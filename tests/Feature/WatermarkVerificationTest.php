@@ -19,15 +19,13 @@ class WatermarkVerificationTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $watermarkService = new WatermarkService;
-        $this->service = new WatermarkVerificationService($watermarkService);
+        $this->service = new WatermarkVerificationService(new WatermarkService);
         config(['watermark.signing_key' => 'test-signing-key']);
     }
 
-    public function test_tampering_fails_verification()
+    private function makeDerivative(Media $media): MediaDerivative
     {
-        $media = Media::factory()->create();
-        $derivative = new MediaDerivative([
+        return new MediaDerivative([
             'media_id' => $media->id,
             'derivative_type' => DerivativeType::PUBLIC,
             'filename' => 'test.jpg',
@@ -35,54 +33,138 @@ class WatermarkVerificationTest extends TestCase
             'size' => 100,
             'mime_type' => 'image/jpeg',
         ]);
+    }
 
+    private function verifyWithPayload(array $payload, Media $media, MediaDerivative $derivative): bool
+    {
+        $mock = $this->createMock(WatermarkService::class);
+        $mock->method('extractInvisibleIdentifier')->willReturn($payload);
+        $svc = new WatermarkVerificationService($mock);
+
+        return $svc->verifyDerivative($derivative, $media);
+    }
+
+    public function test_valid_payload_passes_verification()
+    {
+        $media = Media::factory()->create();
+        $derivative = $this->makeDerivative($media);
         $payload = $this->service->generatePayload($media, DerivativeType::PUBLIC);
 
-        $watermarkServiceMock = $this->createMock(WatermarkService::class);
-        $service = new WatermarkVerificationService($watermarkServiceMock);
+        $this->assertTrue($this->verifyWithPayload($payload, $media, $derivative));
+    }
 
-        // Test missing signature
-        $tampered = $payload;
-        unset($tampered['signature']);
-        $watermarkServiceMock->method('extractInvisibleIdentifier')->willReturn($tampered);
-        $this->assertFalse($service->verifyDerivative($derivative, $media));
+    public function test_tampered_installation_id_fails()
+    {
+        $media = Media::factory()->create();
+        $derivative = $this->makeDerivative($media);
+        $payload = $this->service->generatePayload($media, DerivativeType::PUBLIC);
+        $payload['installation_id'] = 'evil-installation';
 
-        // Test modified media_id
-        $tampered = $payload;
-        $tampered['media_id'] = 'malicious-id';
-        $watermarkServiceMock = $this->createMock(WatermarkService::class);
-        $watermarkServiceMock->method('extractInvisibleIdentifier')->willReturn($tampered);
-        $service = new WatermarkVerificationService($watermarkServiceMock);
-        $this->assertFalse($service->verifyDerivative($derivative, $media));
+        $this->assertFalse($this->verifyWithPayload($payload, $media, $derivative));
+    }
 
-        // Test modified derivative_type
-        $tampered = $payload;
-        $tampered['derivative_type'] = 'private';
-        $watermarkServiceMock = $this->createMock(WatermarkService::class);
-        $watermarkServiceMock->method('extractInvisibleIdentifier')->willReturn($tampered);
-        $service = new WatermarkVerificationService($watermarkServiceMock);
-        $this->assertFalse($service->verifyDerivative($derivative, $media));
+    public function test_tampered_media_id_fails()
+    {
+        $media = Media::factory()->create();
+        $derivative = $this->makeDerivative($media);
+        $payload = $this->service->generatePayload($media, DerivativeType::PUBLIC);
+        $payload['media_id'] = 99999;
 
-        // Test extra field
-        $tampered = $payload;
-        $tampered['extra'] = 'hacked';
-        $watermarkServiceMock = $this->createMock(WatermarkService::class);
-        $watermarkServiceMock->method('extractInvisibleIdentifier')->willReturn($tampered);
-        $service = new WatermarkVerificationService($watermarkServiceMock);
-        $this->assertFalse($service->verifyDerivative($derivative, $media));
+        $this->assertFalse($this->verifyWithPayload($payload, $media, $derivative));
+    }
 
-        // Test missing key
+    public function test_tampered_derivative_type_fails()
+    {
+        $media = Media::factory()->create();
+        $derivative = $this->makeDerivative($media);
+        $payload = $this->service->generatePayload($media, DerivativeType::PUBLIC);
+        $payload['derivative_type'] = 'private';
+
+        $this->assertFalse($this->verifyWithPayload($payload, $media, $derivative));
+    }
+
+    public function test_tampered_watermark_version_fails()
+    {
+        $media = Media::factory()->create();
+        $derivative = $this->makeDerivative($media);
+        $payload = $this->service->generatePayload($media, DerivativeType::PUBLIC);
+        $payload['watermark_version'] = '9.9';
+
+        $this->assertFalse($this->verifyWithPayload($payload, $media, $derivative));
+    }
+
+    public function test_tampered_issued_at_fails()
+    {
+        $media = Media::factory()->create();
+        $derivative = $this->makeDerivative($media);
+        $payload = $this->service->generatePayload($media, DerivativeType::PUBLIC);
+        $payload['issued_at'] = 0;
+
+        $this->assertFalse($this->verifyWithPayload($payload, $media, $derivative));
+    }
+
+    public function test_tampered_signature_fails()
+    {
+        $media = Media::factory()->create();
+        $derivative = $this->makeDerivative($media);
+        $payload = $this->service->generatePayload($media, DerivativeType::PUBLIC);
+        $payload['signature'] = 'forged-signature-value';
+
+        $this->assertFalse($this->verifyWithPayload($payload, $media, $derivative));
+    }
+
+    public function test_missing_signature_fails()
+    {
+        $media = Media::factory()->create();
+        $derivative = $this->makeDerivative($media);
+        $payload = $this->service->generatePayload($media, DerivativeType::PUBLIC);
+        unset($payload['signature']);
+
+        $this->assertFalse($this->verifyWithPayload($payload, $media, $derivative));
+    }
+
+    public function test_missing_required_field_fails()
+    {
+        $media = Media::factory()->create();
+        $derivative = $this->makeDerivative($media);
+        $payload = $this->service->generatePayload($media, DerivativeType::PUBLIC);
+        unset($payload['watermark_version']);
+
+        $this->assertFalse($this->verifyWithPayload($payload, $media, $derivative));
+    }
+
+    public function test_unexpected_extra_field_fails()
+    {
+        $media = Media::factory()->create();
+        $derivative = $this->makeDerivative($media);
+        $payload = $this->service->generatePayload($media, DerivativeType::PUBLIC);
+        $payload['malicious'] = 'injected';
+
+        $this->assertFalse($this->verifyWithPayload($payload, $media, $derivative));
+    }
+
+    public function test_missing_signing_key_fails_closed()
+    {
         config(['watermark.signing_key' => '']);
-        $watermarkServiceMock = $this->createMock(WatermarkService::class);
-        $watermarkServiceMock->method('extractInvisibleIdentifier')->willReturn($payload);
-        $service = new WatermarkVerificationService($watermarkServiceMock);
-        $this->assertFalse($service->verifyDerivative($derivative, $media));
+        $media = Media::factory()->create();
+        $derivative = $this->makeDerivative($media);
 
-        // Test valid payload
-        config(['watermark.signing_key' => 'test-signing-key']);
-        $watermarkServiceMock = $this->createMock(WatermarkService::class);
-        $watermarkServiceMock->method('extractInvisibleIdentifier')->willReturn($payload);
-        $service = new WatermarkVerificationService($watermarkServiceMock);
-        $this->assertTrue($service->verifyDerivative($derivative, $media));
+        $mock = $this->createMock(WatermarkService::class);
+        $mock->method('extractInvisibleIdentifier')->willReturn(['anything' => 'here']);
+        $svc = new WatermarkVerificationService($mock);
+
+        $this->assertFalse($svc->verifyDerivative($derivative, $media));
+    }
+
+    public function test_null_extraction_fails()
+    {
+        $media = Media::factory()->create();
+        $derivative = $this->makeDerivative($media);
+
+        $mock = $this->createMock(WatermarkService::class);
+        $mock->method('extractInvisibleIdentifier')->willReturn(null);
+        $svc = new WatermarkVerificationService($mock);
+
+        $this->assertFalse($svc->verifyDerivative($derivative, $media));
     }
 }

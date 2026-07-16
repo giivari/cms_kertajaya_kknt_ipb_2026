@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Contracts\MediaUsageResolver;
 use App\Enums\MediaProcessingStatus;
 use App\Models\Media;
+use App\Services\MediaDeletionService;
 use App\Services\MediaUsageService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -19,7 +20,6 @@ class MediaDeletionServiceTest extends TestCase
             'processing_status' => MediaProcessingStatus::COMPLETED,
         ]);
 
-        // This should not throw an exception
         $media->delete();
         $this->assertSoftDeleted($media);
     }
@@ -56,12 +56,11 @@ class MediaDeletionServiceTest extends TestCase
 
         $usageService = app(MediaUsageService::class);
 
-        // Create an anonymous class implementing MediaUsageResolver
         $resolver = new class implements MediaUsageResolver
         {
             public function isInUse(Media $media): bool
             {
-                return true; // Always in use
+                return true;
             }
 
             public function getUsage(Media $media): array
@@ -78,22 +77,74 @@ class MediaDeletionServiceTest extends TestCase
         $media->delete();
     }
 
-    public function test_bulk_delete_evaluates_every_record()
+    public function test_atomic_bulk_delete_one_invalid_prevents_all()
     {
         $media1 = Media::factory()->create(['processing_status' => MediaProcessingStatus::COMPLETED]);
-        $media2 = Media::factory()->create(['processing_status' => MediaProcessingStatus::PENDING]); // Will fail
+        $media2 = Media::factory()->create(['processing_status' => MediaProcessingStatus::COMPLETED]);
+        $media3 = Media::factory()->create(['processing_status' => MediaProcessingStatus::PENDING]);
 
-        $failed = false;
-        try {
-            // Manual loop like Filament would do (if not caught earlier)
-            $media1->delete();
-            $media2->delete();
-        } catch (\Exception $e) {
-            $failed = true;
-        }
+        $service = app(MediaDeletionService::class);
+        $result = $service->bulkDelete(collect([$media1, $media2, $media3]));
 
-        $this->assertTrue($failed);
-        $this->assertSoftDeleted($media1); // First one succeeded
-        $this->assertNotSoftDeleted($media2); // Second one failed
+        $this->assertEquals(0, $result['deleted']);
+        $this->assertNotEmpty($result['errors']);
+
+        // None should be deleted
+        $this->assertNotSoftDeleted($media1);
+        $this->assertNotSoftDeleted($media2);
+        $this->assertNotSoftDeleted($media3);
+    }
+
+    public function test_atomic_bulk_delete_all_eligible_succeeds()
+    {
+        $media1 = Media::factory()->create(['processing_status' => MediaProcessingStatus::COMPLETED]);
+        $media2 = Media::factory()->create(['processing_status' => MediaProcessingStatus::COMPLETED]);
+        $media3 = Media::factory()->create(['processing_status' => MediaProcessingStatus::COMPLETED]);
+
+        $service = app(MediaDeletionService::class);
+        $result = $service->bulkDelete(collect([$media1, $media2, $media3]));
+
+        $this->assertEquals(3, $result['deleted']);
+        $this->assertEmpty($result['errors']);
+
+        $this->assertSoftDeleted($media1);
+        $this->assertSoftDeleted($media2);
+        $this->assertSoftDeleted($media3);
+    }
+
+    public function test_atomic_bulk_delete_resolver_protected_aborts_all()
+    {
+        $media1 = Media::factory()->create(['processing_status' => MediaProcessingStatus::COMPLETED]);
+        $media2 = Media::factory()->create(['processing_status' => MediaProcessingStatus::COMPLETED]);
+
+        $usageService = app(MediaUsageService::class);
+        $protectedId = $media2->id;
+
+        $resolver = new class($protectedId) implements MediaUsageResolver
+        {
+            public function __construct(private $protectedId) {}
+
+            public function isInUse(Media $media): bool
+            {
+                return $media->id === $this->protectedId;
+            }
+
+            public function getUsage(Media $media): array
+            {
+                return $media->id === $this->protectedId ? ['Page: Homepage'] : [];
+            }
+        };
+
+        $usageService->registerResolver($resolver);
+
+        $service = app(MediaDeletionService::class);
+        $result = $service->bulkDelete(collect([$media1, $media2]));
+
+        $this->assertEquals(0, $result['deleted']);
+        $this->assertNotEmpty($result['errors']);
+
+        // Neither should be deleted
+        $this->assertNotSoftDeleted($media1);
+        $this->assertNotSoftDeleted($media2);
     }
 }

@@ -5,7 +5,6 @@ namespace Tests\Feature;
 use App\Enums\InvisibleWatermarkStatus;
 use App\Enums\MediaProcessingStatus;
 use App\Jobs\ProcessMediaJob;
-use App\Models\WatermarkVerificationLog;
 use App\Services\MediaProcessingService;
 use App\Services\WatermarkService;
 use App\Services\WatermarkVerificationService;
@@ -45,10 +44,6 @@ class MediaPipelineTest extends TestCase
         $job->handle(app(WatermarkService::class), app(WatermarkVerificationService::class));
 
         $media->refresh();
-
-        if ($media->processing_status->value === 'failed') {
-            dump('Verification logs:', WatermarkVerificationLog::all()->toArray());
-        }
 
         $this->assertEquals(MediaProcessingStatus::COMPLETED, $media->processing_status);
         $this->assertEquals(InvisibleWatermarkStatus::VERIFIED, $media->invisible_watermark_status);

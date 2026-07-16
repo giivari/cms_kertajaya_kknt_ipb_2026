@@ -5,13 +5,14 @@ namespace App\Filament\Resources\Media\Tables;
 use App\Enums\InvisibleWatermarkStatus;
 use App\Enums\MediaProcessingStatus;
 use App\Jobs\ProcessMediaJob;
+use App\Services\MediaDeletionService;
 use App\Services\MediaUsageService;
 use App\Services\WatermarkVerificationService;
 use Filament\Notifications\Notification;
 use Filament\Tables\Actions\Action;
+use Filament\Tables\Actions\BulkAction;
 use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteAction;
-use Filament\Tables\Actions\DeleteBulkAction;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
@@ -101,21 +102,27 @@ class MediaTable
             ])
             ->bulkActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make()
-                        ->before(function (DeleteBulkAction $action, Collection $records, MediaUsageService $usageService) {
-                            $inUseCount = 0;
-                            foreach ($records as $record) {
-                                if ($usageService->isInUse($record)) {
-                                    $inUseCount++;
-                                }
-                            }
-                            if ($inUseCount > 0) {
+                    BulkAction::make('delete')
+                        ->label('Delete selected')
+                        ->icon('heroicon-o-trash')
+                        ->color('danger')
+                        ->requiresConfirmation()
+                        ->deselectRecordsAfterCompletion()
+                        ->action(function (Collection $records, MediaDeletionService $deletionService) {
+                            $result = $deletionService->bulkDelete($records);
+
+                            if (count($result['errors']) > 0) {
                                 Notification::make()
                                     ->danger()
-                                    ->title('Cannot delete selected media')
-                                    ->body("{$inUseCount} of the selected media are in use and cannot be deleted.")
+                                    ->title('Bulk deletion aborted')
+                                    ->body(count($result['errors']).' record(s) failed validation. No records were deleted.')
                                     ->send();
-                                $action->cancel();
+                            } else {
+                                Notification::make()
+                                    ->success()
+                                    ->title('Deleted')
+                                    ->body("{$result['deleted']} media record(s) deleted.")
+                                    ->send();
                             }
                         }),
                 ]),

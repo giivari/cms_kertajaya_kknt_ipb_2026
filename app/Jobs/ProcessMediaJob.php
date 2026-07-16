@@ -90,7 +90,7 @@ class ProcessMediaJob implements ShouldQueue
                 $existingDerivative = MediaDerivative::where('media_id', $this->media->id)
                     ->where('derivative_type', DerivativeType::PUBLIC)
                     ->first();
-                    
+
                 if ($existingDerivative) {
                     Storage::disk($existingDerivative->disk)->delete($existingDerivative->filename);
                     $existingDerivative->delete();
@@ -98,7 +98,7 @@ class ProcessMediaJob implements ShouldQueue
 
                 Storage::disk('public')->put($publicFilename, file_get_contents($stagingPath));
                 $publicPath = Storage::disk('public')->path($publicFilename);
-                
+
                 $checksum = hash_file('sha256', $publicPath);
 
                 $derivative = MediaDerivative::create([
