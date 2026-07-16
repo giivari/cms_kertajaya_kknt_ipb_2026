@@ -27,7 +27,14 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path(config('village.admin_path', 'desa-dashboard'))
-            ->login()
+            ->login(\App\Filament\Pages\Auth\Login::class)
+            ->profile(\App\Filament\Pages\Auth\EditProfile::class)
+            ->multiFactorAuthentication(
+                providers: [
+                    \Filament\Auth\MultiFactor\App\AppAuthentication::make(),
+                ],
+                isRequired: true
+            )
             ->colors([
                 'primary' => Color::Amber,
             ])
