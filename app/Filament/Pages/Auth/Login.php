@@ -29,10 +29,7 @@ class Login extends BaseLogin
             return null;
         }
 
-        $attempts = RateLimiter::attempts($key);
-        if ($attempts > 0) {
-            usleep(min($attempts * 200000, 1000000));
-        }
+        // Progressive delay via sleep removed in favor of strict rate limiting.
 
         try {
             $response = parent::authenticate();

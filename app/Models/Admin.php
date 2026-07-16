@@ -23,6 +23,7 @@ class Admin extends Authenticatable implements FilamentUser, HasAppAuthenticatio
         'email',
         'password',
         'force_password_change',
+        'password_changed_at',
         'app_authentication_secret',
     ];
 
@@ -34,6 +35,7 @@ class Admin extends Authenticatable implements FilamentUser, HasAppAuthenticatio
     {
         return [
             'password' => 'hashed',
+            'app_authentication_secret' => 'encrypted',
         ];
     }
 

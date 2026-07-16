@@ -14,7 +14,7 @@ class ProvisionAdmin extends Command
      *
      * @var string
      */
-    protected $signature = 'admin:provision {--name=} {--username=} {--email=} {--password=}';
+    protected $signature = 'admin:provision {--name=} {--username=} {--email=}';
 
     /**
      * The console command description.
@@ -38,10 +38,7 @@ class ProvisionAdmin extends Command
         $username = $this->option('username') ?? $this->ask('Username', 'admin');
         $email = $this->option('email') ?? $this->ask('Email Address', 'admin@example.com');
 
-        $password = $this->option('password');
-        if (! $password) {
-            $password = $this->secret('Password (leave blank to auto-generate)');
-        }
+        $password = $this->secret('Password (leave blank to auto-generate)');
 
         $generated = false;
         if (empty($password)) {

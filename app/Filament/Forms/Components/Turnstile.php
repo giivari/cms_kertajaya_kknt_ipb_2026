@@ -4,6 +4,7 @@ namespace App\Filament\Forms\Components;
 
 use Closure;
 use Filament\Forms\Components\Field;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
 use SensitiveParameter;
 
@@ -33,14 +34,18 @@ class Turnstile extends Field
                     return;
                 }
 
-                $response = Http::asForm()->post('https://challenges.cloudflare.com/turnstile/v0/siteverify', [
-                    'secret' => $secret,
-                    'response' => $value,
-                    'remoteip' => request()->ip(),
-                ]);
+                try {
+                    $response = Http::timeout(3)->asForm()->post('https://challenges.cloudflare.com/turnstile/v0/siteverify', [
+                        'secret' => $secret,
+                        'response' => $value,
+                        'remoteip' => request()->ip(),
+                    ]);
 
-                if (! $response->json('success')) {
-                    $fail('The CAPTCHA verification failed.');
+                    if (! $response->json('success')) {
+                        $fail('The CAPTCHA verification failed.');
+                    }
+                } catch (ConnectionException $e) {
+                    $fail('The CAPTCHA verification failed due to a timeout.');
                 }
             };
         });

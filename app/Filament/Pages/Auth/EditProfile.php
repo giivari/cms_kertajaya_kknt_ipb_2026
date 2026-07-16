@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages\Auth;
 
+use App\Services\AuditLogService;
 use Closure;
 use Filament\Auth\MultiFactor\App\AppAuthentication;
 use Filament\Auth\Pages\EditProfile as BaseEditProfile;
@@ -55,15 +56,24 @@ class EditProfile extends BaseEditProfile
                     }
                 };
             })
-            ->visible(fn (Get $get): bool => filled($get('password')) || ($get('email') !== $this->getUser()->getAttributeValue('email')));
+            ->visible(fn (Get $get): bool => (filled($get('password')) || ($get('email') !== $this->getUser()->getAttributeValue('email'))) && filled($this->getUser()->getAttributeValue('app_authentication_secret')));
     }
 
     protected function mutateFormDataBeforeSave(array $data): array
     {
         if (isset($data['password'])) {
             $data['force_password_change'] = false;
+            $data['password_changed_at'] = now();
+            AuditLogService::log('password_changed', $this->getUser(), null, null);
         }
 
         return parent::mutateFormDataBeforeSave($data);
+    }
+
+    protected function afterSave(): void
+    {
+        if (isset($this->data['password']) && request()->hasSession()) {
+            request()->session()->regenerate();
+        }
     }
 }
