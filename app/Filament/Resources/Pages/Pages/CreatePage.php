@@ -12,7 +12,8 @@ class CreatePage extends CreateRecord
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         $this->builderSections = $data['builder_sections'] ?? [];
-        unset($data['builder_sections']);
+        $this->selectedTemplate = $data['template'] ?? 'blank';
+        unset($data['builder_sections'], $data['template']);
 
         if ($data['status'] === \App\Enums\PageStatus::PUBLISHED->value && empty($data['published_at'])) {
             $data['published_at'] = now();
@@ -24,6 +25,13 @@ class CreatePage extends CreateRecord
     protected function afterCreate(): void
     {
         $service = app(\App\Services\PageBuilderService::class);
-        $service->saveSectionsAndComponents($this->record, $this->builderSections ?? []);
+        
+        $sections = $this->builderSections ?? [];
+        if (empty($sections) && !empty($this->selectedTemplate) && $this->selectedTemplate !== 'blank') {
+            $templateService = app(\App\Services\PageTemplateService::class);
+            $sections = $templateService->getTemplateDefinition($this->selectedTemplate);
+        }
+
+        $service->saveSectionsAndComponents($this->record, $sections);
     }
 }

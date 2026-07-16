@@ -13,7 +13,8 @@ class PageBuilderService
      */
     public function saveSectionsAndComponents(Page $page, array $sectionsData): void
     {
-        // Get existing section IDs to determine which ones to delete
+        \Illuminate\Support\Facades\DB::transaction(function () use ($page, $sectionsData) {
+            // Get existing section IDs to determine which ones to delete
         $existingSectionIds = $page->sections()->pluck('id')->toArray();
         $keptSectionIds = [];
 
@@ -49,11 +50,12 @@ class PageBuilderService
             $this->saveComponents($sectionModel, $sectionData['components'] ?? []);
         }
 
-        // Delete sections that were removed
-        $sectionsToDelete = array_diff($existingSectionIds, $keptSectionIds);
-        if (!empty($sectionsToDelete)) {
-            PageSection::whereIn('id', $sectionsToDelete)->delete();
-        }
+            // Delete sections that were removed
+            $sectionsToDelete = array_diff($existingSectionIds, $keptSectionIds);
+            if (!empty($sectionsToDelete)) {
+                PageSection::whereIn('id', $sectionsToDelete)->delete();
+            }
+        });
     }
 
     protected function saveComponents(PageSection $section, array $componentsData): void
@@ -74,12 +76,27 @@ class PageBuilderService
                 $keptComponentIds[] = $componentId;
             } else {
                 $componentModel = new PageComponent();
-                $componentModel->page_section_id = $section->id;
+                $componentModel->section_id = $section->id;
             }
 
             $componentModel->component_type = $type;
-            $componentModel->column_position = $data['column_position'] ?? 'main';
+            $componentModel->column_position = isset($data['column_position']) ? (int) $data['column_position'] : 1;
             $componentModel->position = $position++;
+
+            if ($type === 'rich_text' && isset($data['content'])) {
+                $data['content'] = clean($data['content']);
+            }
+
+            if ($type === 'cta_button' && isset($data['url'])) {
+                $data['url'] = $this->sanitizeUrl($data['url']);
+            }
+            if ($type === 'card_grid' && isset($data['cards']) && is_array($data['cards'])) {
+                foreach ($data['cards'] as &$card) {
+                    if (!empty($card['link_url'])) {
+                        $card['link_url'] = $this->sanitizeUrl($card['link_url']);
+                    }
+                }
+            }
             
             // Extract settings from data if we want to separate them, or keep them all in content_data
             $settings = $data['component_settings'] ?? [];
@@ -138,5 +155,19 @@ class PageBuilderService
         }
 
         return $state;
+    }
+
+    protected function sanitizeUrl(?string $url): ?string
+    {
+        if (empty($url)) {
+            return $url;
+        }
+
+        // Reject javascript: and vbscript: URLs
+        if (preg_match('/^(javascript|vbscript):/i', trim($url))) {
+            return '#';
+        }
+
+        return $url;
     }
 }

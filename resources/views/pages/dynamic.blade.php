@@ -47,7 +47,7 @@
                         @foreach($section->components as $component)
                             @if($component->is_visible)
                                 <div class="component-wrapper">
-                                    @include('pages.components.' . $component->component_type->value, ['data' => $component->content_data])
+                                    @include('pages.components.' . $component->component_type, ['data' => $component->content_data])
                                 </div>
                             @endif
                         @endforeach

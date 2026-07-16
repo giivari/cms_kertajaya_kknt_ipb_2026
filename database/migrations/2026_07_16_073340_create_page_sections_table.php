@@ -14,12 +14,14 @@ return new class extends Migration
         Schema::create('page_sections', function (Blueprint $table) {
             $table->id();
             $table->foreignId('page_id')->constrained()->cascadeOnDelete();
-            $table->string('name')->nullable(); // Optional internal name
-            $table->string('layout_type')->default('single_column');
-            $table->integer('position')->default(0);
-            $table->jsonb('section_settings')->nullable();
-            $table->boolean('is_visible')->default(true);
+            $table->string('name', 150)->nullable();
+            $table->string('layout_type', 50)->default('single_column')->index();
+            $table->integer('position')->default(0)->index();
+            $table->jsonb('section_settings')->default('{}');
+            $table->boolean('is_visible')->default(true)->index();
             $table->timestamps();
+
+            $table->unique(['page_id', 'position']);
         });
     }
 

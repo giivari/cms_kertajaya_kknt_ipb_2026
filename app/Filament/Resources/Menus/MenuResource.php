@@ -54,12 +54,13 @@ class MenuResource extends Resource
                                     ->live()
                                     ->required(),
                                 Select::make('page_id')
-                                    ->relationship('page', 'title')
+                                    ->relationship('page', 'title', fn(\Illuminate\Database\Eloquent\Builder $query) => $query->where('status', \App\Enums\PageStatus::PUBLISHED->value))
                                     ->searchable()
                                     ->visible(fn(Forms\Get $get) => $get('link_type') === LinkType::PAGE->value)
                                     ->required(fn(Forms\Get $get) => $get('link_type') === LinkType::PAGE->value),
                                 TextInput::make('custom_url')
                                     ->url()
+                                    ->regex('/^https?:\/\//i')
                                     ->visible(fn(Forms\Get $get) => $get('link_type') === LinkType::CUSTOM->value)
                                     ->required(fn(Forms\Get $get) => $get('link_type') === LinkType::CUSTOM->value),
                                 Select::make('target')
@@ -77,12 +78,13 @@ class MenuResource extends Resource
                                             ->live()
                                             ->required(),
                                         Select::make('page_id')
-                                            ->relationship('page', 'title')
+                                            ->relationship('page', 'title', fn(\Illuminate\Database\Eloquent\Builder $query) => $query->where('status', \App\Enums\PageStatus::PUBLISHED->value))
                                             ->searchable()
                                             ->visible(fn(Forms\Get $get) => $get('link_type') === LinkType::PAGE->value)
                                             ->required(fn(Forms\Get $get) => $get('link_type') === LinkType::PAGE->value),
                                         TextInput::make('custom_url')
                                             ->url()
+                                            ->regex('/^https?:\/\//i')
                                             ->visible(fn(Forms\Get $get) => $get('link_type') === LinkType::CUSTOM->value)
                                             ->required(fn(Forms\Get $get) => $get('link_type') === LinkType::CUSTOM->value),
                                         Select::make('target')

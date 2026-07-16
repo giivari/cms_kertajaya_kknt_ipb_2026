@@ -12,7 +12,24 @@ class PageController extends Controller
     {
         $page = Page::where('slug', $slug)
             ->where('status', PageStatus::PUBLISHED->value)
-            ->with(['sections.components.section'])
+            ->with(['sections.components'])
+            ->first();
+
+        if (! $page) {
+            abort(404);
+        }
+
+        return view('pages.dynamic', compact('page'));
+    }
+
+    public function preview($slug)
+    {
+        if (! auth()->check()) {
+            abort(404);
+        }
+
+        $page = Page::where('slug', $slug)
+            ->with(['sections.components'])
             ->first();
 
         if (! $page) {

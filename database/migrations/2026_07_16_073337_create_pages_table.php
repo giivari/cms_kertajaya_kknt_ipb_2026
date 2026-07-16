@@ -14,17 +14,18 @@ return new class extends Migration
     {
         Schema::create('pages', function (Blueprint $table) {
             $table->id();
-            $table->string('title');
+            $table->string('title')->index();
             $table->string('slug')->unique();
             $table->text('excerpt')->nullable();
             $table->foreignId('featured_media_id')->nullable()->constrained('media')->nullOnDelete();
-            $table->string('status')->default(PageStatus::DRAFT->value);
-            $table->boolean('is_featured')->default(false);
+            $table->string('status', 30)->default('published')->index();
+            $table->boolean('is_featured')->default(false)->index();
             $table->string('seo_title')->nullable();
-            $table->text('seo_description')->nullable();
-            $table->timestamp('published_at')->nullable();
-            $table->timestamps();
-            $table->softDeletes();
+            $table->string('seo_description', 320)->nullable();
+            $table->timestampTz('published_at')->nullable()->index();
+            $table->timestampTz('created_at')->useCurrent();
+            $table->timestampTz('updated_at')->useCurrent()->index();
+            $table->softDeletesTz()->index();
         });
     }
 

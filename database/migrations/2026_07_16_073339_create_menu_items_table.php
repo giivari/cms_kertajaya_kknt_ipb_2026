@@ -16,14 +16,17 @@ return new class extends Migration
             $table->id();
             $table->foreignId('menu_id')->constrained()->cascadeOnDelete();
             $table->foreignId('parent_id')->nullable()->constrained('menu_items')->cascadeOnDelete();
-            $table->string('label');
-            $table->string('link_type')->default(LinkType::CUSTOM->value);
+            $table->string('label', 150);
+            $table->string('link_type', 50)->index();
             $table->foreignId('page_id')->nullable()->constrained('pages')->nullOnDelete();
-            $table->string('custom_url')->nullable();
-            $table->string('target')->default('_self');
-            $table->integer('position')->default(0);
-            $table->boolean('is_visible')->default(true);
-            $table->timestamps();
+            $table->text('custom_url')->nullable();
+            $table->string('target', 20)->default('_self');
+            $table->integer('position')->default(0)->index();
+            $table->boolean('is_visible')->default(true)->index();
+            $table->timestampTz('created_at')->useCurrent();
+            $table->timestampTz('updated_at')->useCurrent();
+
+            $table->unique(['menu_id', 'parent_id', 'position'], 'menu_items_unique_position');
         });
     }
 

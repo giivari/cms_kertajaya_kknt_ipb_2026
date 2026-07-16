@@ -25,15 +25,17 @@ class PageMediaUsageResolver implements MediaUsageResolver
         }
 
         // Check inside components (requires querying JSONB)
-        $components = PageComponent::whereJsonContains('content_data->media_id', $media->id)
-            ->orWhereJsonContains('content_data->items', ['media_id' => $media->id])
-            ->orWhereJsonContains('content_data->images', $media->id)
+        $components = PageComponent::where('content_data->media_id', $media->id)
+            ->orWhereJsonContains('content_data->images', (string)$media->id)
+            ->orWhereJsonContains('content_data->images', $media->id) // Some might be int
+            ->orWhereJsonContains('content_data->documents', (string)$media->id)
+            ->orWhereJsonContains('content_data->documents', $media->id)
             ->with('section.page')
             ->get();
 
         foreach ($components as $component) {
             if ($component->section && $component->section->page) {
-                $usages[] = "Page Component: {$component->section->page->title} ({$component->component_type->value})";
+                $usages[] = "Page Component: {$component->section->page->title} ({$component->component_type})";
             }
         }
 
@@ -47,9 +49,13 @@ class PageMediaUsageResolver implements MediaUsageResolver
             return $pageCount;
         }
 
-        return PageComponent::whereJsonContains('content_data->media_id', $media->id)
-            ->orWhereJsonContains('content_data->items', ['media_id' => $media->id])
+        $componentCount = PageComponent::where('content_data->media_id', $media->id)
+            ->orWhereJsonContains('content_data->images', (string)$media->id)
             ->orWhereJsonContains('content_data->images', $media->id)
+            ->orWhereJsonContains('content_data->documents', (string)$media->id)
+            ->orWhereJsonContains('content_data->documents', $media->id)
             ->count();
+
+        return $pageCount + $componentCount;
     }
 }

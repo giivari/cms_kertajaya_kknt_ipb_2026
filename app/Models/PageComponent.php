@@ -12,7 +12,7 @@ class PageComponent extends Model
     use HasFactory;
 
     protected $fillable = [
-        'page_section_id',
+        'section_id',
         'component_type',
         'column_position',
         'position',
@@ -22,7 +22,6 @@ class PageComponent extends Model
     ];
 
     protected $casts = [
-        'component_type' => ComponentType::class,
         'content_data' => 'array',
         'component_settings' => 'array',
         'is_visible' => 'boolean',
@@ -30,6 +29,6 @@ class PageComponent extends Model
 
     public function section(): BelongsTo
     {
-        return $this->belongsTo(PageSection::class, 'page_section_id');
+        return $this->belongsTo(PageSection::class, 'section_id');
     }
 }

@@ -32,6 +32,6 @@ class PageSection extends Model
 
     public function components(): HasMany
     {
-        return $this->hasMany(PageComponent::class)->orderBy('position');
+        return $this->hasMany(PageComponent::class, 'section_id')->orderBy('position');
     }
 }

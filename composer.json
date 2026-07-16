@@ -12,6 +12,7 @@
         "laravel/framework": "^12.0",
         "laravel/tinker": "^3.0",
         "lsolesen/pel": "^0.9.12",
+        "mews/purifier": "^3.4",
         "smalot/pdfparser": "^2.12",
         "tecnickcom/tcpdf": "^7.0"
     },

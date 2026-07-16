@@ -41,9 +41,10 @@ class PageTest extends TestCase
         ]);
 
         PageComponent::create([
-            'page_section_id' => $section->id,
-            'component_type' => ComponentType::HEADING->value,
+            'section_id' => $section->id,
+            'component_type' => 'heading',
             'content_data' => ['text' => 'Hello World', 'level' => 'h2'],
+            'position' => 0,
         ]);
 
         $response = $this->get('/halaman/published-page');
@@ -52,26 +53,16 @@ class PageTest extends TestCase
         $response->assertSee('Hello World');
     }
 
-    public function test_templates_create_draft_pages()
+    public function test_template_service_returns_definitions()
     {
-        $this->seed(\Database\Seeders\PageTemplateSeeder::class);
-
-        $templates = [
-            'Profil Desa',
-            'Sejarah Desa',
-            'Visi dan Misi',
-            'Potensi Desa',
-            'Informasi Dusun',
-            'Pelayanan',
-            'BUMDes',
-            'Rawan Bencana',
-        ];
-
-        foreach ($templates as $template) {
-            $page = Page::where('title', $template)->first();
-            $this->assertNotNull($page);
-            $this->assertEquals(PageStatus::DRAFT, $page->status);
-            $this->assertGreaterThan(0, $page->sections->count());
-        }
+        $service = new \App\Services\PageTemplateService();
+        $templates = $service->getAvailableTemplates();
+        
+        $this->assertArrayHasKey('profil_desa', $templates);
+        
+        $definition = $service->getTemplateDefinition('profil_desa');
+        $this->assertIsArray($definition);
+        $this->assertCount(2, $definition);
+        $this->assertEquals('heading', $definition[0]['components'][array_key_first($definition[0]['components'])]['type']);
     }
 }

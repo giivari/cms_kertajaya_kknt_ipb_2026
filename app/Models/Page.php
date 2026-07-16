@@ -40,4 +40,22 @@ class Page extends Model
     {
         return $this->belongsTo(Media::class, 'featured_media_id');
     }
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::saving(function ($page) {
+            if (empty($page->slug)) {
+                $page->slug = \Illuminate\Support\Str::slug($page->title);
+            }
+
+            $originalSlug = $page->slug;
+            $count = 1;
+            while (static::where('slug', $page->slug)->where('id', '!=', $page->id)->exists()) {
+                $page->slug = "{$originalSlug}-{$count}";
+                $count++;
+            }
+        });
+    }
 }
