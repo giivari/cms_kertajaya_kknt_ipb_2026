@@ -25,6 +25,9 @@ class AppServiceProvider extends ServiceProvider
         $this->app->booted(function () {
             $mediaUsageService = $this->app->make(\App\Services\MediaUsageService::class);
             $mediaUsageService->registerResolver(new \App\Services\PageMediaUsageResolver());
+            $mediaUsageService->registerResolver(new \App\Services\NewsMediaUsageResolver());
+            $mediaUsageService->registerResolver(new \App\Services\GalleryMediaUsageResolver());
+            $mediaUsageService->registerResolver(new \App\Services\DocumentMediaUsageResolver());
         });
 
         \Illuminate\Support\Facades\View::composer('partials.header', function ($view) {
