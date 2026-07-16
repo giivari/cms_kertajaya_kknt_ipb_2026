@@ -60,4 +60,97 @@
         </div>
     </div>
 </div>
+
+@if(isset($latestNews) && $latestNews->isNotEmpty())
+<div class="bg-gray-50 py-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-end mb-8">
+            <h2 class="text-3xl font-bold text-gray-900">Berita Terkini</h2>
+            <a href="{{ route('news.index') }}" class="text-emerald-600 hover:text-emerald-700 font-medium">Lihat Semua &rarr;</a>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            @foreach($latestNews as $news)
+                <div class="bg-white rounded-xl shadow-sm overflow-hidden flex flex-col">
+                    @if($news->featuredMedia)
+                        <img src="{{ $news->featuredMedia->url }}" class="w-full h-48 object-cover">
+                    @else
+                        <div class="w-full h-48 bg-gray-200"></div>
+                    @endif
+                    <div class="p-6 flex-grow flex flex-col">
+                        <span class="text-sm text-emerald-600 mb-2 font-medium">{{ $news->category?->name }}</span>
+                        <h3 class="text-xl font-bold mb-2"><a href="{{ route('news.show', $news->slug) }}" class="hover:text-emerald-700">{{ $news->title }}</a></h3>
+                        <p class="text-gray-500 text-sm mb-4">{{ Str::limit($news->excerpt, 100) }}</p>
+                        <div class="mt-auto text-sm text-gray-400">
+                            {{ $news->published_at->format('d M Y') }}
+                        </div>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    </div>
+</div>
+@endif
+
+@if(isset($latestAlbums) && $latestAlbums->isNotEmpty())
+<div class="bg-white py-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-end mb-8">
+            <h2 class="text-3xl font-bold text-gray-900">Galeri Kegiatan</h2>
+            <a href="{{ route('gallery.index') }}" class="text-emerald-600 hover:text-emerald-700 font-medium">Lihat Semua &rarr;</a>
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            @foreach($latestAlbums as $album)
+                <a href="{{ route('gallery.show', $album->slug) }}" class="group block relative rounded-lg overflow-hidden h-48">
+                    @if($album->coverMedia)
+                        <img src="{{ $album->coverMedia->url }}" class="w-full h-full object-cover transition duration-300 group-hover:scale-110">
+                    @else
+                        <div class="w-full h-full bg-gray-200"></div>
+                    @endif
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                    <div class="absolute bottom-0 left-0 p-4">
+                        <h3 class="text-white font-bold">{{ $album->title }}</h3>
+                    </div>
+                </a>
+            @endforeach
+        </div>
+    </div>
+</div>
+@endif
+
+@if(isset($latestDocuments) && $latestDocuments->isNotEmpty())
+<div class="bg-gray-50 py-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-end mb-8">
+            <h2 class="text-3xl font-bold text-gray-900">Dokumen Publik</h2>
+            <a href="{{ route('documents.index') }}" class="text-emerald-600 hover:text-emerald-700 font-medium">Lihat Semua &rarr;</a>
+        </div>
+        <div class="bg-white shadow overflow-hidden sm:rounded-md">
+            <ul class="divide-y divide-gray-200">
+                @foreach($latestDocuments as $doc)
+                    <li>
+                        <div class="px-4 py-4 flex items-center sm:px-6">
+                            <div class="min-w-0 flex-1 sm:flex sm:items-center sm:justify-between">
+                                <div class="truncate">
+                                    <div class="flex text-sm">
+                                        <p class="font-medium text-emerald-600 truncate">{{ $doc->title }}</p>
+                                    </div>
+                                    <div class="mt-2 flex">
+                                        <div class="flex items-center text-sm text-gray-500">
+                                            {{ $doc->category?->name }} &bull; {{ $doc->published_at->format('d M Y') }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="ml-5 flex-shrink-0">
+                                <a href="{{ route('documents.download', $doc->slug) }}" target="_blank" class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700">Unduh</a>
+                            </div>
+                        </div>
+                    </li>
+                @endforeach
+            </ul>
+        </div>
+    </div>
+</div>
+@endif
+
 @endsection

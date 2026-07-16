@@ -48,4 +48,14 @@ class Media extends Model
             $deletionService->validateDeletion($media);
         });
     }
+
+    public function scopeApproved(\Illuminate\Database\Eloquent\Builder $query): void
+    {
+        $query->where('processing_status', MediaProcessingStatus::COMPLETED->value);
+    }
+
+    public function getUrlAttribute(): string
+    {
+        return \Illuminate\Support\Facades\Storage::disk($this->disk)->url($this->directory . '/' . $this->filename);
+    }
 }

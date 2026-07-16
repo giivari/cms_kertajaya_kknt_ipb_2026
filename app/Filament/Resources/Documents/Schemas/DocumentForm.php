@@ -29,12 +29,12 @@ class DocumentForm
                 Textarea::make('description')
                     ->columnSpanFull(),
                 \Filament\Forms\Components\Select::make('file_media_id')
-                    ->relationship('fileMedia', 'filename')
+                    ->relationship('fileMedia', 'filename', fn (\Illuminate\Database\Eloquent\Builder $query) => $query->approved())
                     ->required()
                     ->searchable()
                     ->preload(),
                 \Filament\Forms\Components\Select::make('thumbnail_media_id')
-                    ->relationship('thumbnailMedia', 'filename')
+                    ->relationship('thumbnailMedia', 'filename', fn (\Illuminate\Database\Eloquent\Builder $query) => $query->approved())
                     ->searchable()
                     ->preload(),
                 \Filament\Forms\Components\Select::make('status')

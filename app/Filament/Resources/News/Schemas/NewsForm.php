@@ -34,7 +34,7 @@ class NewsForm
                     ->required()
                     ->columnSpanFull(),
                 \Filament\Forms\Components\Select::make('featured_media_id')
-                    ->relationship('featuredMedia', 'filename')
+                    ->relationship('featuredMedia', 'filename', fn (\Illuminate\Database\Eloquent\Builder $query) => $query->approved())
                     ->searchable()
                     ->preload(),
                 \Filament\Forms\Components\Select::make('status')

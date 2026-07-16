@@ -3,9 +3,10 @@
 namespace App\Policies;
 
 use App\Models\Admin;
-use App\Models\Media;
+use App\Models\Document;
+use Illuminate\Auth\Access\Response;
 
-class MediaPolicy
+class DocumentPolicy
 {
     /**
      * Determine whether the user can view any models.
@@ -18,7 +19,7 @@ class MediaPolicy
     /**
      * Determine whether the user can view the model.
      */
-    public function view(Admin $admin, Media $media): bool
+    public function view(Admin $admin, Document $document): bool
     {
         return true;
     }
@@ -34,7 +35,7 @@ class MediaPolicy
     /**
      * Determine whether the user can update the model.
      */
-    public function update(Admin $admin, Media $media): bool
+    public function update(Admin $admin, Document $document): bool
     {
         return true;
     }
@@ -42,7 +43,7 @@ class MediaPolicy
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(Admin $admin, Media $media): bool
+    public function delete(Admin $admin, Document $document): bool
     {
         return true;
     }
@@ -50,7 +51,7 @@ class MediaPolicy
     /**
      * Determine whether the user can restore the model.
      */
-    public function restore(Admin $admin, Media $media): bool
+    public function restore(Admin $admin, Document $document): bool
     {
         return true;
     }
@@ -58,7 +59,7 @@ class MediaPolicy
     /**
      * Determine whether the user can permanently delete the model.
      */
-    public function forceDelete(Admin $admin, Media $media): bool
+    public function forceDelete(Admin $admin, Document $document): bool
     {
         return true;
     }

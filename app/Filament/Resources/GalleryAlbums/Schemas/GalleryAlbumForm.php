@@ -26,7 +26,7 @@ class GalleryAlbumForm
                 Textarea::make('description')
                     ->columnSpanFull(),
                 \Filament\Forms\Components\Select::make('cover_media_id')
-                    ->relationship('coverMedia', 'filename')
+                    ->relationship('coverMedia', 'filename', fn (\Illuminate\Database\Eloquent\Builder $query) => $query->approved())
                     ->searchable()
                     ->preload(),
                 \Filament\Forms\Components\Select::make('status')
@@ -44,7 +44,7 @@ class GalleryAlbumForm
                     ->relationship()
                     ->schema([
                         \Filament\Forms\Components\Select::make('media_id')
-                            ->relationship('media', 'filename')
+                            ->relationship('media', 'filename', fn (\Illuminate\Database\Eloquent\Builder $query) => $query->approved())
                             ->required()
                             ->searchable()
                             ->preload(),
