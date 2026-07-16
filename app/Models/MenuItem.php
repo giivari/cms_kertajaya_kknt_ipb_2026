@@ -53,9 +53,9 @@ class MenuItem extends Model
     {
         return match ($this->link_type) {
             LinkType::PAGE => $this->page ? url('/halaman/' . $this->page->slug) : '#',
-            LinkType::NEWS_INDEX => url('/berita'),
-            LinkType::GALLERY_INDEX => url('/galeri'),
-            LinkType::DOCUMENT_INDEX => url('/dokumen'),
+            LinkType::NEWS_INDEX => route('news.index'),
+            LinkType::GALLERY_INDEX => route('gallery.index'),
+            LinkType::DOCUMENT_INDEX => route('documents.index'),
             LinkType::MAP => url('/peta'),
             LinkType::CONTACT => url('/narahubung'),
             LinkType::CUSTOM => $this->custom_url ?? '#',

@@ -23,6 +23,20 @@ test('news can be created and viewed on the frontend', function () {
     $response = $this->get('/berita');
     $response->assertStatus(200);
     $response->assertSee('Test News');
+});
+
+test('news details can be viewed on frontend', function () {
+    $category = NewsCategory::create(['name' => 'General', 'slug' => 'general']);
+    
+    $news = News::create([
+        'title' => 'Test News',
+        'slug' => 'test-news',
+        'content' => '<p>Test Content</p>',
+        'status' => 'published',
+        'published_at' => now(),
+        'news_category_id' => $category->id,
+        'is_featured' => true,
+    ]);
 
     $response = $this->get('/berita/test-news');
     $response->assertStatus(200);

@@ -7,9 +7,10 @@ use Illuminate\Http\UploadedFile;
 
 uses(RefreshDatabase::class);
 
-test('documents can be viewed and downloaded', function () {
+test('documents can be viewed and downloaded safely', function () {
+    \Illuminate\Support\Facades\Storage::fake('local');
     $media = Media::create([
-        'disk' => 'public',
+        'disk' => 'local',
         'directory' => 'documents',
         'filename' => 'test.pdf',
         'original_filename' => 'test.pdf',
@@ -19,6 +20,15 @@ test('documents can be viewed and downloaded', function () {
         'processing_status' => 'completed',
         'invisible_watermark_status' => 'unsupported',
     ]);
+    $derivative = $media->derivatives()->create([
+        'derivative_type' => 'public',
+        'disk' => 'local',
+        'filename' => 'test-public.pdf',
+        'mime_type' => 'application/pdf',
+        'size' => 512,
+    ]);
+
+    \Illuminate\Support\Facades\Storage::disk('local')->put('test-public.pdf', 'fake pdf content');
 
     $doc = Document::create([
         'title' => 'Test Document',
@@ -34,7 +44,10 @@ test('documents can be viewed and downloaded', function () {
     $response->assertSee('Test Document');
 
     $response = $this->get('/dokumen/test-document/download');
-    $response->assertRedirect($media->url);
+    $response->assertStatus(200);
+    $response->assertHeader('Content-Type', 'application/pdf');
+    $response->assertHeader('Content-Disposition', 'attachment; filename=test-document.pdf');
+    $response->assertHeader('X-Content-Type-Options', 'nosniff');
 
     expect($doc->fresh()->download_count)->toBe(1);
 });

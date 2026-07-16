@@ -15,15 +15,32 @@ class DocumentController extends Controller
 
     public function download($slug)
     {
-        $document = \App\Models\Document::published()->with('fileMedia')->where('slug', $slug)->firstOrFail();
+        $document = \App\Models\Document::published()->with('fileMedia.derivatives')->where('slug', $slug)->firstOrFail();
         
-        $document->increment('download_count');
-        
-        if (!$document->fileMedia) {
-            abort(404);
+        $media = $document->fileMedia;
+        if (!$media || $media->processing_status->value !== 'completed' || !in_array($media->invisible_watermark_status->value, ['verified', 'unsupported'])) {
+            abort(404, 'Dokumen tidak tersedia atau belum disetujui.');
         }
 
-        return redirect($document->fileMedia->url);
+        $derivative = $media->derivatives()->where('derivative_type', 'public')->first();
+        if (!$derivative) {
+            abort(404, 'File publik tidak ditemukan.');
+        }
+
+        $document->increment('download_count');
+
+        $disk = \Illuminate\Support\Facades\Storage::disk($derivative->disk);
+        $path = $derivative->directory ? $derivative->directory . '/' . $derivative->filename : $derivative->filename;
+        if (!$disk->exists($path)) {
+            abort(404, 'File hilang.');
+        }
+
+        return response()->streamDownload(function () use ($disk, $path) {
+            echo $disk->get($path);
+        }, \Illuminate\Support\Str::slug($document->title) . '.pdf', [
+            'Content-Type' => 'application/pdf',
+            'X-Content-Type-Options' => 'nosniff',
+        ]);
     }
 }
 

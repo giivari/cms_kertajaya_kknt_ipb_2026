@@ -59,4 +59,31 @@ class MenuTest extends TestCase
         $this->assertEquals(1, $parent->children->count());
         $this->assertEquals('Child', $parent->children->first()->label);
     }
+
+    public function test_menu_item_generates_correct_route_urls()
+    {
+        $menu = Menu::create(['name' => 'Main', 'location' => 'main']);
+        
+        $news = MenuItem::create([
+            'menu_id' => $menu->id,
+            'label' => 'Berita',
+            'link_type' => LinkType::NEWS_INDEX->value,
+        ]);
+        
+        $gallery = MenuItem::create([
+            'menu_id' => $menu->id,
+            'label' => 'Galeri',
+            'link_type' => LinkType::GALLERY_INDEX->value,
+        ]);
+        
+        $docs = MenuItem::create([
+            'menu_id' => $menu->id,
+            'label' => 'Dokumen',
+            'link_type' => LinkType::DOCUMENT_INDEX->value,
+        ]);
+
+        $this->assertEquals(route('news.index'), $news->url);
+        $this->assertEquals(route('gallery.index'), $gallery->url);
+        $this->assertEquals(route('documents.index'), $docs->url);
+    }
 }

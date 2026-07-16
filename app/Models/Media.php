@@ -51,7 +51,24 @@ class Media extends Model
 
     public function scopeApproved(\Illuminate\Database\Eloquent\Builder $query): void
     {
-        $query->where('processing_status', MediaProcessingStatus::COMPLETED->value);
+        $query->where('processing_status', MediaProcessingStatus::COMPLETED->value)
+              ->whereIn('invisible_watermark_status', [
+                  InvisibleWatermarkStatus::VERIFIED->value,
+                  InvisibleWatermarkStatus::UNSUPPORTED->value
+              ])
+              ->whereHas('derivatives', function ($q) {
+                  $q->where('derivative_type', 'public');
+              });
+    }
+
+    public function scopeApprovedImages(\Illuminate\Database\Eloquent\Builder $query): void
+    {
+        $query->approved()->where('mime_type', 'like', 'image/%');
+    }
+
+    public function scopeApprovedPdfs(\Illuminate\Database\Eloquent\Builder $query): void
+    {
+        $query->approved()->where('mime_type', 'application/pdf');
     }
 
     public function getUrlAttribute(): string

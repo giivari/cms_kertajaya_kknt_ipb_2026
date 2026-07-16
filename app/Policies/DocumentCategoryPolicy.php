@@ -45,7 +45,7 @@ class DocumentCategoryPolicy
      */
     public function delete(Admin $admin, DocumentCategory $documentCategory): bool
     {
-        return true;
+        return $documentCategory->documents()->doesntExist();
     }
 
     /**
@@ -61,6 +61,6 @@ class DocumentCategoryPolicy
      */
     public function forceDelete(Admin $admin, DocumentCategory $documentCategory): bool
     {
-        return true;
+        return $documentCategory->documents()->doesntExist();
     }
 }

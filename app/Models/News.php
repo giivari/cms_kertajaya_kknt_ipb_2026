@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class News extends Model
 {
-    use HasFactory, SoftDeletes, Auditable;
+    use HasFactory, SoftDeletes, Auditable, \App\Traits\HasContentLifecycle;
 
     protected $guarded = [];
 
@@ -30,10 +30,5 @@ class News extends Model
         return $this->belongsTo(Media::class, 'featured_media_id');
     }
 
-    public function scopePublished(Builder $query): void
-    {
-        $query->where('status', 'published')
-              ->whereNotNull('published_at')
-              ->where('published_at', '<=', now());
-    }
+
 }

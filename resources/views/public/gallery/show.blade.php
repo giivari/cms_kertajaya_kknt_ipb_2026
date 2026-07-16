@@ -1,7 +1,9 @@
 @extends('layouts.public')
 
 @section('title', $album->title . ' - Galeri')
-@section('meta_description', Str::limit($album->description, 150))
+@section('seo_description')
+{{ \Illuminate\Support\Str::limit($album->description, 150) }}
+@endsection
 
 @section('content')
 <div class="container mx-auto px-4 py-8">

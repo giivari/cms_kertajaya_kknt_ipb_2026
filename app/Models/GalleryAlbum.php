@@ -11,7 +11,7 @@ use App\Models\Concerns\Auditable;
 
 class GalleryAlbum extends Model
 {
-    use HasFactory, SoftDeletes, Auditable;
+    use HasFactory, SoftDeletes, Auditable, \App\Traits\HasContentLifecycle;
 
     protected $guarded = [];
 
@@ -30,10 +30,5 @@ class GalleryAlbum extends Model
         return $this->hasMany(GalleryAlbumItem::class)->orderBy('position');
     }
 
-    public function scopePublished(Builder $query): void
-    {
-        $query->where('status', 'published')
-              ->whereNotNull('published_at')
-              ->where('published_at', '<=', now());
-    }
+
 }

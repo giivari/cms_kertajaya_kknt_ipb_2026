@@ -1,7 +1,9 @@
 @extends('layouts.public')
 
 @section('title', $newsItem->seo_title ?: $newsItem->title)
-@section('meta_description', $newsItem->seo_description ?: Str::limit($newsItem->excerpt, 150))
+@section('seo_description')
+{{ $newsItem->seo_description ?: \Illuminate\Support\Str::limit($newsItem->excerpt, 150) }}
+@endsection
 
 @section('content')
 <div class="container mx-auto px-4 py-8 max-w-4xl">

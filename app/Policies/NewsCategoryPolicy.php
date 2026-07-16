@@ -45,7 +45,7 @@ class NewsCategoryPolicy
      */
     public function delete(Admin $admin, NewsCategory $newsCategory): bool
     {
-        return true;
+        return $newsCategory->news()->doesntExist();
     }
 
     /**
@@ -61,6 +61,6 @@ class NewsCategoryPolicy
      */
     public function forceDelete(Admin $admin, NewsCategory $newsCategory): bool
     {
-        return true;
+        return $newsCategory->news()->doesntExist();
     }
 }

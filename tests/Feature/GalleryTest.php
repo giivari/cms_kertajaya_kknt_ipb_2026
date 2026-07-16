@@ -19,6 +19,16 @@ test('gallery albums can be viewed on frontend', function () {
     $response = $this->get('/galeri');
     $response->assertStatus(200);
     $response->assertSee('Test Album');
+});
+
+test('gallery album details can be viewed on frontend', function () {
+    $album = GalleryAlbum::create([
+        'title' => 'Test Album',
+        'slug' => 'test-album',
+        'status' => 'published',
+        'published_at' => now(),
+        'is_featured' => true,
+    ]);
 
     $response = $this->get('/galeri/test-album');
     $response->assertStatus(200);

@@ -11,7 +11,7 @@ use App\Models\Concerns\Auditable;
 
 class Document extends Model
 {
-    use HasFactory, SoftDeletes, Auditable;
+    use HasFactory, SoftDeletes, Auditable, \App\Traits\HasContentLifecycle;
 
     protected $guarded = [];
 
@@ -35,10 +35,5 @@ class Document extends Model
         return $this->belongsTo(Media::class, 'thumbnail_media_id');
     }
 
-    public function scopePublished(Builder $query): void
-    {
-        $query->where('status', 'published')
-              ->whereNotNull('published_at')
-              ->where('published_at', '<=', now());
-    }
+
 }
