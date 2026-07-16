@@ -145,7 +145,7 @@ class PageBuilderService
                 // Filament Builder format uses a UUID for the array key usually, 
                 // but sequential array works for setting state.
                 $sectionData['components'][(string) \Illuminate\Support\Str::uuid()] = [
-                    'type' => $component->component_type->value,
+                    'type' => $component->component_type,
                     'data' => $data,
                 ];
             }

@@ -1,7 +1,7 @@
 @extends('layouts.public')
 
-@section('title', $page->seo_title ?? $page->title)
-@section('seo_description', $page->seo_description ?? $page->excerpt)
+@section('title', $page->seo_title ?? $page->title ?? '')
+@section('seo_description', $page->seo_description ?? $page->excerpt ?? '')
 
 @section('content')
 <div class="bg-white">
