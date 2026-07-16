@@ -5,6 +5,8 @@ namespace App\Services;
 use App\Models\Page;
 use App\Models\PageComponent;
 use App\Models\PageSection;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class PageBuilderService
 {
@@ -13,46 +15,46 @@ class PageBuilderService
      */
     public function saveSectionsAndComponents(Page $page, array $sectionsData): void
     {
-        \Illuminate\Support\Facades\DB::transaction(function () use ($page, $sectionsData) {
+        DB::transaction(function () use ($page, $sectionsData) {
             // Get existing section IDs to determine which ones to delete
-        $existingSectionIds = $page->sections()->pluck('id')->toArray();
-        $keptSectionIds = [];
+            $existingSectionIds = $page->sections()->pluck('id')->toArray();
+            $keptSectionIds = [];
 
-        foreach ($sectionsData as $sectionIndex => $sectionData) {
-            $sectionModel = null;
-            
-            // Check if this section already exists (usually Filament passes an ID if editing a repeater item, 
-            // but we might just use the array key or handle it differently.
-            // Filament repeaters use UUIDs as keys, so we can store that or just recreate.
-            // The cleanest way is to recreate or update based on a hidden ID field.
-            
-            $sectionId = $sectionData['id'] ?? null;
+            foreach ($sectionsData as $sectionIndex => $sectionData) {
+                $sectionModel = null;
 
-            if ($sectionId && in_array($sectionId, $existingSectionIds)) {
-                $sectionModel = PageSection::find($sectionId);
-                $keptSectionIds[] = $sectionId;
-            } else {
-                $sectionModel = new PageSection();
-                $sectionModel->page_id = $page->id;
+                // Check if this section already exists (usually Filament passes an ID if editing a repeater item,
+                // but we might just use the array key or handle it differently.
+                // Filament repeaters use UUIDs as keys, so we can store that or just recreate.
+                // The cleanest way is to recreate or update based on a hidden ID field.
+
+                $sectionId = $sectionData['id'] ?? null;
+
+                if ($sectionId && in_array($sectionId, $existingSectionIds)) {
+                    $sectionModel = PageSection::find($sectionId);
+                    $keptSectionIds[] = $sectionId;
+                } else {
+                    $sectionModel = new PageSection;
+                    $sectionModel->page_id = $page->id;
+                }
+
+                $sectionModel->name = $sectionData['name'] ?? null;
+                $sectionModel->layout_type = $sectionData['layout_type'] ?? 'single_column';
+                $sectionModel->position = $sectionIndex;
+                $sectionModel->section_settings = $sectionData['section_settings'] ?? [];
+                $sectionModel->is_visible = $sectionData['is_visible'] ?? true;
+                $sectionModel->save();
+
+                if (! $sectionId) {
+                    $keptSectionIds[] = $sectionModel->id;
+                }
+
+                $this->saveComponents($sectionModel, $sectionData['components'] ?? []);
             }
-
-            $sectionModel->name = $sectionData['name'] ?? null;
-            $sectionModel->layout_type = $sectionData['layout_type'] ?? 'single_column';
-            $sectionModel->position = $sectionIndex;
-            $sectionModel->section_settings = $sectionData['section_settings'] ?? [];
-            $sectionModel->is_visible = $sectionData['is_visible'] ?? true;
-            $sectionModel->save();
-            
-            if (!$sectionId) {
-                $keptSectionIds[] = $sectionModel->id;
-            }
-
-            $this->saveComponents($sectionModel, $sectionData['components'] ?? []);
-        }
 
             // Delete sections that were removed
             $sectionsToDelete = array_diff($existingSectionIds, $keptSectionIds);
-            if (!empty($sectionsToDelete)) {
+            if (! empty($sectionsToDelete)) {
                 PageSection::whereIn('id', $sectionsToDelete)->delete();
             }
         });
@@ -68,14 +70,14 @@ class PageBuilderService
             // Filament Builder passes data in format: ['type' => 'heading', 'data' => [...]]
             $type = $componentData['type'];
             $data = $componentData['data'];
-            
+
             $componentId = $data['id'] ?? null;
 
             if ($componentId && in_array($componentId, $existingComponentIds)) {
                 $componentModel = PageComponent::find($componentId);
                 $keptComponentIds[] = $componentId;
             } else {
-                $componentModel = new PageComponent();
+                $componentModel = new PageComponent;
                 $componentModel->section_id = $section->id;
             }
 
@@ -92,12 +94,12 @@ class PageBuilderService
             }
             if ($type === 'card_grid' && isset($data['cards']) && is_array($data['cards'])) {
                 foreach ($data['cards'] as &$card) {
-                    if (!empty($card['link_url'])) {
+                    if (! empty($card['link_url'])) {
                         $card['link_url'] = $this->sanitizeUrl($card['link_url']);
                     }
                 }
             }
-            
+
             // Extract settings from data if we want to separate them, or keep them all in content_data
             $settings = $data['component_settings'] ?? [];
             unset($data['component_settings'], $data['id'], $data['column_position']);
@@ -107,13 +109,13 @@ class PageBuilderService
             $componentModel->is_visible = $data['is_visible'] ?? true;
             $componentModel->save();
 
-            if (!$componentId) {
+            if (! $componentId) {
                 $keptComponentIds[] = $componentModel->id;
             }
         }
 
         $componentsToDelete = array_diff($existingComponentIds, $keptComponentIds);
-        if (!empty($componentsToDelete)) {
+        if (! empty($componentsToDelete)) {
             PageComponent::whereIn('id', $componentsToDelete)->delete();
         }
     }
@@ -142,16 +144,16 @@ class PageBuilderService
                 $data['component_settings'] = $component->component_settings;
                 $data['is_visible'] = $component->is_visible;
 
-                // Filament Builder format uses a UUID for the array key usually, 
+                // Filament Builder format uses a UUID for the array key usually,
                 // but sequential array works for setting state.
-                $sectionData['components'][(string) \Illuminate\Support\Str::uuid()] = [
+                $sectionData['components'][(string) Str::uuid()] = [
                     'type' => $component->component_type,
                     'data' => $data,
                 ];
             }
 
             // Filament Repeater expects UUID keys
-            $state[(string) \Illuminate\Support\Str::uuid()] = $sectionData;
+            $state[(string) Str::uuid()] = $sectionData;
         }
 
         return $state;

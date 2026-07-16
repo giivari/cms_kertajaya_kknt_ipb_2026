@@ -28,7 +28,7 @@ return new class extends Migration
             $table->timestampTz('updated_at')->useCurrent()->index();
             $table->softDeletesTz()->index();
         });
-        
+
         // Ensure content is full-text searchable (using basic index or specialized one if needed, we'll just rely on DB driver)
     }
 

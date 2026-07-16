@@ -3,9 +3,13 @@
 namespace App\Filament\Resources\Documents\Schemas;
 
 use Filament\Forms\Components\DateTimePicker;
-use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Set;
 use Filament\Schemas\Schema;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Str;
 
 class DocumentForm
 {
@@ -13,7 +17,7 @@ class DocumentForm
     {
         return $schema
             ->components([
-                \Filament\Forms\Components\Select::make('document_category_id')
+                Select::make('document_category_id')
                     ->relationship('category', 'name')
                     ->searchable()
                     ->preload(),
@@ -21,23 +25,23 @@ class DocumentForm
                     ->required()
                     ->maxLength(255)
                     ->live(onBlur: true)
-                    ->afterStateUpdated(fn (string $operation, $state, \Filament\Forms\Set $set) => $operation === 'create' ? $set('slug', \Illuminate\Support\Str::slug($state)) : null),
+                    ->afterStateUpdated(fn (string $operation, $state, Set $set) => $operation === 'create' ? $set('slug', Str::slug($state)) : null),
                 TextInput::make('slug')
                     ->required()
                     ->maxLength(255)
                     ->unique(ignoreRecord: true),
                 Textarea::make('description')
                     ->columnSpanFull(),
-                \Filament\Forms\Components\Select::make('file_media_id')
-                    ->relationship('fileMedia', 'filename', fn (\Illuminate\Database\Eloquent\Builder $query) => $query->approved())
+                Select::make('file_media_id')
+                    ->relationship('fileMedia', 'filename', fn (Builder $query) => $query->approved())
                     ->required()
                     ->searchable()
                     ->preload(),
-                \Filament\Forms\Components\Select::make('thumbnail_media_id')
-                    ->relationship('thumbnailMedia', 'filename', fn (\Illuminate\Database\Eloquent\Builder $query) => $query->approved())
+                Select::make('thumbnail_media_id')
+                    ->relationship('thumbnailMedia', 'filename', fn (Builder $query) => $query->approved())
                     ->searchable()
                     ->preload(),
-                \Filament\Forms\Components\Select::make('status')
+                Select::make('status')
                     ->options([
                         'published' => 'Published',
                         'archived' => 'Archived',

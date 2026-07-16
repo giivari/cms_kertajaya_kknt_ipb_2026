@@ -4,8 +4,8 @@ namespace App\Services;
 
 use App\Contracts\MediaUsageResolver;
 use App\Models\Media;
-use App\Models\PageComponent;
 use App\Models\Page;
+use App\Models\PageComponent;
 
 class PageMediaUsageResolver implements MediaUsageResolver
 {
@@ -26,9 +26,9 @@ class PageMediaUsageResolver implements MediaUsageResolver
 
         // Check inside components (requires querying JSONB)
         $components = PageComponent::where('content_data->media_id', $media->id)
-            ->orWhereJsonContains('content_data->images', (string)$media->id)
+            ->orWhereJsonContains('content_data->images', (string) $media->id)
             ->orWhereJsonContains('content_data->images', $media->id) // Some might be int
-            ->orWhereJsonContains('content_data->documents', (string)$media->id)
+            ->orWhereJsonContains('content_data->documents', (string) $media->id)
             ->orWhereJsonContains('content_data->documents', $media->id)
             ->with('section.page')
             ->get();
@@ -50,9 +50,9 @@ class PageMediaUsageResolver implements MediaUsageResolver
         }
 
         $componentCount = PageComponent::where('content_data->media_id', $media->id)
-            ->orWhereJsonContains('content_data->images', (string)$media->id)
+            ->orWhereJsonContains('content_data->images', (string) $media->id)
             ->orWhereJsonContains('content_data->images', $media->id)
-            ->orWhereJsonContains('content_data->documents', (string)$media->id)
+            ->orWhereJsonContains('content_data->documents', (string) $media->id)
             ->orWhereJsonContains('content_data->documents', $media->id)
             ->count();
 

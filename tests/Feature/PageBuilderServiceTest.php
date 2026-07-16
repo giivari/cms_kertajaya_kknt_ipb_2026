@@ -3,8 +3,8 @@
 namespace Tests\Feature;
 
 use App\Models\Page;
-use App\Models\PageSection;
 use App\Models\PageComponent;
+use App\Models\PageSection;
 use App\Services\PageBuilderService;
 use App\Services\PageTemplateService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -18,7 +18,7 @@ class PageBuilderServiceTest extends TestCase
 
     public function test_template_service_has_all_approved_templates()
     {
-        $service = new PageTemplateService();
+        $service = new PageTemplateService;
         $templates = $service->getAvailableTemplates();
 
         $this->assertArrayHasKey('blank', $templates);
@@ -35,7 +35,7 @@ class PageBuilderServiceTest extends TestCase
     public function test_builder_state_normalizes_to_relational_tables()
     {
         $page = Page::create(['title' => 'Test Page', 'slug' => 'test-page']);
-        $service = new PageBuilderService();
+        $service = new PageBuilderService;
 
         $builderState = [
             [
@@ -47,28 +47,28 @@ class PageBuilderServiceTest extends TestCase
                         'type' => 'heading',
                         'data' => [
                             'text' => 'Welcome',
-                            'level' => 'h1'
-                        ]
+                            'level' => 'h1',
+                        ],
                     ],
                     [
                         'type' => 'rich_text',
                         'data' => [
-                            'content' => '<p>Hello</p>'
-                        ]
-                    ]
-                ]
-            ]
+                            'content' => '<p>Hello</p>',
+                        ],
+                    ],
+                ],
+            ],
         ];
 
         $service->saveSectionsAndComponents($page, $builderState);
 
         $this->assertDatabaseHas('page_sections', [
             'page_id' => $page->id,
-            'name' => 'Hero'
+            'name' => 'Hero',
         ]);
 
         $section = PageSection::where('page_id', $page->id)->first();
-        
+
         $this->assertDatabaseHas('page_components', [
             'section_id' => $section->id,
             'component_type' => 'heading',
@@ -80,7 +80,7 @@ class PageBuilderServiceTest extends TestCase
             'component_type' => 'rich_text',
             'position' => 1,
         ]);
-        
+
         // Assert no monolithic JSON
         $this->assertFalse(Schema::hasColumn('pages', 'content'));
     }
@@ -93,10 +93,10 @@ class PageBuilderServiceTest extends TestCase
             'section_id' => $section->id,
             'component_type' => 'heading',
             'content_data' => ['text' => 'Welcome', 'level' => 'h1'],
-            'position' => 0
+            'position' => 0,
         ]);
 
-        $service = new PageBuilderService();
+        $service = new PageBuilderService;
         $state = $service->reconstructBuilderState($page);
 
         $this->assertCount(1, $state);
@@ -109,7 +109,7 @@ class PageBuilderServiceTest extends TestCase
     public function test_builder_transaction_rolls_back_on_invalid_data()
     {
         $page = Page::create(['title' => 'Test Page 3', 'slug' => 'test-page-3']);
-        $service = new PageBuilderService();
+        $service = new PageBuilderService;
 
         $builderState = [
             [
@@ -119,16 +119,16 @@ class PageBuilderServiceTest extends TestCase
                 'components' => [
                     [
                         'type' => 'invalid_type_causes_db_error_or_we_can_mock',
-                        'data' => []
-                    ]
-                ]
-            ]
+                        'data' => [],
+                    ],
+                ],
+            ],
         ];
 
         try {
             // we will simulate an exception
             DB::beginTransaction();
-            throw new \Exception("Simulated failure");
+            throw new \Exception('Simulated failure');
         } catch (\Exception $e) {
             DB::rollBack();
         }

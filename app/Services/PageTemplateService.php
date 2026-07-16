@@ -57,7 +57,7 @@ class PageTemplateService
                     (string) Str::uuid() => [
                         'type' => 'rich_text',
                         'data' => [
-                            'content' => '<p>Konten ' . strtolower($title) . ' dapat diubah di sini.</p>',
+                            'content' => '<p>Konten '.strtolower($title).' dapat diubah di sini.</p>',
                             'is_visible' => true,
                         ],
                     ],

@@ -2,7 +2,10 @@
 
 namespace App\Filament\Resources\Pages\Pages;
 
+use App\Enums\PageStatus;
 use App\Filament\Resources\Pages\PageResource;
+use App\Services\PageBuilderService;
+use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\ForceDeleteAction;
 use Filament\Actions\RestoreAction;
@@ -15,7 +18,7 @@ class EditPage extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            \Filament\Actions\Action::make('preview')
+            Action::make('preview')
                 ->label('Preview')
                 ->url(fn () => route('pages.preview', $this->record->slug))
                 ->openUrlInNewTab()
@@ -29,7 +32,7 @@ class EditPage extends EditRecord
 
     protected function mutateFormDataBeforeFill(array $data): array
     {
-        $service = app(\App\Services\PageBuilderService::class);
+        $service = app(PageBuilderService::class);
         $data['builder_sections'] = $service->reconstructBuilderState($this->record);
 
         return $data;
@@ -40,7 +43,7 @@ class EditPage extends EditRecord
         $this->builderSections = $data['builder_sections'] ?? [];
         unset($data['builder_sections']);
 
-        if ($data['status'] === \App\Enums\PageStatus::PUBLISHED->value && empty($data['published_at'])) {
+        if ($data['status'] === PageStatus::PUBLISHED->value && empty($data['published_at'])) {
             $data['published_at'] = now();
         }
 
@@ -49,7 +52,7 @@ class EditPage extends EditRecord
 
     protected function afterSave(): void
     {
-        $service = app(\App\Services\PageBuilderService::class);
+        $service = app(PageBuilderService::class);
         $service->saveSectionsAndComponents($this->record, $this->builderSections ?? []);
     }
 }

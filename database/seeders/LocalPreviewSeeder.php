@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class LocalPreviewSeeder extends Seeder
@@ -12,8 +11,9 @@ class LocalPreviewSeeder extends Seeder
      */
     public function run(): void
     {
-        if (!app()->environment('local')) {
+        if (! app()->environment('local')) {
             $this->command->error('Local preview seeder can only be run in local environment.');
+
             return;
         }
 

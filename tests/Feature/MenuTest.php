@@ -63,19 +63,19 @@ class MenuTest extends TestCase
     public function test_menu_item_generates_correct_route_urls()
     {
         $menu = Menu::create(['name' => 'Main', 'location' => 'main']);
-        
+
         $news = MenuItem::create([
             'menu_id' => $menu->id,
             'label' => 'Berita',
             'link_type' => LinkType::NEWS_INDEX->value,
         ]);
-        
+
         $gallery = MenuItem::create([
             'menu_id' => $menu->id,
             'label' => 'Galeri',
             'link_type' => LinkType::GALLERY_INDEX->value,
         ]);
-        
+
         $docs = MenuItem::create([
             'menu_id' => $menu->id,
             'label' => 'Dokumen',

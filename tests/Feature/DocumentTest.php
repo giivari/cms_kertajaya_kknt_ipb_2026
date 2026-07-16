@@ -3,12 +3,12 @@
 use App\Models\Document;
 use App\Models\Media;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 
 uses(RefreshDatabase::class);
 
 test('documents can be viewed and downloaded safely', function () {
-    \Illuminate\Support\Facades\Storage::fake('local');
+    Storage::fake('local');
     $media = Media::create([
         'disk' => 'local',
         'directory' => 'documents',
@@ -28,7 +28,7 @@ test('documents can be viewed and downloaded safely', function () {
         'size' => 512,
     ]);
 
-    \Illuminate\Support\Facades\Storage::disk('local')->put('test-public.pdf', 'fake pdf content');
+    Storage::disk('local')->put('test-public.pdf', 'fake pdf content');
 
     $doc = Document::create([
         'title' => 'Test Document',
@@ -102,4 +102,43 @@ test('documents with unverified media cannot be downloaded', function () {
 
     $response = $this->get('/dokumen/unverified-document/download');
     $response->assertStatus(404);
+});
+
+test('multiple downloads safely increment download count', function () {
+    Storage::fake('local');
+    $media = Media::create([
+        'disk' => 'local',
+        'directory' => 'documents',
+        'filename' => 'test-concurrent.pdf',
+        'original_filename' => 'test-concurrent.pdf',
+        'mime_type' => 'application/pdf',
+        'extension' => 'pdf',
+        'size' => 1024,
+        'processing_status' => 'completed',
+        'invisible_watermark_status' => 'verified',
+    ]);
+    $derivative = $media->derivatives()->create([
+        'derivative_type' => 'public',
+        'disk' => 'local',
+        'filename' => 'test-public-concurrent.pdf',
+        'mime_type' => 'application/pdf',
+        'size' => 512,
+    ]);
+
+    Storage::disk('local')->put('test-public-concurrent.pdf', 'fake pdf content');
+
+    $doc = Document::create([
+        'title' => 'Test Concurrent Document',
+        'slug' => 'test-concurrent-document',
+        'file_media_id' => $media->id,
+        'status' => 'published',
+        'published_at' => now(),
+        'download_count' => 0,
+    ]);
+
+    $this->get('/dokumen/test-concurrent-document/download');
+    $this->get('/dokumen/test-concurrent-document/download');
+    $this->get('/dokumen/test-concurrent-document/download');
+
+    expect($doc->fresh()->download_count)->toBe(3);
 });

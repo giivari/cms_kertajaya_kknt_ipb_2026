@@ -2,16 +2,14 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-
-use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Builder;
 use App\Models\Concerns\Auditable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class News extends Model
 {
-    use HasFactory, SoftDeletes, Auditable, \App\Traits\HasContentLifecycle;
+    use \App\Traits\HasContentLifecycle, Auditable, HasFactory, SoftDeletes;
 
     protected $guarded = [];
 
@@ -29,6 +27,4 @@ class News extends Model
     {
         return $this->belongsTo(Media::class, 'featured_media_id');
     }
-
-
 }

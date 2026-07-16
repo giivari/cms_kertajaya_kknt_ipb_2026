@@ -1,22 +1,28 @@
 <?php
 
-use App\Models\News;
-use App\Models\GalleryAlbum;
+use App\Models\Admin;
 use App\Models\Document;
-use App\Models\NewsCategory;
 use App\Models\DocumentCategory;
+use App\Models\GalleryAlbum;
+use App\Models\Media;
+use App\Models\News;
+use App\Models\NewsCategory;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Storage;
+use Symfony\Component\Routing\Exception\RouteNotFoundException;
 
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    \Illuminate\Support\Facades\Route::get('/login', fn() => 'login')->name('login');
+    Route::get('/login', fn () => 'login')->name('login');
 });
 
 $models = [
-    'news' => fn() => News::create(['title' => 'Test News', 'content' => 'x', 'news_category_id' => NewsCategory::firstOrCreate(['name' => 'Cat'])->id]),
-    'gallery' => fn() => GalleryAlbum::create(['title' => 'Test Gallery']),
-    'document' => fn() => Document::create(['title' => 'Test Document', 'document_category_id' => DocumentCategory::firstOrCreate(['name' => 'Cat'])->id, 'file_media_id' => \App\Models\Media::factory()->create()->id]),
+    'news' => fn () => News::create(['title' => 'Test News', 'content' => 'x', 'news_category_id' => NewsCategory::firstOrCreate(['name' => 'Cat'])->id]),
+    'gallery' => fn () => GalleryAlbum::create(['title' => 'Test Gallery']),
+    'document' => fn () => Document::create(['title' => 'Test Document', 'document_category_id' => DocumentCategory::firstOrCreate(['name' => 'Cat'])->id, 'file_media_id' => Media::factory()->create()->id]),
 ];
 
 foreach ($models as $name => $factory) {
@@ -48,20 +54,20 @@ foreach ($models as $name => $factory) {
     test("{$name} guest preview denied", function () use ($factory, $name) {
         $model = $factory();
         $model->update(['status' => 'draft']);
-        
+
         $routes = [
-            'news' => '/berita/preview/' . $model->slug,
-            'gallery' => '/galeri/preview/' . $model->slug,
-            'document' => '/dokumen/preview/' . $model->slug . '/download'
+            'news' => '/berita/preview/'.$model->slug,
+            'gallery' => '/galeri/preview/'.$model->slug,
+            'document' => '/dokumen/preview/'.$model->slug.'/download',
         ];
 
         try {
             test()->withoutExceptionHandling();
             $response = test()->get($routes[$name]);
             $response->assertStatus(302);
-        } catch (\Symfony\Component\Routing\Exception\RouteNotFoundException $e) {
+        } catch (RouteNotFoundException $e) {
             expect($e->getMessage())->toContain('login');
-        } catch (\Illuminate\Auth\AuthenticationException $e) {
+        } catch (AuthenticationException $e) {
             expect(true)->toBeTrue();
         }
     });
@@ -69,22 +75,22 @@ foreach ($models as $name => $factory) {
     test("{$name} authenticated Admin preview allowed", function () use ($factory, $name) {
         $model = $factory();
         $model->update(['status' => 'draft']);
-        
+
         if ($name === 'document') {
-            $media = \App\Models\Media::factory()->create(['processing_status' => 'completed', 'invisible_watermark_status' => 'verified']);
+            $media = Media::factory()->create(['processing_status' => 'completed', 'invisible_watermark_status' => 'verified']);
             $media->derivatives()->create(['derivative_type' => 'public', 'disk' => 'local', 'filename' => 'test.pdf', 'extension' => 'pdf', 'size' => 1024, 'mime_type' => 'application/pdf']);
             $model->update(['file_media_id' => $media->id]);
-            \Illuminate\Support\Facades\Storage::fake('local');
-            \Illuminate\Support\Facades\Storage::disk('local')->put('test.pdf', 'pdf');
+            Storage::fake('local');
+            Storage::disk('local')->put('test.pdf', 'pdf');
         }
 
         $routes = [
-            'news' => '/berita/preview/' . $model->slug,
-            'gallery' => '/galeri/preview/' . $model->slug,
-            'document' => '/dokumen/preview/' . $model->slug . '/download'
+            'news' => '/berita/preview/'.$model->slug,
+            'gallery' => '/galeri/preview/'.$model->slug,
+            'document' => '/dokumen/preview/'.$model->slug.'/download',
         ];
 
-        $admin = \App\Models\Admin::factory()->create();
+        $admin = Admin::factory()->create();
         $response = test()->actingAs($admin)->get($routes[$name]);
         $response->assertStatus(200);
     });

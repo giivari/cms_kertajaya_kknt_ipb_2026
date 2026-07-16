@@ -5,9 +5,11 @@ namespace App\Models;
 use App\Enums\InvisibleWatermarkStatus;
 use App\Enums\MediaProcessingStatus;
 use App\Services\MediaDeletionService;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Storage;
 
 class Media extends Model
 {
@@ -49,27 +51,27 @@ class Media extends Model
         });
     }
 
-    public function scopeApproved(\Illuminate\Database\Eloquent\Builder $query): void
+    public function scopeApproved(Builder $query): void
     {
         $query->where('processing_status', MediaProcessingStatus::COMPLETED->value)
-              ->where('invisible_watermark_status', InvisibleWatermarkStatus::VERIFIED->value)
-              ->whereHas('derivatives', function ($q) {
-                  $q->where('derivative_type', 'public');
-              });
+            ->where('invisible_watermark_status', InvisibleWatermarkStatus::VERIFIED->value)
+            ->whereHas('derivatives', function ($q) {
+                $q->where('derivative_type', 'public');
+            });
     }
 
-    public function scopeApprovedImages(\Illuminate\Database\Eloquent\Builder $query): void
+    public function scopeApprovedImages(Builder $query): void
     {
         $query->approved()->where('mime_type', 'like', 'image/%');
     }
 
-    public function scopeApprovedPdfs(\Illuminate\Database\Eloquent\Builder $query): void
+    public function scopeApprovedPdfs(Builder $query): void
     {
         $query->approved()->where('mime_type', 'application/pdf');
     }
 
     public function getUrlAttribute(): string
     {
-        return \Illuminate\Support\Facades\Storage::disk($this->disk)->url($this->directory . '/' . $this->filename);
+        return Storage::disk($this->disk)->url($this->directory.'/'.$this->filename);
     }
 }

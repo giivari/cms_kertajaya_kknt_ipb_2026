@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\Admin;
 use App\Models\Document;
-use Illuminate\Auth\Access\Response;
 
 class DocumentPolicy
 {

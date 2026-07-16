@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Menus;
 
 use App\Enums\LinkType;
+use App\Enums\PageStatus;
 use App\Filament\Resources\Menus\Pages\CreateMenu;
 use App\Filament\Resources\Menus\Pages\EditMenu;
 use App\Filament\Resources\Menus\Pages\ListMenus;
@@ -12,11 +13,12 @@ use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
-use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
+use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class MenuResource extends Resource
 {
@@ -54,20 +56,20 @@ class MenuResource extends Resource
                                     ->live()
                                     ->required(),
                                 Select::make('page_id')
-                                    ->relationship('page', 'title', fn(\Illuminate\Database\Eloquent\Builder $query) => $query->where('status', \App\Enums\PageStatus::PUBLISHED->value))
+                                    ->relationship('page', 'title', fn (Builder $query) => $query->where('status', PageStatus::PUBLISHED->value))
                                     ->searchable()
-                                    ->visible(fn(Forms\Get $get) => $get('link_type') === LinkType::PAGE->value)
-                                    ->required(fn(Forms\Get $get) => $get('link_type') === LinkType::PAGE->value),
+                                    ->visible(fn (Forms\Get $get) => $get('link_type') === LinkType::PAGE->value)
+                                    ->required(fn (Forms\Get $get) => $get('link_type') === LinkType::PAGE->value),
                                 TextInput::make('custom_url')
                                     ->url()
                                     ->regex('/^https?:\/\//i')
-                                    ->visible(fn(Forms\Get $get) => $get('link_type') === LinkType::CUSTOM->value)
-                                    ->required(fn(Forms\Get $get) => $get('link_type') === LinkType::CUSTOM->value),
+                                    ->visible(fn (Forms\Get $get) => $get('link_type') === LinkType::CUSTOM->value)
+                                    ->required(fn (Forms\Get $get) => $get('link_type') === LinkType::CUSTOM->value),
                                 Select::make('target')
                                     ->options(['_self' => 'Same Window', '_blank' => 'New Window'])
                                     ->default('_self'),
                                 Toggle::make('is_visible')->default(true),
-                                
+
                                 Repeater::make('children')
                                     ->relationship('children')
                                     ->schema([
@@ -78,15 +80,15 @@ class MenuResource extends Resource
                                             ->live()
                                             ->required(),
                                         Select::make('page_id')
-                                            ->relationship('page', 'title', fn(\Illuminate\Database\Eloquent\Builder $query) => $query->where('status', \App\Enums\PageStatus::PUBLISHED->value))
+                                            ->relationship('page', 'title', fn (Builder $query) => $query->where('status', PageStatus::PUBLISHED->value))
                                             ->searchable()
-                                            ->visible(fn(Forms\Get $get) => $get('link_type') === LinkType::PAGE->value)
-                                            ->required(fn(Forms\Get $get) => $get('link_type') === LinkType::PAGE->value),
+                                            ->visible(fn (Forms\Get $get) => $get('link_type') === LinkType::PAGE->value)
+                                            ->required(fn (Forms\Get $get) => $get('link_type') === LinkType::PAGE->value),
                                         TextInput::make('custom_url')
                                             ->url()
                                             ->regex('/^https?:\/\//i')
-                                            ->visible(fn(Forms\Get $get) => $get('link_type') === LinkType::CUSTOM->value)
-                                            ->required(fn(Forms\Get $get) => $get('link_type') === LinkType::CUSTOM->value),
+                                            ->visible(fn (Forms\Get $get) => $get('link_type') === LinkType::CUSTOM->value)
+                                            ->required(fn (Forms\Get $get) => $get('link_type') === LinkType::CUSTOM->value),
                                         Select::make('target')
                                             ->options(['_self' => 'Same Window', '_blank' => 'New Window'])
                                             ->default('_self'),
@@ -94,11 +96,11 @@ class MenuResource extends Resource
                                     ])
                                     ->orderColumn('position')
                                     ->collapsible()
-                                    ->itemLabel(fn(array $state): ?string => $state['label'] ?? null),
+                                    ->itemLabel(fn (array $state): ?string => $state['label'] ?? null),
                             ])
                             ->orderColumn('position')
                             ->collapsible()
-                            ->itemLabel(fn(array $state): ?string => $state['label'] ?? null),
+                            ->itemLabel(fn (array $state): ?string => $state['label'] ?? null),
                     ]),
             ]);
     }

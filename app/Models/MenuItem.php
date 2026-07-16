@@ -52,7 +52,7 @@ class MenuItem extends Model
     public function getUrlAttribute(): string
     {
         return match ($this->link_type) {
-            LinkType::PAGE => $this->page ? url('/halaman/' . $this->page->slug) : '#',
+            LinkType::PAGE => $this->page ? url('/halaman/'.$this->page->slug) : '#',
             LinkType::NEWS_INDEX => route('news.index'),
             LinkType::GALLERY_INDEX => route('gallery.index'),
             LinkType::DOCUMENT_INDEX => route('documents.index'),

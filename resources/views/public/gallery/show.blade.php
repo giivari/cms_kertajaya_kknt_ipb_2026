@@ -27,7 +27,7 @@
             @foreach($album->items as $item)
                 @if($item->media)
                     <div class="relative group rounded-lg overflow-hidden shadow">
-                        <img src="{{ $item->media->url }}" alt="{{ $item->alt_text ?? $item->caption }}" class="w-full h-48 object-cover transition duration-300 group-hover:scale-105">
+                        <img src="{{ $item->media->url }}" alt="{{ $item->alt_text ?: ($item->caption ?: $album->title . ' image ' . $loop->iteration) }}" class="w-full h-48 object-cover transition duration-300 group-hover:scale-105" loading="lazy" tabindex="0">
                         @if($item->caption)
                             <div class="absolute bottom-0 left-0 right-0 bg-black bg-opacity-70 text-white text-sm p-2 opacity-0 group-hover:opacity-100 transition duration-300">
                                 {{ $item->caption }}

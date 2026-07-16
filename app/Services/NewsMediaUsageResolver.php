@@ -20,6 +20,7 @@ class NewsMediaUsageResolver implements MediaUsageResolver
         foreach ($newsItems as $news) {
             $usages[] = "News Featured Media: {$news->title}";
         }
+
         return $usages;
     }
 }

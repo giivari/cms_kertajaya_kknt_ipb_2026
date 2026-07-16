@@ -3,10 +3,15 @@
 namespace App\Filament\Resources\News\Schemas;
 
 use Filament\Forms\Components\DateTimePicker;
-use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\RichEditor;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Forms\Set;
 use Filament\Schemas\Schema;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Str;
 
 class NewsForm
 {
@@ -14,7 +19,7 @@ class NewsForm
     {
         return $schema
             ->components([
-                \Filament\Forms\Components\Select::make('news_category_id')
+                Select::make('news_category_id')
                     ->relationship('category', 'name')
                     ->searchable()
                     ->preload(),
@@ -22,7 +27,7 @@ class NewsForm
                     ->required()
                     ->maxLength(255)
                     ->live(onBlur: true)
-                    ->afterStateUpdated(fn (string $operation, $state, \Filament\Forms\Set $set) => $operation === 'create' ? $set('slug', \Illuminate\Support\Str::slug($state)) : null),
+                    ->afterStateUpdated(fn (string $operation, $state, Set $set) => $operation === 'create' ? $set('slug', Str::slug($state)) : null),
                 TextInput::make('slug')
                     ->required()
                     ->maxLength(255)
@@ -30,14 +35,14 @@ class NewsForm
                 Textarea::make('excerpt')
                     ->maxLength(500)
                     ->columnSpanFull(),
-                \Filament\Forms\Components\RichEditor::make('content')
+                RichEditor::make('content')
                     ->required()
                     ->columnSpanFull(),
-                \Filament\Forms\Components\Select::make('featured_media_id')
-                    ->relationship('featuredMedia', 'filename', fn (\Illuminate\Database\Eloquent\Builder $query) => $query->approved())
+                Select::make('featured_media_id')
+                    ->relationship('featuredMedia', 'filename', fn (Builder $query) => $query->approved())
                     ->searchable()
                     ->preload(),
-                \Filament\Forms\Components\Select::make('status')
+                Select::make('status')
                     ->options([
                         'published' => 'Published',
                         'archived' => 'Archived',

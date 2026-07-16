@@ -2,11 +2,11 @@
 
 namespace Tests\Feature;
 
-use App\Enums\ComponentType;
 use App\Enums\PageStatus;
 use App\Models\Page;
 use App\Models\PageComponent;
 use App\Models\PageSection;
+use App\Services\PageTemplateService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -55,11 +55,11 @@ class PageTest extends TestCase
 
     public function test_template_service_returns_definitions()
     {
-        $service = new \App\Services\PageTemplateService();
+        $service = new PageTemplateService;
         $templates = $service->getAvailableTemplates();
-        
+
         $this->assertArrayHasKey('profil_desa', $templates);
-        
+
         $definition = $service->getTemplateDefinition('profil_desa');
         $this->assertIsArray($definition);
         $this->assertCount(2, $definition);

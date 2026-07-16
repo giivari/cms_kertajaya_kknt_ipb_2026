@@ -3,8 +3,8 @@
 namespace App\Services;
 
 use App\Contracts\MediaUsageResolver;
-use App\Models\Media;
 use App\Models\Document;
+use App\Models\Media;
 
 class DocumentMediaUsageResolver implements MediaUsageResolver
 {
@@ -18,11 +18,11 @@ class DocumentMediaUsageResolver implements MediaUsageResolver
     public function getUsage(Media $media): array
     {
         $usages = [];
-        
+
         $documents = Document::where('file_media_id', $media->id)
             ->orWhere('thumbnail_media_id', $media->id)
             ->get();
-            
+
         foreach ($documents as $document) {
             if ($document->file_media_id === $media->id) {
                 $usages[] = "Document File: {$document->title}";

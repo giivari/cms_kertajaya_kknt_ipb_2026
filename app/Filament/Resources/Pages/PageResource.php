@@ -2,29 +2,30 @@
 
 namespace App\Filament\Resources\Pages;
 
+use App\Enums\DerivativeType;
+use App\Enums\InvisibleWatermarkStatus;
+use App\Enums\MediaProcessingStatus;
 use App\Enums\PageStatus;
 use App\Filament\Resources\Pages\Pages\CreatePage;
 use App\Filament\Resources\Pages\Pages\EditPage;
 use App\Filament\Resources\Pages\Pages\ListPages;
 use App\Models\Page;
+use App\Services\PageTemplateService;
 use Filament\Forms;
 use Filament\Forms\Components\Builder;
 use Filament\Forms\Components\Builder\Block;
-use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Group;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Tabs;
 use Filament\Forms\Components\TextInput;
-use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
+use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Str;
 
 class PageResource extends Resource
@@ -41,16 +42,16 @@ class PageResource extends Resource
         return 'Pages';
     }
 
-    public static function validMediaQuery(EloquentBuilder $query, string $mimeTypePrefix = null): EloquentBuilder
+    public static function validMediaQuery(EloquentBuilder $query, ?string $mimeTypePrefix = null): EloquentBuilder
     {
-        $query->where('processing_status', \App\Enums\MediaProcessingStatus::COMPLETED->value)
-              ->where('invisible_watermark_status', \App\Enums\InvisibleWatermarkStatus::VERIFIED->value)
-              ->whereHas('derivatives', function ($q) {
-                  $q->whereIn('derivative_type', [\App\Enums\DerivativeType::PUBLIC->value, \App\Enums\DerivativeType::PUBLIC_VISIBLE_WATERMARK->value]);
-              });
+        $query->where('processing_status', MediaProcessingStatus::COMPLETED->value)
+            ->where('invisible_watermark_status', InvisibleWatermarkStatus::VERIFIED->value)
+            ->whereHas('derivatives', function ($q) {
+                $q->whereIn('derivative_type', [DerivativeType::PUBLIC->value, DerivativeType::PUBLIC_VISIBLE_WATERMARK->value]);
+            });
 
         if ($mimeTypePrefix) {
-            $query->where('mime_type', 'like', $mimeTypePrefix . '%');
+            $query->where('mime_type', 'like', $mimeTypePrefix.'%');
         }
 
         return $query;
@@ -65,9 +66,9 @@ class PageResource extends Resource
                         Section::make('Page Information')
                             ->schema([
                                 Select::make('template')
-                                    ->options(app(\App\Services\PageTemplateService::class)->getAvailableTemplates())
+                                    ->options(app(PageTemplateService::class)->getAvailableTemplates())
                                     ->default('blank')
-                                    ->visible(fn ($livewire) => $livewire instanceof \App\Filament\Resources\Pages\Pages\CreatePage)
+                                    ->visible(fn ($livewire) => $livewire instanceof CreatePage)
                                     ->helperText('Select a template to pre-fill the page builder sections after creation.'),
                                 TextInput::make('title')
                                     ->required()
@@ -117,7 +118,7 @@ class PageResource extends Resource
                                                 Block::make('image')
                                                     ->schema([
                                                         Select::make('media_id')
-                                                            ->relationship('featuredMedia', 'original_filename', fn(EloquentBuilder $query) => static::validMediaQuery($query, 'image/'))
+                                                            ->relationship('featuredMedia', 'original_filename', fn (EloquentBuilder $query) => static::validMediaQuery($query, 'image/'))
                                                             ->searchable()
                                                             ->required(),
                                                         TextInput::make('caption'),
@@ -127,7 +128,7 @@ class PageResource extends Resource
                                                     ->schema([
                                                         Select::make('images')
                                                             ->multiple()
-                                                            ->relationship('featuredMedia', 'original_filename', fn(EloquentBuilder $query) => static::validMediaQuery($query, 'image/'))
+                                                            ->relationship('featuredMedia', 'original_filename', fn (EloquentBuilder $query) => static::validMediaQuery($query, 'image/'))
                                                             ->searchable(),
                                                     ]),
                                                 Block::make('statistics')
@@ -154,7 +155,7 @@ class PageResource extends Resource
                                                     ->schema([
                                                         Select::make('documents')
                                                             ->multiple()
-                                                            ->relationship('featuredMedia', 'original_filename', fn(EloquentBuilder $query) => static::validMediaQuery($query)->where('mime_type', 'application/pdf'))
+                                                            ->relationship('featuredMedia', 'original_filename', fn (EloquentBuilder $query) => static::validMediaQuery($query)->where('mime_type', 'application/pdf'))
                                                             ->searchable(),
                                                     ]),
                                                 Block::make('cta_button')
@@ -206,7 +207,7 @@ class PageResource extends Resource
                         Section::make('Media')
                             ->schema([
                                 Select::make('featured_media_id')
-                                    ->relationship('featuredMedia', 'original_filename', fn(EloquentBuilder $query) => static::validMediaQuery($query, 'image/'))
+                                    ->relationship('featuredMedia', 'original_filename', fn (EloquentBuilder $query) => static::validMediaQuery($query, 'image/'))
                                     ->searchable(),
                             ]),
                     ])

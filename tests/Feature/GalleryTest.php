@@ -1,7 +1,6 @@
 <?php
 
 use App\Models\GalleryAlbum;
-use App\Models\GalleryAlbumItem;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
@@ -48,4 +47,17 @@ test('unpublished gallery albums are not visible', function () {
 
     $response = $this->get('/galeri/hidden-album');
     $response->assertStatus(404);
+});
+
+test('empty album renders correctly', function () {
+    $album = GalleryAlbum::create([
+        'title' => 'Empty Album',
+        'slug' => 'empty-album',
+        'status' => 'published',
+        'published_at' => now(),
+    ]);
+
+    $response = $this->get('/galeri/empty-album');
+    $response->assertStatus(200);
+    $response->assertSee('Belum ada foto dalam album ini.');
 });

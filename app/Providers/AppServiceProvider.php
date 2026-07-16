@@ -2,7 +2,13 @@
 
 namespace App\Providers;
 
+use App\Models\Menu;
+use App\Services\DocumentMediaUsageResolver;
+use App\Services\GalleryMediaUsageResolver;
 use App\Services\MediaUsageService;
+use App\Services\NewsMediaUsageResolver;
+use App\Services\PageMediaUsageResolver;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -23,23 +29,23 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->app->booted(function () {
-            $mediaUsageService = $this->app->make(\App\Services\MediaUsageService::class);
-            $mediaUsageService->registerResolver(new \App\Services\PageMediaUsageResolver());
-            $mediaUsageService->registerResolver(new \App\Services\NewsMediaUsageResolver());
-            $mediaUsageService->registerResolver(new \App\Services\GalleryMediaUsageResolver());
-            $mediaUsageService->registerResolver(new \App\Services\DocumentMediaUsageResolver());
+            $mediaUsageService = $this->app->make(MediaUsageService::class);
+            $mediaUsageService->registerResolver(new PageMediaUsageResolver);
+            $mediaUsageService->registerResolver(new NewsMediaUsageResolver);
+            $mediaUsageService->registerResolver(new GalleryMediaUsageResolver);
+            $mediaUsageService->registerResolver(new DocumentMediaUsageResolver);
         });
 
-        \Illuminate\Support\Facades\View::composer('partials.header', function ($view) {
-            $view->with('headerMenu', \App\Models\Menu::where('location', 'header_menu')->with(['items' => function ($query) {
+        View::composer('partials.header', function ($view) {
+            $view->with('headerMenu', Menu::where('location', 'header_menu')->with(['items' => function ($query) {
                 $query->where('is_visible', true)->whereNull('parent_id')->orderBy('position');
             }, 'items.children' => function ($query) {
                 $query->where('is_visible', true)->orderBy('position');
             }, 'items.page', 'items.children.page'])->first());
         });
 
-        \Illuminate\Support\Facades\View::composer('partials.footer', function ($view) {
-            $view->with('footerMenu', \App\Models\Menu::where('location', 'footer_menu')->with(['items' => function ($query) {
+        View::composer('partials.footer', function ($view) {
+            $view->with('footerMenu', Menu::where('location', 'footer_menu')->with(['items' => function ($query) {
                 $query->where('is_visible', true)->whereNull('parent_id')->orderBy('position');
             }, 'items.page'])->first());
         });

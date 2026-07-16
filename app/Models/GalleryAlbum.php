@@ -2,16 +2,14 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-
-use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Models\Concerns\Auditable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class GalleryAlbum extends Model
 {
-    use HasFactory, SoftDeletes, Auditable, \App\Traits\HasContentLifecycle;
+    use \App\Traits\HasContentLifecycle, Auditable, HasFactory, SoftDeletes;
 
     protected $guarded = [];
 
@@ -29,6 +27,4 @@ class GalleryAlbum extends Model
     {
         return $this->hasMany(GalleryAlbumItem::class)->orderBy('position');
     }
-
-
 }

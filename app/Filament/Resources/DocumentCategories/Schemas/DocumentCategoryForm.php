@@ -2,9 +2,11 @@
 
 namespace App\Filament\Resources\DocumentCategories\Schemas;
 
-use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Set;
 use Filament\Schemas\Schema;
+use Illuminate\Support\Str;
 
 class DocumentCategoryForm
 {
@@ -16,7 +18,7 @@ class DocumentCategoryForm
                     ->required()
                     ->maxLength(150)
                     ->live(onBlur: true)
-                    ->afterStateUpdated(fn (string $operation, $state, \Filament\Forms\Set $set) => $operation === 'create' ? $set('slug', \Illuminate\Support\Str::slug($state)) : null),
+                    ->afterStateUpdated(fn (string $operation, $state, Set $set) => $operation === 'create' ? $set('slug', Str::slug($state)) : null),
                 TextInput::make('slug')
                     ->required()
                     ->maxLength(180)

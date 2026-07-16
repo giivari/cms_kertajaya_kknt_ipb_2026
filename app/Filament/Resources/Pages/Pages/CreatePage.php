@@ -2,7 +2,10 @@
 
 namespace App\Filament\Resources\Pages\Pages;
 
+use App\Enums\PageStatus;
 use App\Filament\Resources\Pages\PageResource;
+use App\Services\PageBuilderService;
+use App\Services\PageTemplateService;
 use Filament\Resources\Pages\CreateRecord;
 
 class CreatePage extends CreateRecord
@@ -15,7 +18,7 @@ class CreatePage extends CreateRecord
         $this->selectedTemplate = $data['template'] ?? 'blank';
         unset($data['builder_sections'], $data['template']);
 
-        if ($data['status'] === \App\Enums\PageStatus::PUBLISHED->value && empty($data['published_at'])) {
+        if ($data['status'] === PageStatus::PUBLISHED->value && empty($data['published_at'])) {
             $data['published_at'] = now();
         }
 
@@ -24,11 +27,11 @@ class CreatePage extends CreateRecord
 
     protected function afterCreate(): void
     {
-        $service = app(\App\Services\PageBuilderService::class);
-        
+        $service = app(PageBuilderService::class);
+
         $sections = $this->builderSections ?? [];
-        if (empty($sections) && !empty($this->selectedTemplate) && $this->selectedTemplate !== 'blank') {
-            $templateService = app(\App\Services\PageTemplateService::class);
+        if (empty($sections) && ! empty($this->selectedTemplate) && $this->selectedTemplate !== 'blank') {
+            $templateService = app(PageTemplateService::class);
             $sections = $templateService->getTemplateDefinition($this->selectedTemplate);
         }
 

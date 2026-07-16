@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\Admin;
 use App\Models\DocumentCategory;
-use Illuminate\Auth\Access\Response;
 
 class DocumentCategoryPolicy
 {

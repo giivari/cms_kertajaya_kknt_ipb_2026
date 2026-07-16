@@ -2,14 +2,13 @@
 
 use App\Models\News;
 use App\Models\NewsCategory;
-use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
 
 test('news can be created and viewed on the frontend', function () {
     $category = NewsCategory::create(['name' => 'General', 'slug' => 'general']);
-    
+
     $news = News::create([
         'title' => 'Test News',
         'slug' => 'test-news',
@@ -27,7 +26,7 @@ test('news can be created and viewed on the frontend', function () {
 
 test('news details can be viewed on frontend', function () {
     $category = NewsCategory::create(['name' => 'General', 'slug' => 'general']);
-    
+
     $news = News::create([
         'title' => 'Test News',
         'slug' => 'test-news',

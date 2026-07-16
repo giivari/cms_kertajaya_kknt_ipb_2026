@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Str;
 
 class Page extends Model
 {
@@ -47,7 +48,7 @@ class Page extends Model
 
         static::saving(function ($page) {
             if (empty($page->slug)) {
-                $page->slug = \Illuminate\Support\Str::slug($page->title);
+                $page->slug = Str::slug($page->title);
             }
 
             $originalSlug = $page->slug;

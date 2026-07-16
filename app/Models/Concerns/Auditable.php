@@ -68,5 +68,11 @@ trait Auditable
         static::deleted(function ($model) {
             AuditLogService::log('deleted', $model, self::redact($model->getAttributes(), get_class($model)), null);
         });
+
+        if (method_exists(static::class, 'restored')) {
+            static::restored(function ($model) {
+                AuditLogService::log('restored', $model, null, self::redact($model->getAttributes(), get_class($model)));
+            });
+        }
     }
 }

@@ -3,9 +3,9 @@
 namespace App\Services;
 
 use App\Contracts\MediaUsageResolver;
-use App\Models\Media;
 use App\Models\GalleryAlbum;
 use App\Models\GalleryAlbumItem;
+use App\Models\Media;
 
 class GalleryMediaUsageResolver implements MediaUsageResolver
 {
@@ -18,7 +18,7 @@ class GalleryMediaUsageResolver implements MediaUsageResolver
     public function getUsage(Media $media): array
     {
         $usages = [];
-        
+
         $albums = GalleryAlbum::where('cover_media_id', $media->id)->get();
         foreach ($albums as $album) {
             $usages[] = "Gallery Cover: {$album->title}";
