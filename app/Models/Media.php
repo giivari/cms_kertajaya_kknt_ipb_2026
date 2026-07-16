@@ -52,10 +52,7 @@ class Media extends Model
     public function scopeApproved(\Illuminate\Database\Eloquent\Builder $query): void
     {
         $query->where('processing_status', MediaProcessingStatus::COMPLETED->value)
-              ->whereIn('invisible_watermark_status', [
-                  InvisibleWatermarkStatus::VERIFIED->value,
-                  InvisibleWatermarkStatus::UNSUPPORTED->value
-              ])
+              ->where('invisible_watermark_status', InvisibleWatermarkStatus::VERIFIED->value)
               ->whereHas('derivatives', function ($q) {
                   $q->where('derivative_type', 'public');
               });

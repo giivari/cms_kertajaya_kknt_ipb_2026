@@ -12,7 +12,7 @@
     </div>
 
     <h1 class="text-3xl font-bold mb-2">{{ $album->title }}</h1>
-    <p class="text-gray-500 mb-6">{{ $album->published_at->format('d F Y') }}</p>
+    <p class="text-gray-500 mb-6">{{ $album->published_at ? $album->published_at->format('d F Y') : 'Draft' }}</p>
     
     @if($album->description)
         <div class="mb-8 text-gray-700">

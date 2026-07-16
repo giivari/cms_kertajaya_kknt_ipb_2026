@@ -18,4 +18,10 @@ class NewsController extends Controller
         $newsItem = \App\Models\News::published()->with(['category', 'featuredMedia'])->where('slug', $slug)->firstOrFail();
         return view('public.news.show', compact('newsItem'));
     }
+
+    public function preview($slug)
+    {
+        $newsItem = \App\Models\News::with(['category', 'featuredMedia'])->where('slug', $slug)->firstOrFail();
+        return view('public.news.show', compact('newsItem'));
+    }
 }

@@ -14,7 +14,7 @@
     <h1 class="text-4xl font-bold mb-4">{{ $newsItem->title }}</h1>
     
     <div class="flex items-center text-gray-500 mb-6 space-x-4">
-        <span>{{ $newsItem->published_at->format('d F Y') }}</span>
+        <span>{{ $newsItem->published_at ? $newsItem->published_at->format('d F Y') : 'Draft' }}</span>
         @if($newsItem->category)
             <span class="bg-gray-200 px-2 py-1 rounded text-sm text-gray-700">{{ $newsItem->category->name }}</span>
         @endif

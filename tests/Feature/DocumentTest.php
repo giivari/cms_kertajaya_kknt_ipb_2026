@@ -18,7 +18,7 @@ test('documents can be viewed and downloaded safely', function () {
         'extension' => 'pdf',
         'size' => 1024,
         'processing_status' => 'completed',
-        'invisible_watermark_status' => 'unsupported',
+        'invisible_watermark_status' => 'verified',
     ]);
     $derivative = $media->derivatives()->create([
         'derivative_type' => 'public',
@@ -62,7 +62,7 @@ test('unpublished documents are not visible', function () {
         'extension' => 'pdf',
         'size' => 1024,
         'processing_status' => 'completed',
-        'invisible_watermark_status' => 'unsupported',
+        'invisible_watermark_status' => 'verified',
     ]);
 
     Document::create([
@@ -76,5 +76,30 @@ test('unpublished documents are not visible', function () {
     $response->assertDontSee('Hidden Document');
 
     $response = $this->get('/dokumen/hidden-document/download');
+    $response->assertStatus(404);
+});
+
+test('documents with unverified media cannot be downloaded', function () {
+    $media = Media::create([
+        'disk' => 'public',
+        'directory' => 'documents',
+        'filename' => 'unverified.pdf',
+        'original_filename' => 'unverified.pdf',
+        'mime_type' => 'application/pdf',
+        'extension' => 'pdf',
+        'size' => 1024,
+        'processing_status' => 'completed',
+        'invisible_watermark_status' => 'unsupported',
+    ]);
+
+    Document::create([
+        'title' => 'Unverified Document',
+        'slug' => 'unverified-document',
+        'file_media_id' => $media->id,
+        'status' => 'published',
+        'published_at' => now(),
+    ]);
+
+    $response = $this->get('/dokumen/unverified-document/download');
     $response->assertStatus(404);
 });

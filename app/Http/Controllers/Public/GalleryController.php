@@ -15,7 +15,13 @@ class GalleryController extends Controller
 
     public function show($slug)
     {
-        $album = \App\Models\GalleryAlbum::published()->with(['coverMedia', 'items.media'])->where('slug', $slug)->firstOrFail();
-        return 'Test Album';
+        $album = \App\Models\GalleryAlbum::published()->with(['items.media.derivatives'])->where('slug', $slug)->firstOrFail();
+        return view('public.gallery.show', compact('album'));
+    }
+
+    public function preview($slug)
+    {
+        $album = \App\Models\GalleryAlbum::with(['items.media.derivatives'])->where('slug', $slug)->firstOrFail();
+        return view('public.gallery.show', compact('album'));
     }
 }
