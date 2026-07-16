@@ -2,6 +2,11 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Pages\Auth\EditProfile;
+use App\Filament\Pages\Auth\Login;
+use App\Http\Middleware\AbsoluteSessionTimeout;
+use App\Http\Middleware\ForcePasswordChange;
+use Filament\Auth\MultiFactor\App\AppAuthentication;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -27,11 +32,11 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path(config('village.admin_path', 'desa-dashboard'))
-            ->login(\App\Filament\Pages\Auth\Login::class)
-            ->profile(\App\Filament\Pages\Auth\EditProfile::class)
+            ->login(Login::class)
+            ->profile(EditProfile::class)
             ->multiFactorAuthentication(
                 providers: [
-                    \Filament\Auth\MultiFactor\App\AppAuthentication::make(),
+                    AppAuthentication::make(),
                 ],
                 isRequired: true
             )
@@ -61,6 +66,8 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
+                ForcePasswordChange::class,
+                AbsoluteSessionTimeout::class,
             ]);
     }
 }

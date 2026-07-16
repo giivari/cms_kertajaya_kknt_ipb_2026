@@ -14,7 +14,7 @@ test('generate installation id command works', function () {
     }
 
     $this->artisan('village:install-id')->assertExitCode(0);
-    
+
     $env = file_get_contents($envPath);
     expect($env)->toContain('INSTALLATION_ID=VWCM-');
 

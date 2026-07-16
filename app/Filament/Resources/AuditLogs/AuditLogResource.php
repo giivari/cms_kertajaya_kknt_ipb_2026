@@ -2,8 +2,6 @@
 
 namespace App\Filament\Resources\AuditLogs;
 
-use App\Filament\Resources\AuditLogs\Pages\CreateAuditLog;
-use App\Filament\Resources\AuditLogs\Pages\EditAuditLog;
 use App\Filament\Resources\AuditLogs\Pages\ListAuditLogs;
 use App\Filament\Resources\AuditLogs\Pages\ViewAuditLog;
 use App\Filament\Resources\AuditLogs\Schemas\AuditLogForm;
@@ -11,11 +9,11 @@ use App\Filament\Resources\AuditLogs\Schemas\AuditLogInfolist;
 use App\Filament\Resources\AuditLogs\Tables\AuditLogsTable;
 use App\Models\AuditLog;
 use BackedEnum;
-use Illuminate\Database\Eloquent\Model;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 
 class AuditLogResource extends Resource
 {

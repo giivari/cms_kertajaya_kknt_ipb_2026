@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('username')->unique();
             $table->string('email')->unique();
             $table->string('password');
+            $table->boolean('force_password_change')->default(false);
             $table->text('app_authentication_secret')->nullable();
             $table->timestamps();
             $table->softDeletes();

@@ -11,6 +11,7 @@ class SettingsService
     {
         return Cache::rememberForever("settings.{$key}", function () use ($key, $default) {
             $setting = WebsiteSetting::find($key);
+
             return $setting ? $setting->value : $default;
         });
     }

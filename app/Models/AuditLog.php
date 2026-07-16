@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class AuditLog extends Model
@@ -27,7 +27,7 @@ class AuditLog extends Model
     ];
 
     public $timestamps = false; // Only created_at is needed, handled below
-    
+
     protected static function boot()
     {
         parent::boot();

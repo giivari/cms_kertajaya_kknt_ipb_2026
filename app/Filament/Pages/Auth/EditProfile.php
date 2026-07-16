@@ -2,13 +2,14 @@
 
 namespace App\Filament\Pages\Auth;
 
-use Filament\Auth\Pages\EditProfile as BaseEditProfile;
-use Filament\Forms\Components\TextInput;
-use Filament\Facades\Filament;
-use Filament\Schemas\Components\Component;
-use Filament\Auth\MultiFactor\App\AppAuthentication;
-use Filament\Schemas\Schema;
 use Closure;
+use Filament\Auth\MultiFactor\App\AppAuthentication;
+use Filament\Auth\Pages\EditProfile as BaseEditProfile;
+use Filament\Facades\Filament;
+use Filament\Forms\Components\TextInput;
+use Filament\Schemas\Components\Component;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Schema;
 use SensitiveParameter;
 
 class EditProfile extends BaseEditProfile
@@ -54,6 +55,15 @@ class EditProfile extends BaseEditProfile
                     }
                 };
             })
-            ->visible(fn (\Filament\Schemas\Components\Utilities\Get $get): bool => filled($get('password')) || ($get('email') !== $this->getUser()->getAttributeValue('email')));
+            ->visible(fn (Get $get): bool => filled($get('password')) || ($get('email') !== $this->getUser()->getAttributeValue('email')));
+    }
+
+    protected function mutateFormDataBeforeSave(array $data): array
+    {
+        if (isset($data['password'])) {
+            $data['force_password_change'] = false;
+        }
+
+        return parent::mutateFormDataBeforeSave($data);
     }
 }

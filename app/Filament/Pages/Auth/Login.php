@@ -2,27 +2,62 @@
 
 namespace App\Filament\Pages\Auth;
 
+use App\Filament\Forms\Components\Turnstile;
+use Filament\Auth\Http\Responses\Contracts\LoginResponse;
 use Filament\Auth\Pages\Login as BaseLogin;
-use Filament\Schemas\Components\Component;
 use Filament\Forms\Components\TextInput;
+use Filament\Schemas\Components\Component;
+use Filament\Schemas\Schema;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Validation\ValidationException;
-use DanHarrin\LivewireRateLimiting\Exceptions\TooManyRequestsException;
 use SensitiveParameter;
 
 class Login extends BaseLogin
 {
-    public function authenticate(): ?\Filament\Auth\Http\Responses\Contracts\LoginResponse
+    public function authenticate(): ?LoginResponse
     {
-        try {
-            // Rate limit: 5 attempts per 15 minutes (900 seconds)
-            $this->rateLimit(5, 900);
-        } catch (TooManyRequestsException $exception) {
-            $this->getRateLimitedNotification($exception)?->send();
+        $data = $this->form->getState();
+        $key = 'login.'.strtolower($data['username']).'.'.request()->ip();
+
+        if (RateLimiter::tooManyAttempts($key, 5)) {
+            $seconds = RateLimiter::availableIn($key);
+            $this->addError('data.username', __('filament-panels::pages/auth/login.messages.throttled', [
+                'seconds' => $seconds,
+                'minutes' => ceil($seconds / 60),
+            ]));
+
             return null;
         }
 
-        return parent::authenticate();
+        $attempts = RateLimiter::attempts($key);
+        if ($attempts > 0) {
+            usleep(min($attempts * 200000, 1000000));
+        }
+
+        try {
+            $response = parent::authenticate();
+            if ($response) {
+                RateLimiter::clear($key);
+            }
+
+            return $response;
+        } catch (ValidationException $e) {
+            RateLimiter::hit($key, 900);
+            throw ValidationException::withMessages([
+                'data.username' => __('filament-panels::pages/auth/login.messages.failed'),
+            ]);
+        }
+    }
+
+    public function form(Schema $schema): Schema
+    {
+        return $schema
+            ->components([
+                $this->getEmailFormComponent(),
+                $this->getPasswordFormComponent(),
+                Turnstile::make('captcha'),
+                $this->getRememberFormComponent(),
+            ]);
     }
 
     protected function getEmailFormComponent(): Component

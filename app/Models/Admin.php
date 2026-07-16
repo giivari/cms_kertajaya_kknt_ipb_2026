@@ -2,26 +2,27 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use App\Models\Concerns\Auditable;
+use Filament\Auth\MultiFactor\App\Concerns\InteractsWithAppAuthentication;
+use Filament\Auth\MultiFactor\App\Contracts\HasAppAuthentication;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
-use Filament\Auth\MultiFactor\App\Contracts\HasAppAuthentication;
-use Filament\Auth\MultiFactor\App\Concerns\InteractsWithAppAuthentication;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Models\Concerns\Auditable;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
 
 class Admin extends Authenticatable implements FilamentUser, HasAppAuthentication
 {
-    use HasFactory, Notifiable, HasUuids, SoftDeletes, InteractsWithAppAuthentication, Auditable;
+    use Auditable, HasFactory, HasUuids, InteractsWithAppAuthentication, Notifiable, SoftDeletes;
 
     protected $fillable = [
         'name',
         'username',
         'email',
         'password',
+        'force_password_change',
         'app_authentication_secret',
     ];
 
@@ -34,6 +35,23 @@ class Admin extends Authenticatable implements FilamentUser, HasAppAuthenticatio
         return [
             'password' => 'hashed',
         ];
+    }
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($admin) {
+            if (static::count() > 0) {
+                throw new \Exception('Only one administrator account is permitted.');
+            }
+        });
+
+        static::deleting(function ($admin) {
+            if (static::count() <= 1) {
+                throw new \Exception('Cannot delete the sole administrator account.');
+            }
+        });
     }
 
     public function canAccessPanel(Panel $panel): bool
