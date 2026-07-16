@@ -1,0 +1,1408 @@
+# DOKUMEN PERANCANGAN BASIS DATA DAN ENTITY RELATIONSHIP DIAGRAM
+
+## Village Website CMS
+
+### Single Village Installation
+
+**Versi Dokumen:** 1.0
+**Status:** Draft Final
+**Penyusun:** Tim Pengembang
+**Tanggal:** Juli 2026
+
+---
+
+# 1. Pendahuluan
+
+## 1.1 Tujuan Dokumen
+
+Dokumen ini menjelaskan rancangan basis data Village Website CMS, meliputi:
+
+1. Entitas sistem.
+2. Atribut utama setiap entitas.
+3. Hubungan antarentitas.
+4. Kardinalitas hubungan.
+5. Aturan integritas data.
+6. Struktur penyimpanan Page Builder.
+7. Pertimbangan desain basis data.
+8. Gambaran Entity Relationship Diagram.
+
+Dokumen ini digunakan sebagai dasar untuk:
+
+* Pembuatan migration Laravel.
+* Pembuatan model Eloquent.
+* Pembuatan resource Filament.
+* Pembuatan relasi antarmodel.
+* Implementasi Page Builder.
+* Penyusunan Data Dictionary.
+* Pengujian integritas basis data.
+
+---
+
+## 1.2 Ruang Lingkup
+
+Rancangan basis data mencakup modul:
+
+* Autentikasi administrator.
+* Pengaturan website.
+* Halaman dinamis.
+* Page Builder.
+* Berita.
+* Kategori berita.
+* Galeri.
+* Media Library.
+* Dokumen.
+* Kategori dokumen.
+* Peta dan lokasi.
+* Pesan narahubung.
+* Menu dan submenu.
+* Audit log.
+* Sistem keamanan autentikasi.
+
+Rancangan tidak mencakup:
+
+* Sistem administrasi kependudukan.
+* Sistem surat-menyurat.
+* Sistem transaksi.
+* Sistem multi-admin.
+* Sistem multi-desa.
+* Sistem multi-tenant.
+* Integrasi Dukcapil.
+
+---
+
+# 2. Prinsip Perancangan Basis Data
+
+## 2.1 Single Village Installation
+
+Setiap instalasi sistem hanya digunakan oleh satu desa.
+
+Oleh karena itu, basis data tidak memerlukan atribut:
+
+* `village_id`
+* `tenant_id`
+* `organization_id`
+
+Identitas desa disimpan melalui tabel pengaturan website.
+
+---
+
+## 2.2 Single Administrator
+
+Sistem hanya memiliki satu akun administrator utama.
+
+Tabel administrator tetap digunakan agar sistem autentikasi dapat dikelola secara terstruktur. Namun, aplikasi tidak menyediakan fitur:
+
+* Registrasi administrator.
+* Penambahan administrator.
+* Penghapusan administrator.
+* Penonaktifan administrator utama.
+
+---
+
+## 2.3 JSON-Driven Page Builder
+
+Page Builder menggunakan pendekatan JSON-driven.
+
+Struktur utama Page Builder terdiri atas:
+
+```text
+Page
+└── Page Section
+    └── Page Component
+```
+
+Data spesifik komponen disimpan dalam kolom `content_data` bertipe `JSONB`.
+
+Contoh komponen heading:
+
+```json
+{
+  "text": "Profil Desa",
+  "level": "h2",
+  "alignment": "left"
+}
+```
+
+Contoh komponen gambar:
+
+```json
+{
+  "media_id": 15,
+  "caption": "Kantor Desa",
+  "alt_text": "Tampak depan Kantor Desa",
+  "display_style": "rounded"
+}
+```
+
+Contoh komponen statistik:
+
+```json
+{
+  "items": [
+    {
+      "label": "Jumlah Penduduk",
+      "value": "15000",
+      "icon": "users"
+    },
+    {
+      "label": "Jumlah Dusun",
+      "value": "6",
+      "icon": "map"
+    }
+  ]
+}
+```
+
+Pendekatan ini dipilih karena:
+
+1. Memungkinkan penambahan tipe komponen tanpa membuat tabel baru.
+2. Mempermudah pengembangan Page Builder.
+3. Mengurangi kompleksitas Entity Relationship Diagram.
+4. Mendukung konfigurasi komponen yang berbeda-beda.
+5. Sesuai dengan karakteristik PostgreSQL yang mendukung `JSONB`.
+6. Mempermudah penggunaan ulang sistem pada desa lain.
+
+---
+
+## 2.4 Soft Delete dan Pengarsipan
+
+Sistem membedakan:
+
+### Arsip
+
+Konten tetap tersimpan, tetapi tidak ditampilkan kepada pengunjung.
+
+### Soft Delete
+
+Data dianggap dihapus oleh administrator, tetapi masih dapat dipulihkan secara teknis dalam masa retensi.
+
+### Permanent Delete
+
+Data dihapus permanen setelah masa retensi atau melalui prosedur teknis khusus.
+
+Untuk mencegah kehilangan data akibat kesalahan, tabel konten utama disarankan menggunakan kolom:
+
+```text
+deleted_at
+```
+
+Administrator tidak harus memperoleh menu tempat sampah pada versi pertama.
+
+---
+
+# 3. Daftar Entitas
+
+Entitas utama dalam sistem adalah:
+
+| No. | Entitas              | Fungsi                                                 |
+| --: | -------------------- | ------------------------------------------------------ |
+|   1 | admins               | Menyimpan akun administrator                           |
+|   2 | admin_recovery_codes | Menyimpan recovery code autentikasi                    |
+|   3 | website_settings     | Menyimpan identitas dan konfigurasi website            |
+|   4 | pages                | Menyimpan informasi dasar halaman                      |
+|   5 | page_sections        | Menyimpan section halaman                              |
+|   6 | page_components      | Menyimpan komponen dalam section                       |
+|   7 | news_categories      | Menyimpan kategori berita                              |
+|   8 | news                 | Menyimpan konten berita                                |
+|   9 | gallery_albums       | Menyimpan album galeri                                 |
+|  10 | gallery_album_items  | Menghubungkan album dengan media                       |
+|  11 | document_categories  | Menyimpan kategori dokumen                             |
+|  12 | documents            | Menyimpan informasi dokumen publik                     |
+|  13 | media                | Menyimpan aset digital                                 |
+|  14 | location_categories  | Menyimpan kategori lokasi                              |
+|  15 | locations            | Menyimpan titik lokasi peta                            |
+|  16 | contact_messages     | Menyimpan pesan narahubung                             |
+|  17 | menus                | Menyimpan kelompok menu                                |
+|  18 | menu_items           | Menyimpan item menu dan submenu                        |
+|  19 | audit_logs           | Menyimpan aktivitas sistem                             |
+|  20 | sessions             | Menyimpan sesi login jika menggunakan database session |
+|  21 | jobs                 | Menyimpan pekerjaan antrean sistem                     |
+|  22 | failed_jobs          | Menyimpan pekerjaan antrean yang gagal                 |
+
+---
+
+# 4. Deskripsi Entitas
+
+## 4.1 Entitas `admins`
+
+### Fungsi
+
+Menyimpan akun administrator utama.
+
+### Atribut Utama
+
+| Atribut             | Keterangan                              |
+| ------------------- | --------------------------------------- |
+| id                  | Primary key                             |
+| name                | Nama administrator                      |
+| username            | Username untuk login                    |
+| email               | Email administrator                     |
+| password            | Password dalam bentuk hash              |
+| totp_secret         | Secret autentikasi TOTP yang dienkripsi |
+| totp_enabled        | Status aktivasi TOTP                    |
+| last_login_at       | Waktu login terakhir                    |
+| last_login_ip       | Alamat IP login terakhir                |
+| password_changed_at | Waktu perubahan password                |
+| remember_token      | Token remember session                  |
+| created_at          | Waktu pembuatan                         |
+| updated_at          | Waktu perubahan                         |
+
+### Aturan
+
+1. Tabel hanya boleh memiliki satu akun administrator aktif.
+2. Username harus unik.
+3. Email harus unik apabila digunakan.
+4. Password tidak disimpan dalam bentuk teks biasa.
+5. `totp_secret` harus dienkripsi pada tingkat aplikasi.
+6. Administrator tidak dapat dihapus melalui dashboard.
+
+---
+
+## 4.2 Entitas `admin_recovery_codes`
+
+### Fungsi
+
+Menyimpan kode pemulihan autentikasi dua faktor.
+
+### Atribut Utama
+
+| Atribut    | Keterangan                      |
+| ---------- | ------------------------------- |
+| id         | Primary key                     |
+| admin_id   | Foreign key ke admins           |
+| code_hash  | Recovery code dalam bentuk hash |
+| used_at    | Waktu kode digunakan            |
+| created_at | Waktu pembuatan                 |
+
+### Hubungan
+
+Satu administrator dapat memiliki banyak recovery code.
+
+```text
+admins 1 ─── N admin_recovery_codes
+```
+
+---
+
+## 4.3 Entitas `website_settings`
+
+### Fungsi
+
+Menyimpan identitas, branding, kontak, dan konfigurasi website.
+
+### Atribut Utama
+
+| Atribut       | Keterangan                                            |
+| ------------- | ----------------------------------------------------- |
+| id            | Primary key                                           |
+| setting_key   | Nama pengaturan                                       |
+| setting_value | Nilai pengaturan dalam JSONB                          |
+| setting_group | Kelompok pengaturan                                   |
+| is_public     | Menentukan apakah pengaturan dapat digunakan frontend |
+| created_at    | Waktu pembuatan                                       |
+| updated_at    | Waktu perubahan                                       |
+
+### Contoh `setting_key`
+
+* `site_identity`
+* `village_identity`
+* `contact_information`
+* `social_media`
+* `theme`
+* `homepage`
+* `email_notification`
+* `seo`
+
+### Contoh `setting_value`
+
+```json
+{
+  "village_name": "Desa Kertajaya",
+  "district": "Simpenan",
+  "regency": "Sukabumi",
+  "province": "Jawa Barat"
+}
+```
+
+### Aturan
+
+Kombinasi `setting_key` harus unik.
+
+---
+
+## 4.4 Entitas `pages`
+
+### Fungsi
+
+Menyimpan informasi dasar halaman dinamis.
+
+### Atribut Utama
+
+| Atribut           | Keterangan                |
+| ----------------- | ------------------------- |
+| id                | Primary key               |
+| title             | Judul halaman             |
+| slug              | Alamat URL halaman        |
+| excerpt           | Ringkasan halaman         |
+| featured_media_id | Gambar utama              |
+| status            | Status halaman            |
+| is_featured       | Status halaman unggulan   |
+| seo_title         | Judul untuk mesin pencari |
+| seo_description   | Deskripsi mesin pencari   |
+| published_at      | Waktu publikasi           |
+| created_at        | Waktu pembuatan           |
+| updated_at        | Waktu perubahan           |
+| deleted_at        | Waktu soft delete         |
+
+### Nilai `status`
+
+* `published`
+* `archived`
+
+### Hubungan
+
+Satu halaman memiliki banyak section.
+
+```text
+pages 1 ─── N page_sections
+```
+
+Satu halaman dapat memiliki satu media unggulan.
+
+```text
+media 1 ─── N pages
+```
+
+---
+
+## 4.5 Entitas `page_sections`
+
+### Fungsi
+
+Menyimpan susunan section dalam halaman.
+
+### Atribut Utama
+
+| Atribut          | Keterangan                      |
+| ---------------- | ------------------------------- |
+| id               | Primary key                     |
+| page_id          | Foreign key ke pages            |
+| name             | Nama internal section           |
+| layout_type      | Jenis layout                    |
+| position         | Urutan section                  |
+| section_settings | Konfigurasi section dalam JSONB |
+| is_visible       | Status visibilitas              |
+| created_at       | Waktu pembuatan                 |
+| updated_at       | Waktu perubahan                 |
+
+### Nilai Awal `layout_type`
+
+* `single_column`
+* `two_columns`
+* `three_columns`
+* `hero`
+* `full_width`
+
+### Contoh `section_settings`
+
+```json
+{
+  "background_type": "color",
+  "background_value": "#FFFFFF",
+  "container_width": "default",
+  "padding_top": "large",
+  "padding_bottom": "large",
+  "text_color": "default"
+}
+```
+
+### Hubungan
+
+Satu section memiliki banyak komponen.
+
+```text
+page_sections 1 ─── N page_components
+```
+
+---
+
+## 4.6 Entitas `page_components`
+
+### Fungsi
+
+Menyimpan komponen Page Builder.
+
+### Atribut Utama
+
+| Atribut            | Keterangan                      |
+| ------------------ | ------------------------------- |
+| id                 | Primary key                     |
+| section_id         | Foreign key ke page_sections    |
+| component_type     | Jenis komponen                  |
+| column_position    | Posisi kolom                    |
+| position           | Urutan komponen                 |
+| content_data       | Data komponen dalam JSONB       |
+| component_settings | Pengaturan tampilan dalam JSONB |
+| is_visible         | Status visibilitas              |
+| created_at         | Waktu pembuatan                 |
+| updated_at         | Waktu perubahan                 |
+
+### Nilai Awal `component_type`
+
+* `heading`
+* `rich_text`
+* `image`
+* `gallery`
+* `statistics`
+* `video`
+* `map`
+* `documents`
+* `cta_button`
+* `card_grid`
+* `contact_block`
+
+### Contoh `component_settings`
+
+```json
+{
+  "alignment": "center",
+  "style": "default",
+  "animation": "none",
+  "spacing": "medium"
+}
+```
+
+### Aturan
+
+1. `content_data` wajib mengikuti skema komponen yang ditentukan aplikasi.
+2. Validasi JSON dilakukan di tingkat aplikasi.
+3. Komponen hanya dapat ditempatkan pada section yang valid.
+4. Nilai `position` harus unik dalam section dan kolom yang sama.
+
+---
+
+## 4.7 Entitas `news_categories`
+
+### Fungsi
+
+Menyimpan kategori berita.
+
+### Atribut Utama
+
+| Atribut     | Keterangan      |
+| ----------- | --------------- |
+| id          | Primary key     |
+| name        | Nama kategori   |
+| slug        | Slug kategori   |
+| description | Deskripsi       |
+| created_at  | Waktu pembuatan |
+| updated_at  | Waktu perubahan |
+
+### Hubungan
+
+Satu kategori dapat memiliki banyak berita.
+
+```text
+news_categories 1 ─── N news
+```
+
+---
+
+## 4.8 Entitas `news`
+
+### Fungsi
+
+Menyimpan berita desa.
+
+### Atribut Utama
+
+| Atribut           | Keterangan                     |
+| ----------------- | ------------------------------ |
+| id                | Primary key                    |
+| news_category_id  | Foreign key ke news_categories |
+| title             | Judul berita                   |
+| slug              | Slug berita                    |
+| excerpt           | Ringkasan                      |
+| content           | Isi berita                     |
+| featured_media_id | Gambar utama                   |
+| status            | Status berita                  |
+| is_featured       | Status berita unggulan         |
+| seo_title         | Judul SEO                      |
+| seo_description   | Deskripsi SEO                  |
+| published_at      | Tanggal publikasi              |
+| created_at        | Waktu pembuatan                |
+| updated_at        | Waktu perubahan                |
+| deleted_at        | Waktu soft delete              |
+
+### Nilai `status`
+
+* `published`
+* `archived`
+
+---
+
+## 4.9 Entitas `gallery_albums`
+
+### Fungsi
+
+Menyimpan informasi album galeri.
+
+### Atribut Utama
+
+| Atribut        | Keterangan            |
+| -------------- | --------------------- |
+| id             | Primary key           |
+| title          | Judul album           |
+| slug           | Slug album            |
+| description    | Deskripsi             |
+| cover_media_id | Media sampul          |
+| status         | Status album          |
+| is_featured    | Status album unggulan |
+| published_at   | Tanggal publikasi     |
+| created_at     | Waktu pembuatan       |
+| updated_at     | Waktu perubahan       |
+| deleted_at     | Waktu soft delete     |
+
+### Hubungan
+
+Satu album dapat memiliki banyak item media.
+
+```text
+gallery_albums 1 ─── N gallery_album_items
+```
+
+---
+
+## 4.10 Entitas `gallery_album_items`
+
+### Fungsi
+
+Menghubungkan album galeri dengan media.
+
+### Atribut Utama
+
+| Atribut          | Keterangan                    |
+| ---------------- | ----------------------------- |
+| id               | Primary key                   |
+| gallery_album_id | Foreign key ke gallery_albums |
+| media_id         | Foreign key ke media          |
+| caption          | Keterangan foto               |
+| alt_text         | Teks alternatif               |
+| position         | Urutan media                  |
+| created_at       | Waktu pembuatan               |
+| updated_at       | Waktu perubahan               |
+
+### Hubungan
+
+Satu album memiliki banyak item.
+
+Satu media dapat digunakan dalam beberapa album.
+
+```text
+gallery_albums N ─── N media
+```
+
+Hubungan many-to-many tersebut direalisasikan melalui `gallery_album_items`.
+
+---
+
+## 4.11 Entitas `document_categories`
+
+### Fungsi
+
+Menyimpan kategori dokumen publik.
+
+### Atribut Utama
+
+| Atribut     | Keterangan      |
+| ----------- | --------------- |
+| id          | Primary key     |
+| name        | Nama kategori   |
+| slug        | Slug kategori   |
+| description | Deskripsi       |
+| created_at  | Waktu pembuatan |
+| updated_at  | Waktu perubahan |
+
+### Hubungan
+
+Satu kategori dapat memiliki banyak dokumen.
+
+```text
+document_categories 1 ─── N documents
+```
+
+---
+
+## 4.12 Entitas `documents`
+
+### Fungsi
+
+Menyimpan informasi dokumen publik.
+
+### Atribut Utama
+
+| Atribut              | Keterangan            |
+| -------------------- | --------------------- |
+| id                   | Primary key           |
+| document_category_id | Foreign key kategori  |
+| title                | Judul dokumen         |
+| slug                 | Slug dokumen          |
+| description          | Deskripsi             |
+| file_media_id        | Foreign key file PDF  |
+| thumbnail_media_id   | Foreign key thumbnail |
+| status               | Status dokumen        |
+| published_at         | Tanggal publikasi     |
+| download_count       | Jumlah unduhan        |
+| created_at           | Waktu pembuatan       |
+| updated_at           | Waktu perubahan       |
+| deleted_at           | Waktu soft delete     |
+
+### Nilai `status`
+
+* `published`
+* `archived`
+
+---
+
+## 4.13 Entitas `media`
+
+### Fungsi
+
+Menyimpan seluruh aset digital.
+
+### Atribut Utama
+
+| Atribut           | Keterangan                    |
+| ----------------- | ----------------------------- |
+| id                | Primary key                   |
+| disk              | Lokasi storage                |
+| directory         | Folder penyimpanan            |
+| filename          | Nama file sistem              |
+| original_filename | Nama file asli                |
+| mime_type         | Jenis MIME                    |
+| extension         | Ekstensi file                 |
+| size              | Ukuran file dalam byte        |
+| width             | Lebar gambar                  |
+| height            | Tinggi gambar                 |
+| alt_text          | Teks alternatif               |
+| caption           | Keterangan                    |
+| metadata          | Metadata tambahan dalam JSONB |
+| checksum          | Nilai hash file               |
+| uploaded_at       | Waktu unggah                  |
+| created_at        | Waktu pembuatan               |
+| updated_at        | Waktu perubahan               |
+| deleted_at        | Waktu soft delete             |
+
+### Jenis File Awal
+
+* JPG
+* JPEG
+* PNG
+* WebP
+* PDF
+
+### Aturan
+
+1. File harus divalidasi berdasarkan MIME type.
+2. Nama file disimpan menggunakan nama aman.
+3. Gambar dapat dikompresi dan dikonversi ke WebP.
+4. File tidak langsung dihapus apabila masih digunakan oleh konten.
+5. Sistem perlu memeriksa referensi media sebelum penghapusan permanen.
+
+---
+
+## 4.14 Entitas `location_categories`
+
+### Fungsi
+
+Menyimpan kategori titik lokasi.
+
+### Contoh Kategori
+
+* Kantor desa.
+* Fasilitas umum.
+* Tempat wisata.
+* Titik evakuasi.
+* Fasilitas pendidikan.
+* Fasilitas kesehatan.
+* Lainnya.
+
+### Atribut Utama
+
+| Atribut     | Keterangan      |
+| ----------- | --------------- |
+| id          | Primary key     |
+| name        | Nama kategori   |
+| slug        | Slug kategori   |
+| marker_icon | Ikon marker     |
+| description | Deskripsi       |
+| created_at  | Waktu pembuatan |
+| updated_at  | Waktu perubahan |
+
+---
+
+## 4.15 Entitas `locations`
+
+### Fungsi
+
+Menyimpan titik lokasi yang ditampilkan pada peta.
+
+### Atribut Utama
+
+| Atribut              | Keterangan                  |
+| -------------------- | --------------------------- |
+| id                   | Primary key                 |
+| location_category_id | Foreign key kategori lokasi |
+| name                 | Nama lokasi                 |
+| slug                 | Slug                        |
+| description          | Deskripsi                   |
+| address              | Alamat                      |
+| latitude             | Koordinat lintang           |
+| longitude            | Koordinat bujur             |
+| featured_media_id    | Gambar lokasi               |
+| navigation_url       | URL navigasi eksternal      |
+| status               | Status lokasi               |
+| position             | Urutan                      |
+| created_at           | Waktu pembuatan             |
+| updated_at           | Waktu perubahan             |
+| deleted_at           | Waktu soft delete           |
+
+### Hubungan
+
+Satu kategori dapat memiliki banyak lokasi.
+
+```text
+location_categories 1 ─── N locations
+```
+
+---
+
+## 4.16 Entitas `contact_messages`
+
+### Fungsi
+
+Menyimpan pesan yang dikirim oleh pengunjung.
+
+### Atribut Utama
+
+| Atribut      | Keterangan                     |
+| ------------ | ------------------------------ |
+| id           | Primary key                    |
+| sender_name  | Nama pengirim                  |
+| sender_email | Email pengirim                 |
+| sender_phone | Nomor telepon                  |
+| subject      | Subjek pesan                   |
+| message      | Isi pesan                      |
+| status       | Status pesan                   |
+| admin_note   | Catatan internal administrator |
+| source_ip    | Alamat IP pengirim             |
+| user_agent   | Informasi browser              |
+| read_at      | Waktu pesan dibaca             |
+| processed_at | Waktu mulai diproses           |
+| completed_at | Waktu selesai                  |
+| archived_at  | Waktu arsip                    |
+| created_at   | Waktu pengiriman               |
+| updated_at   | Waktu perubahan                |
+| deleted_at   | Waktu soft delete              |
+
+### Nilai `status`
+
+* `new`
+* `read`
+* `processing`
+* `completed`
+* `archived`
+
+### Aturan
+
+1. Pesan hanya dapat dilihat administrator.
+2. Pesan dilindungi dari spam menggunakan rate limiting dan CAPTCHA.
+3. Pesan tidak ditampilkan pada website publik.
+4. Notifikasi email dikirim melalui queue.
+5. Data pesan dapat dihapus otomatis sesuai kebijakan retensi.
+
+---
+
+## 4.17 Entitas `menus`
+
+### Fungsi
+
+Menyimpan kelompok menu.
+
+### Contoh
+
+* Header menu.
+* Footer menu.
+* Quick links.
+
+### Atribut Utama
+
+| Atribut     | Keterangan         |
+| ----------- | ------------------ |
+| id          | Primary key        |
+| name        | Nama kelompok menu |
+| location    | Posisi menu        |
+| description | Deskripsi          |
+| created_at  | Waktu pembuatan    |
+| updated_at  | Waktu perubahan    |
+
+### Hubungan
+
+Satu kelompok menu memiliki banyak item menu.
+
+```text
+menus 1 ─── N menu_items
+```
+
+---
+
+## 4.18 Entitas `menu_items`
+
+### Fungsi
+
+Menyimpan menu dan submenu.
+
+### Atribut Utama
+
+| Atribut    | Keterangan                |
+| ---------- | ------------------------- |
+| id         | Primary key               |
+| menu_id    | Foreign key ke menus      |
+| parent_id  | Foreign key ke menu_items |
+| label      | Nama yang ditampilkan     |
+| link_type  | Jenis tautan              |
+| page_id    | Referensi halaman         |
+| custom_url | URL manual                |
+| target     | Target pembukaan          |
+| position   | Urutan                    |
+| is_visible | Status visibilitas        |
+| created_at | Waktu pembuatan           |
+| updated_at | Waktu perubahan           |
+
+### Nilai `link_type`
+
+* `page`
+* `news_index`
+* `gallery_index`
+* `document_index`
+* `map`
+* `contact`
+* `custom`
+
+### Hubungan Hierarkis
+
+Satu item menu dapat memiliki banyak submenu.
+
+```text
+menu_items 1 ─── N menu_items
+```
+
+Hubungan dilakukan menggunakan `parent_id`.
+
+---
+
+## 4.19 Entitas `audit_logs`
+
+### Fungsi
+
+Menyimpan catatan aktivitas administrator dan keamanan.
+
+### Atribut Utama
+
+| Atribut      | Keterangan                            |
+| ------------ | ------------------------------------- |
+| id           | Primary key                           |
+| admin_id     | Foreign key administrator, dapat null |
+| event_type   | Jenis aktivitas                       |
+| subject_type | Jenis objek yang dipengaruhi          |
+| subject_id   | ID objek yang dipengaruhi             |
+| description  | Deskripsi aktivitas                   |
+| old_values   | Data sebelum perubahan dalam JSONB    |
+| new_values   | Data setelah perubahan dalam JSONB    |
+| ip_address   | Alamat IP                             |
+| user_agent   | Informasi perangkat                   |
+| request_id   | ID permintaan                         |
+| created_at   | Waktu aktivitas                       |
+
+### Contoh `event_type`
+
+* `login_success`
+* `login_failed`
+* `logout`
+* `password_changed`
+* `content_created`
+* `content_updated`
+* `content_deleted`
+* `media_uploaded`
+* `settings_updated`
+* `message_status_changed`
+
+### Aturan
+
+1. Audit log tidak dapat diedit melalui dashboard.
+2. Audit log tidak dapat dihapus manual oleh administrator.
+3. Pembersihan log dilakukan otomatis berdasarkan kebijakan retensi.
+4. Audit log tidak memiliki `updated_at`.
+5. Penghapusan data utama tidak menghapus audit log terkait.
+
+---
+
+## 4.20 Entitas Sistem Pendukung
+
+### `sessions`
+
+Digunakan apabila session Laravel disimpan dalam database.
+
+### `jobs`
+
+Digunakan untuk antrean:
+
+* Pengiriman email.
+* Optimasi gambar.
+* Pembuatan thumbnail.
+* Pemrosesan pekerjaan latar belakang.
+
+### `failed_jobs`
+
+Menyimpan antrean yang gagal diproses agar dapat diperiksa dan dijalankan ulang.
+
+---
+
+# 5. Hubungan Antarentitas
+
+| Entitas Asal        | Relasi | Entitas Tujuan       |
+| ------------------- | ------ | -------------------- |
+| admins              | 1 : N  | admin_recovery_codes |
+| admins              | 1 : N  | audit_logs           |
+| pages               | 1 : N  | page_sections        |
+| page_sections       | 1 : N  | page_components      |
+| media               | 1 : N  | pages                |
+| news_categories     | 1 : N  | news                 |
+| media               | 1 : N  | news                 |
+| gallery_albums      | 1 : N  | gallery_album_items  |
+| media               | 1 : N  | gallery_album_items  |
+| document_categories | 1 : N  | documents            |
+| media               | 1 : N  | documents            |
+| location_categories | 1 : N  | locations            |
+| media               | 1 : N  | locations            |
+| menus               | 1 : N  | menu_items           |
+| menu_items          | 1 : N  | menu_items           |
+| pages               | 1 : N  | menu_items           |
+
+---
+
+# 6. Entity Relationship Diagram Konseptual
+
+```text
+ADMINS
+│
+├──< ADMIN_RECOVERY_CODES
+│
+└──< AUDIT_LOGS
+
+
+WEBSITE_SETTINGS
+
+
+PAGES
+│
+└──< PAGE_SECTIONS
+      │
+      └──< PAGE_COMPONENTS
+
+
+NEWS_CATEGORIES
+│
+└──< NEWS
+      │
+      └── FEATURED_MEDIA_ID >── MEDIA
+
+
+GALLERY_ALBUMS
+│
+└──< GALLERY_ALBUM_ITEMS
+      │
+      └── MEDIA
+
+
+DOCUMENT_CATEGORIES
+│
+└──< DOCUMENTS
+      ├── FILE_MEDIA_ID >── MEDIA
+      └── THUMBNAIL_MEDIA_ID >── MEDIA
+
+
+LOCATION_CATEGORIES
+│
+└──< LOCATIONS
+      │
+      └── FEATURED_MEDIA_ID >── MEDIA
+
+
+MENUS
+│
+└──< MENU_ITEMS
+      ├── PARENT_ID >── MENU_ITEMS
+      └── PAGE_ID >── PAGES
+
+
+CONTACT_MESSAGES
+
+
+SESSIONS
+
+
+JOBS
+
+
+FAILED_JOBS
+```
+
+---
+
+# 7. Diagram Relasi Page Builder
+
+```text
+PAGES
+│
+│ 1
+│
+└────────────── N
+          PAGE_SECTIONS
+          │
+          │ 1
+          │
+          └────────────── N
+                    PAGE_COMPONENTS
+```
+
+Contoh implementasi:
+
+```text
+Page: Profil Desa
+│
+├── Section 1: Hero
+│   ├── Component: Heading
+│   ├── Component: Rich Text
+│   └── Component: CTA Button
+│
+├── Section 2: Two Columns
+│   ├── Component: Image
+│   └── Component: Rich Text
+│
+└── Section 3: Statistics
+    └── Component: Statistics
+```
+
+---
+
+# 8. Aturan Integritas Data
+
+## 8.1 Slug
+
+Atribut `slug` harus unik pada tabel masing-masing:
+
+* pages
+* news
+* gallery_albums
+* documents
+* locations
+* news_categories
+* document_categories
+* location_categories
+
+Slug menggunakan:
+
+* Huruf kecil.
+* Angka.
+* Tanda hubung.
+* Tanpa spasi.
+* Tanpa karakter khusus yang tidak aman.
+
+---
+
+## 8.2 Foreign Key
+
+Foreign key wajib diterapkan untuk menjaga konsistensi data.
+
+Contoh:
+
+```text
+page_sections.page_id
+```
+
+harus merujuk ke:
+
+```text
+pages.id
+```
+
+---
+
+## 8.3 Cascade Delete
+
+Cascade delete digunakan secara terbatas.
+
+### Dapat menggunakan cascade
+
+* Page dihapus → section ikut dihapus.
+* Section dihapus → component ikut dihapus.
+* Album dihapus → album item ikut dihapus.
+* Menu dihapus → menu item ikut dihapus.
+* Admin dihapus secara teknis → recovery code ikut dihapus.
+
+### Tidak menggunakan cascade langsung
+
+* Media.
+* Audit log.
+* Dokumen publik.
+* Berita.
+* Lokasi.
+
+Media tidak boleh terhapus otomatis apabila masih digunakan pada bagian lain.
+
+---
+
+## 8.4 Unique Constraint
+
+Unique constraint diterapkan pada:
+
+* admins.username
+* admins.email
+* pages.slug
+* news.slug
+* gallery_albums.slug
+* documents.slug
+* news_categories.slug
+* document_categories.slug
+* location_categories.slug
+* locations.slug
+* website_settings.setting_key
+
+---
+
+## 8.5 Check Constraint
+
+Check constraint disarankan untuk:
+
+* Nilai status.
+* Latitude antara -90 dan 90.
+* Longitude antara -180 dan 180.
+* Position tidak bernilai negatif.
+* Ukuran file tidak bernilai negatif.
+
+---
+
+# 9. Strategi Indeks
+
+Indeks diperlukan untuk meningkatkan performa pencarian dan pengambilan data.
+
+## Indeks yang Direkomendasikan
+
+### `pages`
+
+* slug
+* status
+* is_featured
+* published_at
+
+### `news`
+
+* slug
+* status
+* category
+* is_featured
+* published_at
+
+### `documents`
+
+* slug
+* category
+* status
+* published_at
+
+### `media`
+
+* mime_type
+* checksum
+* original_filename
+
+### `contact_messages`
+
+* status
+* created_at
+* sender_email
+
+### `audit_logs`
+
+* admin_id
+* event_type
+* subject_type
+* subject_id
+* created_at
+
+### `menu_items`
+
+* menu_id
+* parent_id
+* position
+
+### `page_components`
+
+* section_id
+* component_type
+* position
+
+---
+
+# 10. Strategi Pencarian
+
+Pencarian publik mencakup:
+
+* Pages.
+* News.
+* Documents.
+
+Pencarian tidak mencakup:
+
+* Konten berstatus archived.
+* Konten yang dihapus.
+* Pesan narahubung.
+* Audit log.
+* Pengaturan internal.
+
+Pencarian awal dapat menggunakan:
+
+* `ILIKE` PostgreSQL.
+* Indeks teks.
+* Full-text search PostgreSQL apabila diperlukan.
+
+---
+
+# 11. Strategi Penyimpanan Media
+
+Basis data tidak menyimpan file biner secara langsung.
+
+Basis data hanya menyimpan:
+
+* Lokasi file.
+* Nama file.
+* Metadata.
+* Ukuran.
+* MIME type.
+* Dimensi.
+* Alt text.
+* Caption.
+
+File fisik disimpan pada:
+
+* Local storage.
+* Shared hosting storage.
+* Object storage pada pengembangan selanjutnya.
+
+Struktur direktori awal:
+
+```text
+uploads/
+├── images/
+│   ├── original/
+│   ├── optimized/
+│   └── thumbnails/
+│
+└── documents/
+    └── pdf/
+```
+
+---
+
+# 12. Retensi Data
+
+## Audit Log
+
+* Log aktivitas umum: 12 bulan.
+* Log keamanan: 24 bulan.
+* Penghapusan dilakukan otomatis oleh sistem.
+
+## Pesan Narahubung
+
+* Pesan aktif disimpan selama masih diperlukan.
+* Pesan arsip dapat disimpan selama 12 bulan.
+* Penghapusan menyesuaikan kebijakan pengelola.
+
+## Soft Delete
+
+* Data dapat dipertahankan selama 30 hari sebelum penghapusan permanen.
+* Penghapusan permanen dilakukan oleh scheduled task.
+
+## Session
+
+* Session yang kedaluwarsa dibersihkan secara berkala.
+
+---
+
+# 13. Pertimbangan Keamanan Basis Data
+
+1. Kredensial database disimpan dalam environment variable.
+2. File `.env` tidak disimpan di repository publik.
+3. Akun database produksi memiliki hak akses minimum.
+4. Query menggunakan Eloquent ORM atau parameter binding.
+5. Password administrator disimpan menggunakan hashing.
+6. Secret TOTP dienkripsi.
+7. Recovery code disimpan menggunakan hashing.
+8. Audit log tidak menyimpan password, token, atau secret.
+9. Backup database harus dienkripsi atau disimpan pada lokasi yang terlindungi.
+10. Pesan narahubung tidak dapat diakses guest.
+11. Data sensitif tidak dimasukkan ke log.
+12. File upload harus melalui validasi MIME type dan ukuran.
+
+---
+
+# 14. Strategi Backup
+
+Backup mencakup:
+
+1. Database PostgreSQL.
+2. Media dan dokumen.
+3. File konfigurasi deployment yang diperlukan.
+4. Daftar environment variable tanpa membocorkan nilai rahasia.
+
+Rekomendasi awal:
+
+* Backup database mingguan.
+* Backup file media mingguan.
+* Backup sebelum deployment besar.
+* Backup sebelum migrasi database.
+* Minimal satu salinan backup disimpan di lokasi berbeda.
+
+---
+
+# 15. Kesimpulan
+
+Rancangan basis data Village Website CMS menggunakan pendekatan relasional yang dikombinasikan dengan struktur `JSONB` untuk mendukung Page Builder yang fleksibel.
+
+Struktur utama Page Builder terdiri atas:
+
+```text
+pages
+page_sections
+page_components
+```
+
+Pendekatan tersebut memungkinkan administrator menyusun halaman dengan berbagai layout dan komponen tanpa perubahan source code atau struktur database utama.
+
+Rancangan ini mendukung:
+
+* Satu instalasi untuk satu desa.
+* Satu administrator utama.
+* Pengelolaan konten tanpa coding.
+* Penggunaan ulang sistem pada desa lain.
+* Pengembangan komponen baru.
+* Pengamanan aktivitas administrator.
+* Penyimpanan media terpusat.
+* Pengelolaan menu dinamis.
+* Penerapan pada hosting ekonomis.
+
+Tambahan:
+Menambahkan media_derivatives.
+Menambahkan watermark_verification_logs.
+Menambahkan atribut watermark pada media.

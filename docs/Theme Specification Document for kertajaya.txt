@@ -1,0 +1,749 @@
+# THEME SPECIFICATION DOCUMENT
+
+## Theme Name: Village Nature
+
+### Village Website CMS
+
+**Versi Dokumen:** 1.0
+**Status:** Approved Draft
+**Jenis Dokumen:** Theme Specification
+**Bergantung Pada:** UI Architecture & Design System Core v1.0
+**Tanggal:** Juli 2026
+
+---
+
+# 1. Pendahuluan
+
+## 1.1 Tujuan
+
+Dokumen ini mendefinisikan identitas visual untuk Theme Village Nature yang digunakan pada Village Website CMS.
+
+Theme merupakan lapisan visual yang berada di atas Design System Core.
+
+Theme tidak mengubah:
+
+* Struktur sistem.
+* Database.
+* Dashboard.
+* Permission.
+* CMS.
+* Fitur.
+
+Theme hanya mengubah:
+
+* Warna.
+* Tipografi.
+* Fotografi.
+* Ilustrasi.
+* Visual Style.
+* Branding.
+
+---
+
+## 1.2 Ruang Lingkup
+
+Theme ini dirancang untuk:
+
+* Desa wisata.
+* Desa agraris.
+* Desa perkebunan.
+* Desa pesisir.
+* Desa konservasi.
+* Desa yang ingin tampil modern dan menarik.
+
+---
+
+# 2. Brand Positioning
+
+## Positioning Statement
+
+Village Nature menghadirkan identitas visual yang menggabungkan keindahan alam, kemudahan akses informasi, dan profesionalisme pemerintahan desa dalam satu pengalaman digital yang modern.
+
+---
+
+## Target Impression
+
+Ketika pengunjung pertama kali membuka website:
+
+```text
+"Wah desanya keren."
+"Wah informasinya mudah dipahami."
+"Wah desa ini terlihat aktif dan modern."
+```
+
+---
+
+## Karakter Brand
+
+### Utama
+
+* Modern
+* Natural
+* Informatif
+* Ramah
+* Profesional
+* Terpercaya
+
+### Sekunder
+
+* Hangat
+* Bersih
+* Estetik
+* Terorganisir
+
+---
+
+## Karakter yang Dihindari
+
+* Kaku
+* Birokratis
+* Korporat
+* Mewah berlebihan
+* Ramai
+* Berlebihan
+
+---
+
+# 3. Color System
+
+---
+
+## Primary Color
+
+### Navy Base
+
+```css
+#073157
+```
+
+Digunakan untuk:
+
+* Header
+* Footer
+* Hero Overlay
+* Navigation
+* Heading Penting
+
+Representasi:
+
+```text
+Kepercayaan
+Profesionalisme
+Stabilitas
+```
+
+---
+
+## Secondary Color
+
+### Teal Depth
+
+```css
+#075F55
+```
+
+Digunakan untuk:
+
+* Secondary Section
+* Informasi Tambahan
+* Statistik
+
+Representasi:
+
+```text
+Alam
+Keseimbangan
+Keberlanjutan
+```
+
+---
+
+## Accent Color
+
+### Emerald
+
+```css
+#098C4C
+```
+
+Digunakan untuk:
+
+* CTA
+* Link Aktif
+* Success State
+* Highlight
+
+Representasi:
+
+```text
+Pertumbuhan
+Kemajuan
+Harapan
+```
+
+---
+
+## Highlight Color
+
+### Lime Highlight
+
+```css
+#BDEB38
+```
+
+Digunakan untuk:
+
+* Badge
+* Highlight Text
+* Accent Kecil
+
+Tidak digunakan untuk area besar.
+
+---
+
+## Attention Color
+
+### Warm Yellow
+
+```css
+#F6C431
+```
+
+Digunakan untuk:
+
+* Statistik Penting
+* Highlight Informasi
+* Section Promosi
+
+---
+
+## Surface Color
+
+### Cream Paper
+
+```css
+#F6F0DB
+```
+
+Digunakan untuk:
+
+* Background
+* Surface
+* Card tertentu
+* Area Konten
+
+Representasi:
+
+```text
+Hangat
+Nyaman
+Tidak Menyilaukan
+```
+
+---
+
+# 4. Typography System
+
+---
+
+## Primary Font
+
+### Nourd
+
+Digunakan untuk:
+
+* Body Text
+* Navbar
+* Button
+* Form
+* Dashboard
+* Table
+* Card
+* Footer
+
+---
+
+### Karakter
+
+```text
+Modern
+Premium
+Tidak Pasaran
+Mudah Dibaca
+```
+
+---
+
+## Display Font
+
+### Bricolage Grotesque
+
+Digunakan untuk:
+
+* Hero Heading
+* Campaign Section
+* Tagline
+* Landing Page Highlight
+
+---
+
+### Karakter
+
+```text
+Unik
+Friendly
+Modern
+Memiliki Identitas
+```
+
+---
+
+## Fallback Font
+
+### Poppins
+
+Digunakan apabila font utama gagal dimuat.
+
+---
+
+## Rasio Penggunaan
+
+```text
+Nourd               90%
+Bricolage Grotesque 10%
+```
+
+---
+
+# 5. Photography Style
+
+## Prinsip
+
+Foto harus:
+
+* Nyata
+* Autentik
+* Tidak terlalu dipoles
+* Merepresentasikan desa
+
+---
+
+## Prioritas Foto
+
+1. Pemandangan desa
+2. Aktivitas masyarakat
+3. Potensi desa
+4. Wisata
+5. Infrastruktur
+6. UMKM
+7. Kegiatan pemerintahan
+
+---
+
+## Hindari
+
+* Stock photo generik
+* Foto blur
+* Foto terlalu gelap
+* Foto terlalu jenuh
+
+---
+
+# 6. Hero Style
+
+---
+
+## Konsep
+
+Hero menjadi elemen utama website.
+
+Hero harus memberikan kesan:
+
+```text
+Desa yang indah
+Desa yang aktif
+Desa yang modern
+```
+
+---
+
+## Struktur
+
+```text
+Background Photo
+Overlay
+Headline
+Subheadline
+CTA
+```
+
+---
+
+## Overlay
+
+```css
+rgba(7,49,87,.45)
+```
+
+---
+
+## Headline
+
+Menggunakan:
+
+```text
+Bricolage Grotesque
+```
+
+---
+
+## Subheadline
+
+Menggunakan:
+
+```text
+Nourd
+```
+
+---
+
+# 7. Card Style
+
+---
+
+## Radius
+
+```text
+16px
+```
+
+---
+
+## Shadow
+
+Ringan.
+
+Tidak menggunakan shadow berlebihan.
+
+---
+
+## Gaya
+
+Card harus terasa:
+
+```text
+Bersih
+Modern
+Mudah Dipindai
+```
+
+---
+
+# 8. Button Style
+
+---
+
+## Primary Button
+
+Background:
+
+```css
+#098C4C
+```
+
+Text:
+
+```css
+#FFFFFF
+```
+
+---
+
+## Secondary Button
+
+Background:
+
+```css
+#073157
+```
+
+Text:
+
+```css
+#FFFFFF
+```
+
+---
+
+## Outline Button
+
+Border:
+
+```css
+#073157
+```
+
+Background:
+
+```css
+transparent
+```
+
+---
+
+# 9. Icon Style
+
+## Tipe
+
+Menggunakan:
+
+```text
+Rounded Outline Icon
+```
+
+---
+
+## Karakter
+
+* Ramah
+* Modern
+* Bersih
+
+---
+
+## Hindari
+
+* Skeuomorphic
+* 3D Icon
+* Cartoon Icon
+
+---
+
+# 10. Illustration Style
+
+Apabila digunakan.
+
+---
+
+## Gaya
+
+Flat Illustration
+
+atau
+
+Minimal Illustration
+
+---
+
+## Warna
+
+Mengikuti palet tema.
+
+---
+
+# 11. Dashboard Theme
+
+---
+
+## Sidebar
+
+Background:
+
+```css
+#073157
+```
+
+---
+
+## Active Menu
+
+```css
+#098C4C
+```
+
+---
+
+## Card
+
+Radius:
+
+```text
+16px
+```
+
+---
+
+## Kesan
+
+Dashboard harus terasa:
+
+```text
+Modern
+Bersih
+Profesional
+```
+
+bukan:
+
+```text
+Portal Pemerintah Lama
+```
+
+---
+
+# 12. Animation Style
+
+---
+
+## Prinsip
+
+Subtle Motion
+
+---
+
+## Diizinkan
+
+* Fade
+* Slide
+* Hover
+* Scale ringan
+
+---
+
+## Tidak Diizinkan
+
+* Bounce
+* Spin
+* Flash
+* Animasi berlebihan
+
+---
+
+# 13. Responsive Experience
+
+---
+
+## Mobile
+
+Prioritas utama.
+
+Target:
+
+```text
+≥70% pengguna
+```
+
+---
+
+## Tablet
+
+Harus tetap optimal.
+
+---
+
+## Desktop
+
+Memberikan pengalaman visual terbaik.
+
+---
+
+# 14. Accessibility
+
+Target:
+
+```text
+WCAG AA
+```
+
+---
+
+## Wajib
+
+* Alt text
+* Kontras memadai
+* Focus state
+* Keyboard navigation
+
+---
+
+# 15. Theme Token
+
+Contoh implementasi:
+
+```php
+return [
+
+'colors' => [
+    'primary' => '#073157',
+    'secondary' => '#075F55',
+    'accent' => '#098C4C',
+    'highlight' => '#BDEB38',
+    'warning' => '#F6C431',
+    'surface' => '#F6F0DB',
+],
+
+'fonts' => [
+    'primary' => 'Nourd',
+    'display' => 'Bricolage Grotesque',
+    'fallback' => 'Poppins',
+],
+
+];
+```
+
+---
+
+# 16. Reusability
+
+Theme Village Nature dapat digunakan oleh:
+
+* Desa Kertajaya.
+* Desa wisata.
+* Desa agraris.
+* Desa pesisir.
+* Desa perkebunan.
+
+Tanpa mengubah CMS.
+
+---
+
+# 17. Hubungan dengan CMS
+
+```text
+Village Website CMS
+        +
+Theme Village Nature
+        =
+Website Desa Final
+```
+
+CMS mengelola:
+
+* fitur;
+* database;
+* dashboard;
+* keamanan.
+
+Theme mengelola:
+
+* visual;
+* branding;
+* identitas.
+
+---
+
+# 18. Kesimpulan
+
+Theme Village Nature dirancang untuk menghasilkan pengalaman digital desa yang:
+
+```text
+Modern
+Natural
+Profesional
+Mudah Dipahami
+Menarik untuk Dikunjungi
+```
+
+dengan tujuan akhir:
+
+> Membuat desa terlihat aktif, informatif, dan memiliki identitas visual yang kuat tanpa kehilangan kesan profesional dan terpercaya.

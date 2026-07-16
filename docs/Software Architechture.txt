@@ -1,0 +1,1283 @@
+# SOFTWARE ARCHITECTURE DOCUMENT (SAD)
+
+## Village Website CMS
+
+### Single Village Installation
+
+**Versi Dokumen:** 1.0
+**Status:** Draft Final
+**Jenis Dokumen:** Software Architecture Specification
+**Berlaku Untuk:** Seluruh implementasi Village Website CMS
+**Tanggal:** Juli 2026
+
+---
+
+# 1. Pendahuluan
+
+## 1.1 Tujuan Dokumen
+
+Software Architecture Document menjelaskan struktur teknis dan arsitektur perangkat lunak yang digunakan dalam pengembangan Village Website CMS.
+
+Dokumen ini menjadi acuan untuk:
+
+1. Menentukan struktur aplikasi.
+2. Menentukan pembagian tanggung jawab setiap modul.
+3. Menentukan hubungan frontend, backend, basis data, dan penyimpanan.
+4. Menentukan struktur folder Laravel.
+5. Menentukan penggunaan Filament.
+6. Menentukan pola komunikasi antarkomponen.
+7. Menentukan strategi pemrosesan media.
+8. Menentukan mekanisme queue dan scheduler.
+9. Menjadi dasar implementasi dan pengujian sistem.
+10. Menjaga konsistensi pengembangan oleh seluruh anggota tim.
+
+---
+
+## 1.2 Ruang Lingkup
+
+Dokumen ini mencakup arsitektur:
+
+* Website publik.
+* Dashboard administrator.
+* Autentikasi.
+* Page Builder.
+* Berita.
+* Galeri.
+* Dokumen.
+* Media Library.
+* Watermark.
+* Menu Builder.
+* Peta.
+* Narahubung.
+* Pencarian.
+* Audit log.
+* Pengaturan website.
+* Penyimpanan file.
+* Queue.
+* Scheduler.
+* Deployment.
+
+Dokumen ini tidak membahas desain visual secara rinci dan tidak menggantikan dokumen ERD, Data Dictionary, Security Specification, atau Deployment Specification.
+
+---
+
+# 2. Gambaran Umum Arsitektur
+
+Village Website CMS menggunakan arsitektur aplikasi monolitik modular berbasis Laravel.
+
+Pendekatan ini dipilih karena:
+
+1. Lebih sederhana untuk dikembangkan oleh tim kecil.
+2. Mudah dijalankan pada shared hosting atau VPS ringan.
+3. Tidak memerlukan pemisahan frontend dan backend.
+4. Mudah dipelihara setelah masa KKN.
+5. Mendukung penggunaan kembali pada instalasi desa lain.
+6. Cocok dengan Blade, Filament, Eloquent ORM, queue, dan scheduler Laravel.
+
+---
+
+## 2.1 Model Arsitektur
+
+```text
+Guest / Admin
+      ↓
+Cloudflare
+      ↓
+Web Server
+      ↓
+Laravel Application
+      ├── Public Frontend
+      ├── Admin Dashboard
+      ├── Business Services
+      ├── Queue Workers
+      └── Scheduler
+      ↓
+PostgreSQL Database
+      ↓
+File Storage
+```
+
+---
+
+## 2.2 Jenis Aplikasi
+
+Sistem merupakan:
+
+```text
+Modular Monolith
+```
+
+Seluruh modul berada dalam satu aplikasi dan satu deployment, tetapi dipisahkan berdasarkan tanggung jawab agar mudah dikembangkan dan dipelihara.
+
+Sistem tidak menggunakan:
+
+* Microservices.
+* Frontend SPA terpisah.
+* Database terpisah untuk setiap modul.
+* API gateway.
+* Multi-tenant architecture.
+
+---
+
+# 3. Technology Stack
+
+## 3.1 Backend Framework
+
+Laravel digunakan sebagai framework utama.
+
+Fungsi:
+
+* Routing.
+* Authentication.
+* Validation.
+* ORM.
+* Queue.
+* Scheduler.
+* File storage.
+* Caching.
+* Logging.
+* Security middleware.
+
+Versi yang digunakan mengikuti versi stabil yang kompatibel dengan lingkungan hosting dan dependensi proyek.
+
+---
+
+## 3.2 Admin Panel
+
+Filament digunakan untuk membangun dashboard administrator.
+
+Filament digunakan untuk:
+
+* Dashboard.
+* Form CRUD.
+* Data table.
+* Filter.
+* Media management.
+* Website settings.
+* Audit log.
+* Page Builder interface.
+* Action confirmation.
+
+Tampilan Filament dikustomisasi agar mengikuti Theme Village Nature tanpa mengubah perilaku inti dashboard.
+
+---
+
+## 3.3 Frontend
+
+Frontend publik menggunakan:
+
+* Laravel Blade.
+* Tailwind CSS.
+* Alpine.js apabila diperlukan.
+* JavaScript ringan untuk interaksi tertentu.
+* Leaflet untuk peta.
+* Lucide untuk ikon frontend.
+* Heroicons sebagai ikon bawaan atau fallback Filament.
+
+Frontend tidak menggunakan framework SPA terpisah pada versi pertama.
+
+---
+
+## 3.4 Database
+
+PostgreSQL digunakan sebagai basis data utama.
+
+Alasan:
+
+* Mendukung relasi data.
+* Mendukung transaksi.
+* Mendukung `JSONB`.
+* Mendukung indeks yang fleksibel.
+* Cocok untuk Page Builder berbasis JSON.
+* Mendukung pengembangan pencarian lanjutan.
+
+---
+
+## 3.5 Penyimpanan Media
+
+Media menggunakan Laravel Filesystem.
+
+Tahap awal:
+
+* Private local storage untuk file sumber.
+* Public storage untuk derivative yang telah diproses.
+
+Tahap lanjutan dapat menggunakan:
+
+* S3-compatible object storage.
+* Cloud object storage.
+* CDN.
+
+---
+
+# 4. Architectural Principles
+
+## 4.1 Separation of Concerns
+
+Setiap bagian aplikasi memiliki tanggung jawab yang jelas.
+
+Contoh:
+
+* Controller menerima request.
+* Form Request melakukan validasi.
+* Service menjalankan logika bisnis.
+* Model berinteraksi dengan basis data.
+* Job menjalankan proses berat.
+* Policy mengatur otorisasi.
+* View menampilkan antarmuka.
+
+---
+
+## 4.2 Thin Controller
+
+Controller tidak menyimpan logika bisnis yang kompleks.
+
+Controller hanya bertugas:
+
+1. Menerima request.
+2. Memanggil service atau action.
+3. Mengembalikan response.
+
+---
+
+## 4.3 Service-Oriented Business Logic
+
+Logika penting diletakkan pada service atau action.
+
+Contoh:
+
+* `PagePublishingService`
+* `MediaProcessingService`
+* `WatermarkService`
+* `MenuService`
+* `SearchService`
+* `AuditLogService`
+
+---
+
+## 4.4 Reusable Components
+
+Komponen Page Builder, frontend, dan dashboard harus dapat digunakan ulang.
+
+Komponen tidak boleh bergantung pada data Desa Kertajaya secara langsung.
+
+---
+
+## 4.5 Configuration over Hardcoding
+
+Identitas desa dan theme tidak ditulis langsung di dalam view atau component.
+
+Data diperoleh melalui:
+
+* Website settings.
+* Theme configuration.
+* Environment variable.
+* Database.
+
+---
+
+## 4.6 Secure by Default
+
+Fitur keamanan aktif secara bawaan dan tidak bergantung pada konfigurasi operator non-teknis.
+
+---
+
+# 5. Application Layers
+
+## 5.1 Presentation Layer
+
+Terdiri atas:
+
+* Blade views.
+* Filament pages.
+* Filament resources.
+* Form components.
+* Frontend components.
+* Public controllers.
+
+Tanggung jawab:
+
+* Menampilkan data.
+* Menerima input.
+* Menampilkan status dan kesalahan.
+* Tidak menjalankan logika bisnis kompleks.
+
+---
+
+## 5.2 Application Layer
+
+Terdiri atas:
+
+* Actions.
+* Services.
+* Use case handlers.
+* Jobs.
+* Commands.
+
+Tanggung jawab:
+
+* Menjalankan alur bisnis.
+* Mengatur transaksi.
+* Menghubungkan beberapa model.
+* Menjalankan proses publikasi.
+* Menjalankan pemrosesan media.
+
+---
+
+## 5.3 Domain Layer
+
+Terdiri atas:
+
+* Model.
+* Enum.
+* Value object sederhana.
+* Business rules.
+* Policy.
+
+Tanggung jawab:
+
+* Mendefinisikan data dan hubungan.
+* Menjaga aturan utama sistem.
+* Menentukan status yang valid.
+* Menentukan otorisasi.
+
+---
+
+## 5.4 Infrastructure Layer
+
+Terdiri atas:
+
+* Database.
+* File storage.
+* Mail provider.
+* Queue.
+* Cache.
+* Cloudflare.
+* Logging.
+* External map service.
+
+---
+
+# 6. Struktur Modul
+
+Modul utama sistem:
+
+```text
+Authentication
+Dashboard
+Pages
+PageBuilder
+PageTemplates
+News
+Gallery
+Documents
+Media
+Watermark
+Menus
+Locations
+ContactMessages
+Search
+Settings
+AuditLogs
+```
+
+---
+
+## 6.1 Authentication Module
+
+Tanggung jawab:
+
+* Login.
+* Logout.
+* Password hashing.
+* TOTP.
+* CAPTCHA.
+* Session.
+* Rate limiting.
+* Login audit.
+
+Komponen utama:
+
+* `Admin` model.
+* Authentication controller.
+* TOTP service.
+* Login middleware.
+* Login event listener.
+
+---
+
+## 6.2 Pages Module
+
+Tanggung jawab:
+
+* Membuat halaman.
+* Mengubah halaman.
+* Mengarsipkan halaman.
+* Soft delete halaman.
+* Preview.
+* Publikasi.
+* Halaman unggulan.
+
+Entitas:
+
+* `Page`
+* `PageSection`
+* `PageComponent`
+
+---
+
+## 6.3 Page Builder Module
+
+Tanggung jawab:
+
+* Menambah section.
+* Memilih layout.
+* Menambah komponen.
+* Mengatur posisi.
+* Mengatur visibilitas.
+* Menyimpan data `JSONB`.
+* Merender halaman.
+
+Struktur:
+
+```text
+Page
+└── Sections
+    └── Components
+```
+
+---
+
+## 6.4 Page Template Module
+
+Tanggung jawab:
+
+* Menyediakan template awal.
+* Membuat halaman dari template.
+* Menyalin section dan component.
+* Tidak mengunci admin pada struktur template.
+
+Template awal:
+
+* Profil Desa.
+* Sejarah Desa.
+* Visi dan Misi.
+* Potensi Desa.
+* Informasi Dusun.
+* Pelayanan.
+* BUMDes.
+* Rawan Bencana.
+
+Template hanya menjadi titik awal dan tetap dapat diubah melalui Page Builder.
+
+---
+
+## 6.5 News Module
+
+Tanggung jawab:
+
+* CRUD berita.
+* Kategori berita.
+* Berita unggulan.
+* Arsip.
+* Preview.
+* Publikasi.
+
+Entitas:
+
+* `News`
+* `NewsCategory`
+
+---
+
+## 6.6 Gallery Module
+
+Tanggung jawab:
+
+* Membuat album.
+* Memilih media.
+* Mengatur urutan.
+* Menentukan cover.
+* Menambahkan caption.
+* Menampilkan lightbox.
+
+Entitas:
+
+* `GalleryAlbum`
+* `GalleryAlbumItem`
+
+---
+
+## 6.7 Documents Module
+
+Tanggung jawab:
+
+* Mengunggah PDF.
+* Mengelola kategori.
+* Menyimpan metadata.
+* Menampilkan preview.
+* Menghitung unduhan.
+* Publikasi dan arsip.
+
+Entitas:
+
+* `Document`
+* `DocumentCategory`
+
+---
+
+## 6.8 Media Module
+
+Tanggung jawab:
+
+* Upload.
+* Validasi file.
+* Metadata.
+* Alt text.
+* Reuse media.
+* Pencarian media.
+* Soft delete.
+* Pemeriksaan penggunaan media.
+
+Entitas:
+
+* `Media`
+* `MediaDerivative`
+
+---
+
+## 6.9 Watermark Module
+
+Tanggung jawab:
+
+* Membuat identifier media.
+* Menerapkan watermark tak terlihat.
+* Menerapkan watermark terlihat jika aktif.
+* Membuat derivative.
+* Memverifikasi watermark.
+* Mencatat hasil pemrosesan.
+* Mencegah publikasi media gagal.
+
+Komponen:
+
+* `WatermarkService`
+* `WatermarkVerificationService`
+* `ProcessMediaJob`
+* `GenerateDerivativeJob`
+* `WatermarkVerificationLog`
+
+Watermark gambar menjadi bagian wajib MVP.
+
+Watermark format lain dapat ditambahkan melalui processor khusus.
+
+---
+
+## 6.10 Menu Module
+
+Tanggung jawab:
+
+* Menu utama.
+* Footer menu.
+* Quick links.
+* Submenu.
+* Urutan drag-and-drop.
+* Link internal.
+* Link eksternal.
+
+Entitas:
+
+* `Menu`
+* `MenuItem`
+
+---
+
+## 6.11 Locations Module
+
+Tanggung jawab:
+
+* Titik lokasi.
+* Kategori lokasi.
+* Koordinat.
+* Marker.
+* Navigasi eksternal.
+* Peta publik.
+
+Entitas:
+
+* `Location`
+* `LocationCategory`
+
+---
+
+## 6.12 Contact Messages Module
+
+Tanggung jawab:
+
+* Menyimpan pesan.
+* Validasi CAPTCHA.
+* Rate limiting.
+* Status pesan.
+* Catatan internal.
+* Notifikasi email.
+* Arsip.
+
+Entitas:
+
+* `ContactMessage`
+
+---
+
+## 6.13 Search Module
+
+Tanggung jawab:
+
+* Mencari judul halaman.
+* Mencari judul berita.
+* Mencari judul dokumen.
+* Menampilkan konten berstatus published.
+
+Versi awal menggunakan query PostgreSQL sederhana.
+
+Tidak menggunakan mesin pencarian eksternal.
+
+---
+
+## 6.14 Settings Module
+
+Tanggung jawab:
+
+* Identitas desa.
+* Kontak.
+* Media sosial.
+* Branding.
+* SEO dasar.
+* Watermark terlihat.
+* Konfigurasi beranda.
+
+Entitas:
+
+* `WebsiteSetting`
+
+---
+
+## 6.15 Audit Logs Module
+
+Tanggung jawab:
+
+* Menyimpan aktivitas utama.
+* Menampilkan filter.
+* Menampilkan detail.
+* Retensi otomatis.
+* Mencegah penghapusan manual.
+
+Entitas:
+
+* `AuditLog`
+
+---
+
+# 7. Struktur Folder Laravel
+
+Struktur awal yang direkomendasikan:
+
+```text
+app/
+├── Actions/
+│   ├── Authentication/
+│   ├── Pages/
+│   ├── Media/
+│   └── Settings/
+│
+├── Enums/
+│   ├── ContentStatus.php
+│   ├── ContactMessageStatus.php
+│   ├── MediaProcessingStatus.php
+│   └── WatermarkStatus.php
+│
+├── Events/
+│   ├── AdminLoggedIn.php
+│   ├── ContentPublished.php
+│   └── MediaUploaded.php
+│
+├── Filament/
+│   ├── Pages/
+│   ├── Resources/
+│   └── Widgets/
+│
+├── Http/
+│   ├── Controllers/
+│   │   ├── Public/
+│   │   └── Auth/
+│   ├── Middleware/
+│   └── Requests/
+│
+├── Jobs/
+│   ├── ProcessMediaJob.php
+│   ├── GenerateMediaDerivativeJob.php
+│   ├── SendContactNotificationJob.php
+│   └── CleanupExpiredDataJob.php
+│
+├── Listeners/
+│
+├── Models/
+│
+├── Policies/
+│
+├── Providers/
+│
+├── Services/
+│   ├── AuditLogService.php
+│   ├── MediaProcessingService.php
+│   ├── MenuService.php
+│   ├── PageBuilderService.php
+│   ├── PagePublishingService.php
+│   ├── SearchService.php
+│   ├── SettingsService.php
+│   └── WatermarkService.php
+│
+├── Support/
+│   ├── PageBuilder/
+│   ├── Themes/
+│   └── Watermark/
+│
+└── View/
+    └── Components/
+```
+
+---
+
+# 8. Struktur Frontend
+
+```text
+resources/
+├── css/
+│   ├── app.css
+│   ├── theme.css
+│   └── admin.css
+│
+├── js/
+│   ├── app.js
+│   ├── map.js
+│   └── page-builder.js
+│
+└── views/
+    ├── components/
+    │   ├── cards/
+    │   ├── forms/
+    │   ├── layout/
+    │   └── page-builder/
+    │
+    ├── layouts/
+    │   ├── public.blade.php
+    │   └── error.blade.php
+    │
+    ├── pages/
+    ├── news/
+    ├── galleries/
+    ├── documents/
+    ├── locations/
+    ├── contact/
+    ├── search/
+    └── errors/
+```
+
+---
+
+# 9. Routing Architecture
+
+## 9.1 Public Routes
+
+Contoh struktur:
+
+```text
+/
+ /halaman/{slug}
+ /berita
+ /berita/{slug}
+ /galeri
+ /galeri/{slug}
+ /dokumen
+ /dokumen/{slug}
+ /peta
+ /narahubung
+ /pencarian
+```
+
+---
+
+## 9.2 Admin Routes
+
+Dashboard menggunakan prefix khusus yang diperoleh melalui environment variable atau configuration.
+
+Contoh:
+
+```text
+/{admin_path}
+```
+
+Prefix tidak ditulis permanen dalam source code publik.
+
+Proteksi route:
+
+* Authentication.
+* TOTP.
+* Session.
+* Rate limiting.
+* Security middleware.
+
+---
+
+# 10. Page Builder Rendering Architecture
+
+Page Builder menggunakan renderer berdasarkan `component_type`.
+
+Alur:
+
+```text
+Page
+↓
+Load Sections
+↓
+Sort by Position
+↓
+Load Components
+↓
+Resolve Component Renderer
+↓
+Render Blade Component
+```
+
+Contoh pemetaan:
+
+```text
+heading       → page-builder.heading
+rich_text     → page-builder.rich-text
+image         → page-builder.image
+gallery       → page-builder.gallery
+statistics    → page-builder.statistics
+video         → page-builder.video
+map           → page-builder.map
+documents     → page-builder.documents
+cta_button    → page-builder.cta-button
+card_grid     → page-builder.card-grid
+contact_block → page-builder.contact-block
+```
+
+Jika jenis komponen tidak dikenali, sistem:
+
+1. Tidak menampilkan komponen.
+2. Mencatat error.
+3. Tidak menyebabkan halaman gagal seluruhnya.
+
+---
+
+# 11. Page Template Architecture
+
+Template halaman dapat disimpan sebagai:
+
+* Configuration file.
+* Seeder.
+* JSON template.
+
+Struktur contoh:
+
+```json
+{
+  "name": "Profil Desa",
+  "sections": [
+    {
+      "layout_type": "hero",
+      "components": []
+    },
+    {
+      "layout_type": "two_columns",
+      "components": []
+    }
+  ]
+}
+```
+
+Template tidak menyimpan data desa tertentu.
+
+---
+
+# 12. Media Processing Architecture
+
+Alur media:
+
+```text
+Upload
+↓
+Validate
+↓
+Store Private Source
+↓
+Create Media Record
+↓
+Dispatch Processing Job
+↓
+Generate Identifier
+↓
+Apply Invisible Watermark
+↓
+Generate Derivatives
+↓
+Apply Visible Watermark if Enabled
+↓
+Verify
+↓
+Set Completed
+```
+
+Media tidak dapat digunakan pada konten publik sebelum statusnya `completed`.
+
+---
+
+## 12.1 Queue
+
+Proses yang masuk queue:
+
+* Optimasi gambar.
+* Watermark.
+* Thumbnail.
+* Derivative.
+* Email notification.
+* Pembersihan data.
+* Regenerasi media.
+
+---
+
+## 12.2 Failure Handling
+
+Jika proses gagal:
+
+1. Status media menjadi `failed`.
+2. Kesalahan disimpan.
+3. Admin melihat notifikasi.
+4. Media tidak dapat dipublikasikan.
+5. Admin dapat menjalankan proses ulang.
+
+---
+
+# 13. Audit Logging Architecture
+
+Audit log dibuat melalui:
+
+* Model observer.
+* Event listener.
+* Authentication event.
+* Service tertentu.
+
+Data sensitif harus difilter sebelum disimpan.
+
+Aktivitas utama:
+
+* Login.
+* Logout.
+* Gagal login.
+* Ubah password.
+* Tambah konten.
+* Edit konten.
+* Hapus konten.
+* Ubah pengaturan.
+
+---
+
+# 14. Caching Strategy
+
+Cache digunakan untuk:
+
+* Website settings.
+* Menu.
+* Halaman publik.
+* Berita terbaru.
+* Konten beranda.
+
+Cache harus dihapus ketika data terkait diperbarui.
+
+Tahap awal dapat menggunakan:
+
+* File cache.
+* Database cache.
+
+Redis dapat digunakan pada infrastruktur lanjutan.
+
+---
+
+# 15. Search Architecture
+
+MVP menggunakan pencarian berdasarkan:
+
+* `pages.title`
+* `news.title`
+* `documents.title`
+
+Hanya data published dan tidak terhapus yang ditampilkan.
+
+Search service menggabungkan hasil dan memberikan tipe konten pada setiap item.
+
+---
+
+# 16. Email Architecture
+
+Email digunakan untuk:
+
+* Notifikasi pesan narahubung.
+* Pemberitahuan kegagalan tertentu jika diterapkan.
+
+Pengiriman email dijalankan melalui queue agar request guest tidak menunggu proses SMTP.
+
+Jika email gagal, pesan narahubung tetap tersimpan.
+
+---
+
+# 17. Scheduler Architecture
+
+Scheduler menjalankan:
+
+* Pembersihan session.
+* Retensi audit log.
+* Retensi pesan.
+* Permanent delete setelah masa retensi.
+* Pemeriksaan backup.
+* Pemrosesan ulang terjadwal jika diperlukan.
+
+Contoh:
+
+```text
+Setiap hari:
+- Cleanup expired sessions
+- Cleanup soft-deleted records
+
+Setiap minggu:
+- Database backup
+- Media backup
+
+Setiap bulan:
+- Audit log retention
+```
+
+---
+
+# 18. Error Handling
+
+Sistem menggunakan:
+
+* Validation error.
+* Domain exception.
+* Application exception.
+* Global exception handler.
+
+Frontend tidak menampilkan:
+
+* Stack trace.
+* Query.
+* Path server.
+* Environment value.
+* Secret.
+
+Error penting dicatat pada application log.
+
+---
+
+# 19. Authorization
+
+Karena sistem hanya memiliki satu admin, otorisasi tetap diterapkan melalui policy agar akses data dashboard tidak bergantung hanya pada tampilan menu.
+
+Guest hanya dapat mengakses:
+
+* Konten published.
+* Media derivative publik.
+* Form narahubung.
+* Pencarian publik.
+
+---
+
+# 20. Configuration Architecture
+
+Konfigurasi dibagi menjadi:
+
+## Environment Configuration
+
+Contoh:
+
+* Database.
+* Mail.
+* Admin path.
+* Storage.
+* Cloudflare.
+* Application key.
+
+## Website Settings
+
+Contoh:
+
+* Nama desa.
+* Kontak.
+* Logo.
+* Media sosial.
+
+## Theme Configuration
+
+Contoh:
+
+* Warna.
+* Font.
+* Radius.
+* Shadow.
+* Icon library.
+
+---
+
+# 21. Theme Architecture
+
+Struktur:
+
+```text
+Core Design System
++
+Theme Configuration
++
+Website Content
+```
+
+Theme tidak mengubah business logic.
+
+Implementasi awal:
+
+```text
+Village Nature
+```
+
+Ikon frontend menggunakan Lucide.
+
+Ikon Filament dapat menggunakan Heroicons atau ikon kompatibel yang disediakan panel.
+
+---
+
+# 22. Database Transaction Strategy
+
+Transaksi digunakan untuk proses yang mengubah beberapa tabel sekaligus.
+
+Contoh:
+
+* Membuat halaman dari template.
+* Menghapus halaman dan section.
+* Membuat album beserta item.
+* Menyimpan struktur menu.
+* Menerbitkan halaman.
+* Memperbarui status pesan.
+
+Jika satu langkah gagal, seluruh transaksi dibatalkan.
+
+---
+
+# 23. Testing Architecture
+
+## Unit Test
+
+Menguji:
+
+* Service.
+* Enum.
+* Validation.
+* Watermark helper.
+* Slug generation.
+
+## Feature Test
+
+Menguji:
+
+* Login.
+* CRUD.
+* Publikasi.
+* Arsip.
+* Pencarian.
+* Narahubung.
+* Upload media.
+* Authorization.
+
+## Integration Test
+
+Menguji:
+
+* Database.
+* Queue.
+* Storage.
+* Email.
+* Media processing.
+
+## Browser Test
+
+Menguji alur kritis jika waktu memungkinkan.
+
+---
+
+# 24. Observability
+
+Sistem minimal memantau:
+
+* Application error.
+* Queue failure.
+* Email failure.
+* Media processing failure.
+* Disk usage.
+* Backup status.
+* Login failure.
+
+---
+
+# 25. Architecture Constraints
+
+1. Sistem harus dapat berjalan pada infrastruktur ekonomis.
+2. Tidak boleh bergantung pada service berbayar untuk fungsi inti.
+3. Seluruh fitur publik harus tetap berjalan ketika email gagal.
+4. Media gagal proses tidak boleh dipublikasikan.
+5. Sistem hanya melayani satu desa per instalasi.
+6. Sistem hanya memiliki satu admin.
+7. Theme tidak boleh memengaruhi business logic.
+8. Konten harus dapat kosong tanpa menyebabkan error.
+9. Struktur database harus reusable untuk desa lain.
+10. Fitur kompleks di luar MVP dimasukkan ke backlog.
+
+---
+
+# 26. Architecture Decision Summary
+
+| Keputusan         | Pilihan                               |
+| ----------------- | ------------------------------------- |
+| Application style | Modular monolith                      |
+| Backend           | Laravel                               |
+| Frontend          | Blade + Tailwind                      |
+| Admin panel       | Filament                              |
+| Database          | PostgreSQL                            |
+| Page Builder      | Section + component + JSONB           |
+| Admin             | Single admin                          |
+| Installation      | Single village                        |
+| Storage           | Private source + public derivative    |
+| Async processing  | Laravel Queue                         |
+| Map               | Leaflet + OpenStreetMap               |
+| Frontend icons    | Lucide                                |
+| Admin icons       | Heroicons/Filament default            |
+| Search MVP        | Title-based PostgreSQL search         |
+| Theme             | Configuration-based                   |
+| Watermark image   | Mandatory invisible, optional visible |
+
+---
+
+# 27. Kesimpulan
+
+Village Website CMS menggunakan arsitektur modular monolith yang membagi sistem menjadi modul terpisah dalam satu aplikasi Laravel.
+
+Arsitektur ini memberikan:
+
+* Pengembangan yang lebih sederhana.
+* Biaya deployment yang rendah.
+* Struktur kode yang terorganisasi.
+* Page Builder yang fleksibel.
+* Media pipeline yang terlindungi.
+* Penggunaan ulang pada desa lain.
+* Kemudahan serah terima.
+* Fondasi untuk pengembangan lanjutan.
+
+Dokumen ini menjadi dasar utama dalam pembuatan Product Backlog, struktur repository, migration Laravel, resource Filament, pengembangan frontend, dan implementasi setiap modul.

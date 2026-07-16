@@ -1,0 +1,658 @@
+# PRODUCT BACKLOG & SPRINT PLANNING DOCUMENT
+
+## Village Website CMS
+
+**Versi Dokumen:** 1.0
+**Status:** Approved Draft
+**Jenis Dokumen:** Product Backlog & Sprint Plan
+---
+
+# 1. Tujuan Dokumen
+
+Dokumen ini digunakan untuk:
+
+* Menentukan prioritas pengembangan.
+* Menentukan MVP.
+* Menentukan pembagian sprint.
+* Menentukan urutan pengerjaan.
+* Mengurangi risiko fitur tidak selesai.
+
+---
+
+# 2. Definisi Prioritas
+
+## P0 – Critical
+
+Website tidak dapat berjalan tanpa fitur ini.
+
+Contoh:
+
+* Login
+* Pages
+* Settings
+
+---
+
+## P1 – High
+
+Sangat penting untuk MVP.
+
+Contoh:
+
+* News
+* Gallery
+* Documents
+
+---
+
+## P2 – Medium
+
+Meningkatkan kualitas sistem.
+
+Contoh:
+
+* Search
+* Maps
+
+---
+
+## P3 – Low
+
+Boleh dikerjakan jika waktu cukup.
+
+Contoh:
+
+* Watermark PDF
+* Analytics lanjutan
+
+---
+
+# 3. MVP Definition
+
+Target minimum agar website dapat digunakan.
+
+---
+
+## Authentication
+
+Priority:
+
+```text id="8klnsx"
+P0
+```
+
+Fitur:
+
+* Login
+* Logout
+* CAPTCHA
+* TOTP
+* Session
+
+---
+
+## Website Settings
+
+Priority:
+
+```text id="j4zkgq"
+P0
+```
+
+Fitur:
+
+* Nama Desa
+* Logo
+* Kontak
+* Sosial Media
+* SEO Dasar
+
+---
+
+## Pages
+
+Priority:
+
+```text id="0u8xv9"
+P0
+```
+
+Fitur:
+
+* CRUD Halaman
+* Publish
+* Archive
+* Soft Delete
+
+---
+
+## Page Builder
+
+Priority:
+
+```text id="p6x8tn"
+P0
+```
+
+Fitur:
+
+* Section
+* Component
+* Layout
+* Preview
+
+---
+
+## Menu Builder
+
+Priority:
+
+```text id="f7g5rs"
+P0
+```
+
+Fitur:
+
+* Menu
+* Submenu
+* Sort
+
+---
+
+## News
+
+Priority:
+
+```text id="h8z4al"
+P1
+```
+
+---
+
+## Gallery
+
+Priority:
+
+```text id="e7b5qn"
+P1
+```
+
+---
+
+## Documents
+
+Priority:
+
+```text id="v2g7mf"
+P1
+```
+
+---
+
+## Media Library
+
+Priority:
+
+```text id="s4n8kh"
+P1
+```
+
+---
+
+## Watermark Image
+
+Priority:
+
+```text id="g7r6ys"
+P1
+```
+
+---
+
+## Contact Form
+
+Priority:
+
+```text id="c9x4dt"
+P1
+```
+
+---
+
+## Audit Log
+
+Priority:
+
+```text id="m8y7uv"
+P1
+```
+
+---
+
+## Search
+
+Priority:
+
+```text id="l5z7wj"
+P2
+```
+
+---
+
+## Maps
+
+Priority:
+
+```text id="r8a4kc"
+P2
+```
+
+---
+
+# 4. EPIC LIST
+
+---
+
+## EPIC 1
+
+Authentication & Security
+
+---
+
+## EPIC 2
+
+Website Settings
+
+---
+
+## EPIC 3
+
+Page Management
+
+---
+
+## EPIC 4
+
+Page Builder
+
+---
+
+## EPIC 5
+
+News Management
+
+---
+
+## EPIC 6
+
+Gallery Management
+
+---
+
+## EPIC 7
+
+Document Management
+
+---
+
+## EPIC 8
+
+Media Management
+
+---
+
+## EPIC 9
+
+Menu Management
+
+---
+
+## EPIC 10
+
+Contact & Communication
+
+---
+
+## EPIC 11
+
+Maps & Locations
+
+---
+
+## EPIC 12
+
+Search
+
+---
+
+## EPIC 13
+
+Audit & Monitoring
+
+---
+
+# 5. Sprint Planning
+
+Durasi:
+
+```text id="7x9mkp"
+6 minggu
+```
+
+---
+
+# Sprint 1
+
+## Foundation Sprint
+
+Target:
+
+Website dapat dijalankan.
+
+---
+
+Fitur:
+
+### Authentication
+
+* Login
+* Logout
+* Password
+* TOTP
+
+---
+
+### Settings
+
+* Website Settings
+
+---
+
+### Dashboard
+
+* Dashboard Layout
+
+---
+
+### Database
+
+* Migration
+* Seeder
+
+---
+
+Output:
+
+```text id="g7v4mz"
+Admin bisa login
+```
+
+---
+
+# Sprint 2
+
+## Core CMS Sprint
+
+Target:
+
+Konten dasar dapat dibuat.
+
+---
+
+Fitur:
+
+### Pages
+
+* CRUD
+
+---
+
+### Page Templates
+
+* Profil Desa
+* Sejarah
+* Visi Misi
+
+---
+
+### Menu Builder
+
+---
+
+Output:
+
+```text id="m5x8wp"
+Halaman desa dapat dibuat
+```
+
+---
+
+# Sprint 3
+
+## Content Sprint
+
+Target:
+
+Konten publik tersedia.
+
+---
+
+Fitur:
+
+### News
+
+### Gallery
+
+### Documents
+
+---
+
+Output:
+
+```text id="s8f6dr"
+Website mulai memiliki isi
+```
+
+---
+
+# Sprint 4
+
+## Media Sprint
+
+Target:
+
+Media dapat digunakan secara aman.
+
+---
+
+Fitur:
+
+### Media Library
+
+### Watermark
+
+### Media Processing
+
+---
+
+Output:
+
+```text id="v9h3lt"
+Media siap produksi
+```
+
+---
+
+# Sprint 5
+
+## Interaction Sprint
+
+Target:
+
+Interaksi pengguna aktif.
+
+---
+
+Fitur:
+
+### Contact Form
+
+### Search
+
+### Maps
+
+---
+
+Output:
+
+```text id="a4m7zk"
+Website dapat digunakan publik
+```
+
+---
+
+# Sprint 6
+
+## Stabilization Sprint
+
+Target:
+
+Go Live
+
+---
+
+Fitur:
+
+### Audit Log
+
+### Bug Fixing
+
+### Optimization
+
+### Testing
+
+### Deployment
+
+---
+
+Output:
+
+```text id="q7d2ux"
+Production Ready
+```
+
+# 7. Product Backlog Detail
+
+| ID     | Feature              | Priority | Sprint |
+| ------ | -------------------- | -------- | ------ |
+| PB-001 | Login Admin          | P0       | 1      |
+| PB-002 | TOTP                 | P0       | 1      |
+| PB-003 | Dashboard            | P0       | 1      |
+| PB-004 | Website Settings     | P0       | 1      |
+| PB-005 | Pages CRUD           | P0       | 2      |
+| PB-006 | Page Templates       | P0       | 2      |
+| PB-007 | Page Builder         | P0       | 2      |
+| PB-008 | Menu Builder         | P0       | 2      |
+| PB-009 | News CRUD            | P1       | 3      |
+| PB-010 | Gallery CRUD         | P1       | 3      |
+| PB-011 | Document CRUD        | P1       | 3      |
+| PB-012 | Media Library        | P1       | 4      |
+| PB-013 | Watermark Image      | P1       | 4      |
+| PB-014 | Contact Form         | P1       | 5      |
+| PB-015 | Search               | P2       | 5      |
+| PB-016 | Maps                 | P2       | 5      |
+| PB-017 | Audit Log            | P1       | 6      |
+| PB-018 | Optimization         | P1       | 6      |
+| PB-019 | Deployment           | P0       | 6      |
+| PB-020 | User Acceptance Test | P0       | 6      |
+
+---
+
+# 8. Backlog Yang Ditunda
+
+Tidak masuk MVP.
+
+---
+
+## Future Feature
+
+### Watermark PDF
+
+Priority:
+
+```text id="8e2x6k"
+Future
+```
+
+---
+
+### Analytics Dashboard
+
+Priority:
+
+```text id="s4w7qm"
+Future
+```
+
+---
+
+### Visitor Heatmap
+
+Priority:
+
+```text id="w9u5dx"
+Future
+```
+
+---
+
+### Multi Theme Switcher
+
+Priority:
+
+```text id="y2n6ra"
+Future
+```
+
+---
+
+### Multi Village Installation
+
+Priority:
+
+```text id="d4z8hc"
+Future
+```
+
+---
+
+# 9. Definition of Done
+
+Sebuah fitur dianggap selesai apabila:
+
+✅ Coding selesai
+
+✅ Database selesai
+
+✅ Testing berhasil
+
+✅ Tidak ada error kritis
+
+✅ Responsive
+
+✅ Dokumentasi diperbarui
+
+✅ Sudah di-review
+
+---
+
+# 10. Kesimpulan
+
+Village Website CMS akan dikembangkan menggunakan pendekatan bertahap selama 6 minggu dengan fokus utama pada MVP yang benar-benar dibutuhkan oleh desa.
+
+Strategi ini memastikan:
+
+* Website selesai tepat waktu.
+* Fitur penting tidak tertinggal.
+* Scope tetap terkendali.
+* Sistem siap digunakan dan diserahkan kepada desa setelah program KKN berakhir.

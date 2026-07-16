@@ -1,0 +1,768 @@
+# DOKUMEN USER FLOW SPECIFICATION
+
+## Village Website CMS
+
+### Single Village Installation
+
+**Versi Dokumen:** 1.0
+**Status:** Draft Final
+**Penyusun:** Tim Pengembang
+**Tanggal:** Juli 2026
+
+---
+
+# 1. Pendahuluan
+
+## 1.1 Tujuan Dokumen
+
+Dokumen User Flow Specification digunakan untuk mendefinisikan alur perjalanan pengguna (user journey) pada Village Website CMS.
+
+Dokumen ini menjadi dasar untuk:
+
+1. Perancangan wireframe.
+2. Perancangan antarmuka pengguna.
+3. Penyusunan navigasi sistem.
+4. Pengembangan frontend dan backend.
+5. Pengujian pengalaman pengguna.
+6. Validasi proses bisnis sistem.
+
+---
+
+## 1.2 Aktor Sistem
+
+Village Website CMS memiliki dua aktor utama:
+
+### Guest
+
+Pengguna umum yang mengakses website tanpa proses autentikasi.
+
+Hak akses:
+
+* Melihat informasi desa.
+* Membaca berita.
+* Melihat galeri.
+* Mengunduh dokumen publik.
+* Melihat peta lokasi.
+* Mengirim pesan narahubung.
+* Menggunakan fitur pencarian.
+
+### Admin
+
+Administrator website yang mengelola seluruh konten dan konfigurasi sistem.
+
+Hak akses:
+
+* Mengelola halaman.
+* Mengelola berita.
+* Mengelola galeri.
+* Mengelola dokumen.
+* Mengelola media.
+* Mengelola menu.
+* Mengelola lokasi.
+* Mengelola pesan.
+* Mengelola pengaturan website.
+* Melihat audit log.
+
+---
+
+# 2. User Flow Guest
+
+---
+
+# 2.1 User Flow Melihat Informasi Desa
+
+## Tujuan
+
+Guest dapat mengakses informasi umum mengenai desa.
+
+## Alur
+
+```text id="b4n2wt"
+Mulai
+↓
+Guest membuka website
+↓
+Sistem menampilkan Beranda
+↓
+Guest memilih menu informasi
+↓
+Sistem menampilkan daftar halaman
+↓
+Guest memilih halaman
+↓
+Sistem menampilkan isi halaman
+↓
+Selesai
+```
+
+## Halaman yang Terlibat
+
+* Beranda
+* Profil Desa
+* Sejarah Desa
+* Visi dan Misi
+* Potensi Desa
+* Informasi Dusun
+* Pelayanan
+* BUMDes
+* Informasi Rawan Bencana
+
+---
+
+# 2.2 User Flow Membaca Berita
+
+## Tujuan
+
+Guest dapat memperoleh informasi terbaru mengenai desa.
+
+## Alur
+
+```text id="v52wfi"
+Mulai
+↓
+Guest membuka website
+↓
+Guest memilih menu Berita
+↓
+Sistem menampilkan daftar berita
+↓
+Guest memilih berita
+↓
+Sistem menampilkan detail berita
+↓
+Selesai
+```
+
+## Halaman yang Terlibat
+
+* Daftar Berita
+* Detail Berita
+
+---
+
+# 2.3 User Flow Melihat Galeri
+
+## Tujuan
+
+Guest dapat melihat dokumentasi kegiatan desa.
+
+## Alur
+
+```text id="yx0c1k"
+Mulai
+↓
+Guest membuka menu Galeri
+↓
+Sistem menampilkan daftar album
+↓
+Guest memilih album
+↓
+Sistem menampilkan foto-foto album
+↓
+Guest melihat foto
+↓
+Selesai
+```
+
+## Halaman yang Terlibat
+
+* Daftar Album
+* Detail Album
+
+---
+
+# 2.4 User Flow Mengunduh Dokumen
+
+## Tujuan
+
+Guest dapat memperoleh dokumen publik yang disediakan desa.
+
+## Alur
+
+```text id="m09f5m"
+Mulai
+↓
+Guest membuka menu Dokumen
+↓
+Sistem menampilkan daftar dokumen
+↓
+Guest memilih dokumen
+↓
+Sistem menampilkan detail dokumen
+↓
+Guest mengunduh dokumen
+↓
+Sistem mencatat jumlah unduhan
+↓
+Selesai
+```
+
+## Halaman yang Terlibat
+
+* Daftar Dokumen
+* Detail Dokumen
+
+---
+
+# 2.5 User Flow Melihat Peta Desa
+
+## Tujuan
+
+Guest dapat melihat lokasi penting di desa.
+
+## Alur
+
+```text id="apkj26"
+Mulai
+↓
+Guest membuka menu Peta
+↓
+Sistem menampilkan peta interaktif
+↓
+Guest memilih marker lokasi
+↓
+Sistem menampilkan detail lokasi
+↓
+Selesai
+```
+
+## Halaman yang Terlibat
+
+* Peta Desa
+
+---
+
+# 2.6 User Flow Mengirim Pesan Narahubung
+
+## Tujuan
+
+Guest dapat menghubungi pengelola website atau pemerintah desa.
+
+## Alur
+
+```text id="jv3vrh"
+Mulai
+↓
+Guest membuka menu Narahubung
+↓
+Sistem menampilkan formulir
+↓
+Guest mengisi data
+↓
+Guest menyelesaikan CAPTCHA
+↓
+Guest mengirim pesan
+↓
+Sistem memvalidasi data
+↓
+Apakah data valid?
+├── Tidak
+│   ↓
+│ Sistem menampilkan kesalahan
+│
+└── Ya
+    ↓
+  Sistem menyimpan pesan
+    ↓
+  Sistem menampilkan notifikasi berhasil
+    ↓
+  Selesai
+```
+
+## Halaman yang Terlibat
+
+* Narahubung
+
+---
+
+# 2.7 User Flow Pencarian Informasi
+
+## Tujuan
+
+Guest dapat menemukan informasi secara cepat.
+
+## Alur
+
+```text id="pazkfi"
+Mulai
+↓
+Guest menggunakan kolom pencarian
+↓
+Guest memasukkan kata kunci
+↓
+Sistem melakukan pencarian
+↓
+Sistem menampilkan hasil
+↓
+Guest memilih hasil
+↓
+Sistem membuka konten terkait
+↓
+Selesai
+```
+
+## Objek yang Dicari
+
+* Halaman
+* Berita
+* Dokumen
+
+---
+
+# 3. User Flow Admin
+
+---
+
+# 3.1 User Flow Login
+
+## Tujuan
+
+Administrator mengakses dashboard pengelolaan sistem.
+
+## Alur
+
+```text id="z9x0ly"
+Mulai
+↓
+Admin membuka URL dashboard
+↓
+Admin memasukkan username
+↓
+Admin memasukkan password
+↓
+Admin menyelesaikan CAPTCHA
+↓
+Sistem memverifikasi kredensial
+↓
+Admin memasukkan kode TOTP
+↓
+Sistem memverifikasi kode
+↓
+Apabila berhasil
+↓
+Dashboard ditampilkan
+↓
+Selesai
+```
+
+---
+
+# 3.2 User Flow Membuat Halaman
+
+## Tujuan
+
+Administrator membuat halaman informasi baru.
+
+## Alur
+
+```text id="h7xg21"
+Mulai
+↓
+Dashboard
+↓
+Menu Halaman
+↓
+Tambah Halaman
+↓
+Pilih Template
+↓
+Isi Informasi Dasar
+↓
+Masuk Page Builder
+↓
+Menambahkan Section
+↓
+Menambahkan Komponen
+↓
+Preview
+↓
+Publish
+↓
+Selesai
+```
+
+## Template Bawaan
+
+* Profil Desa
+* Sejarah Desa
+* Visi dan Misi
+* Potensi Desa
+* Informasi Dusun
+* Pelayanan
+* BUMDes
+* Rawan Bencana
+
+---
+
+# 3.3 User Flow Mengelola Berita
+
+## Tujuan
+
+Administrator membuat dan memperbarui berita.
+
+## Alur
+
+```text id="3wdu5o"
+Mulai
+↓
+Dashboard
+↓
+Menu Berita
+↓
+Tambah atau Edit Berita
+↓
+Isi Konten
+↓
+Preview
+↓
+Publish
+↓
+Selesai
+```
+
+---
+
+# 3.4 User Flow Mengelola Galeri
+
+## Tujuan
+
+Administrator mengelola dokumentasi foto.
+
+## Alur
+
+```text id="g79x6g"
+Mulai
+↓
+Dashboard
+↓
+Menu Galeri
+↓
+Tambah Album
+↓
+Unggah Foto
+↓
+Simpan Album
+↓
+Publish
+↓
+Selesai
+```
+
+---
+
+# 3.5 User Flow Mengelola Dokumen
+
+## Tujuan
+
+Administrator mengelola dokumen publik.
+
+## Alur
+
+```text id="6q4jpx"
+Mulai
+↓
+Dashboard
+↓
+Menu Dokumen
+↓
+Unggah Dokumen
+↓
+Isi Metadata
+↓
+Publish
+↓
+Selesai
+```
+
+---
+
+# 3.6 User Flow Mengunggah Media
+
+## Tujuan
+
+Administrator mengelola aset media.
+
+## Alur
+
+```text id="58q6kw"
+Mulai
+↓
+Dashboard
+↓
+Media Library
+↓
+Upload File
+↓
+Validasi File
+↓
+Penerapan Watermark Tak Terlihat
+↓
+Pembuatan Versi Turunan
+↓
+Verifikasi
+↓
+Status Completed
+↓
+Media Siap Digunakan
+↓
+Selesai
+```
+
+## Catatan
+
+Seluruh media wajib memiliki watermark tak terlihat.
+
+Media yang gagal diverifikasi tidak dapat dipublikasikan.
+
+---
+
+# 3.7 User Flow Mengelola Menu
+
+## Tujuan
+
+Administrator mengatur navigasi website.
+
+## Alur
+
+```text id="v4m2v9"
+Mulai
+↓
+Dashboard
+↓
+Menu Builder
+↓
+Tambah Item Menu
+↓
+Atur Submenu
+↓
+Atur Urutan
+↓
+Simpan
+↓
+Selesai
+```
+
+---
+
+# 3.8 User Flow Mengelola Lokasi
+
+## Tujuan
+
+Administrator mengelola lokasi pada peta.
+
+## Alur
+
+```text id="9p0hyu"
+Mulai
+↓
+Dashboard
+↓
+Menu Lokasi
+↓
+Tambah Lokasi
+↓
+Isi Informasi
+↓
+Isi Koordinat
+↓
+Simpan
+↓
+Selesai
+```
+
+---
+
+# 3.9 User Flow Mengelola Pesan Narahubung
+
+## Tujuan
+
+Administrator mengelola pesan yang dikirim pengunjung.
+
+## Alur
+
+```text id="f8s2nw"
+Mulai
+↓
+Dashboard
+↓
+Menu Pesan
+↓
+Membuka Pesan
+↓
+Membaca Pesan
+↓
+Mengubah Status
+↓
+Menyimpan
+↓
+Selesai
+```
+
+## Status Pesan
+
+* New
+* Read
+* Processing
+* Completed
+* Archived
+
+---
+
+# 3.10 User Flow Mengelola Pengaturan Website
+
+## Tujuan
+
+Administrator mengatur identitas dan konfigurasi website.
+
+## Alur
+
+```text id="g4wh5z"
+Mulai
+↓
+Dashboard
+↓
+Menu Pengaturan
+↓
+Mengubah Konfigurasi
+↓
+Simpan
+↓
+Sistem mencatat Audit Log
+↓
+Selesai
+```
+
+## Pengaturan yang Dikelola
+
+* Identitas Desa
+* Logo
+* Informasi Kontak
+* Media
+* Watermark
+* SEO Dasar
+
+---
+
+# 3.11 User Flow Audit Log
+
+## Tujuan
+
+Administrator memantau aktivitas penting sistem.
+
+## Alur
+
+```text id="p9v7c0"
+Mulai
+↓
+Dashboard
+↓
+Audit Log
+↓
+Melihat Daftar Aktivitas
+↓
+Filter Aktivitas
+↓
+Melihat Detail
+↓
+Selesai
+```
+
+## Aktivitas yang Dicatat
+
+* Login
+* Logout
+* Gagal Login
+* Ubah Password
+* Tambah Konten
+* Edit Konten
+* Hapus Konten
+* Ubah Pengaturan
+
+---
+
+# 4. Matriks User Flow
+
+| Kode   | User Flow              | Aktor |
+| ------ | ---------------------- | ----- |
+| UF-G01 | Melihat Informasi Desa | Guest |
+| UF-G02 | Membaca Berita         | Guest |
+| UF-G03 | Melihat Galeri         | Guest |
+| UF-G04 | Mengunduh Dokumen      | Guest |
+| UF-G05 | Melihat Peta           | Guest |
+| UF-G06 | Mengirim Pesan         | Guest |
+| UF-G07 | Pencarian Informasi    | Guest |
+| UF-A01 | Login                  | Admin |
+| UF-A02 | Membuat Halaman        | Admin |
+| UF-A03 | Mengelola Berita       | Admin |
+| UF-A04 | Mengelola Galeri       | Admin |
+| UF-A05 | Mengelola Dokumen      | Admin |
+| UF-A06 | Mengelola Media        | Admin |
+| UF-A07 | Mengelola Menu         | Admin |
+| UF-A08 | Mengelola Lokasi       | Admin |
+| UF-A09 | Mengelola Pesan        | Admin |
+| UF-A10 | Mengelola Pengaturan   | Admin |
+| UF-A11 | Audit Log              | Admin |
+
+---
+
+# 5. Daftar Layar Sistem
+
+## Frontend
+
+1. Beranda
+2. Halaman Dinamis
+3. Daftar Berita
+4. Detail Berita
+5. Daftar Album
+6. Detail Album
+7. Daftar Dokumen
+8. Detail Dokumen
+9. Peta Desa
+10. Narahubung
+11. Hasil Pencarian
+12. Halaman 404
+
+---
+
+## Backend
+
+1. Login
+2. Dashboard
+3. Manajemen Halaman
+4. Page Builder
+5. Manajemen Berita
+6. Manajemen Galeri
+7. Manajemen Dokumen
+8. Media Library
+9. Menu Builder
+10. Manajemen Lokasi
+11. Manajemen Pesan
+12. Pengaturan Website
+13. Audit Log
+14. Profil Administrator
+
+---
+
+# 6. Kesimpulan
+
+User Flow Specification Village Website CMS mendefinisikan seluruh perjalanan pengguna yang akan didukung oleh sistem.
+
+Dokumen ini menjadi acuan utama dalam penyusunan:
+
+* Wireframe Specification
+* Information Architecture
+* Desain UI/UX
+* Struktur Navigasi
+* Pengembangan Frontend
+* Pengembangan Backend
+* Pengujian Sistem
+
+Seluruh user flow dirancang berdasarkan konsep:
+
+* Single Village Installation
+* Single Administrator
+* Guest Access Without Login
+* Dynamic Page Builder
+* Mandatory Invisible Watermark
+* Reusable Village Website CMS
+* Mobile-First Experience

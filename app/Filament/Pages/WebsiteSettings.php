@@ -3,8 +3,10 @@
 namespace App\Filament\Pages;
 
 use App\Services\SettingsService;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
@@ -52,8 +54,15 @@ class WebsiteSettings extends Page
             'meta_description' => SettingsService::get('meta_description', ''),
             'footer_copyright_text' => SettingsService::get('footer_copyright_text', ''),
             'watermark_image_placeholder' => SettingsService::get('watermark_image_placeholder', 'To be implemented in Sprint 2'),
-            'watermark_text' => SettingsService::get('watermark_text', ''),
+            'watermark_text' => SettingsService::get('watermark_text', 'Village CMS'),
             'watermark_opacity' => SettingsService::get('watermark_opacity', 50),
+            'enable_visible_watermark' => SettingsService::get('enable_visible_watermark', false),
+            'watermark_position' => SettingsService::get('watermark_position', 'bottom-right'),
+            'watermark_scale' => SettingsService::get('watermark_scale', 20),
+            'max_upload_size' => SettingsService::get('max_upload_size', 10),
+            'max_image_width' => SettingsService::get('max_image_width', 3840),
+            'max_image_height' => SettingsService::get('max_image_height', 2160),
+            'processing_timeout' => SettingsService::get('processing_timeout', 120),
         ]);
     }
 
@@ -93,9 +102,24 @@ class WebsiteSettings extends Page
                     ])->columns(1),
                 Section::make('Branding & Watermark')
                     ->schema([
-                        TextInput::make('watermark_image_placeholder')->disabled(),
+                        Toggle::make('enable_visible_watermark')->label('Enable Visible Watermark'),
                         TextInput::make('watermark_text'),
                         TextInput::make('watermark_opacity')->numeric()->minValue(0)->maxValue(100),
+                        Select::make('watermark_position')->options([
+                            'top-left' => 'Top Left',
+                            'top-right' => 'Top Right',
+                            'bottom-left' => 'Bottom Left',
+                            'bottom-right' => 'Bottom Right',
+                            'center' => 'Center',
+                        ]),
+                        TextInput::make('watermark_scale')->numeric()->minValue(1)->maxValue(100)->label('Scale (%)'),
+                    ])->columns(2),
+                Section::make('Media & Processing Limits')
+                    ->schema([
+                        TextInput::make('max_upload_size')->numeric()->minValue(1)->maxValue(50)->label('Max Upload Size (MB)'),
+                        TextInput::make('max_image_width')->numeric()->minValue(100)->maxValue(8000)->label('Max Image Width (px)'),
+                        TextInput::make('max_image_height')->numeric()->minValue(100)->maxValue(8000)->label('Max Image Height (px)'),
+                        TextInput::make('processing_timeout')->numeric()->minValue(10)->maxValue(600)->label('Processing Timeout (sec)'),
                     ])->columns(2),
             ])
             ->statePath('data');

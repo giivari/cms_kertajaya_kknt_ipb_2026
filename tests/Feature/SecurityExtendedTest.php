@@ -6,7 +6,6 @@ use App\Filament\Pages\Auth\EditProfile;
 use App\Filament\Pages\Auth\Login;
 use App\Filament\Pages\WebsiteSettings as WebsiteSettingsPage;
 use App\Models\Admin;
-use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
@@ -108,7 +107,7 @@ class SecurityExtendedTest extends TestCase
     public function test_logout_invalidates_session()
     {
         $this->withoutMiddleware();
-        
+
         $admin = Admin::factory()->create();
         $this->actingAs($admin, 'web');
 
@@ -152,7 +151,7 @@ class SecurityExtendedTest extends TestCase
             ])
             ->call('authenticate');
 
-        $key = 'login.' . strtolower($username) . '.' . $ip;
+        $key = 'login.'.strtolower($username).'.'.$ip;
         $this->assertEquals(1, RateLimiter::attempts($key));
     }
 
@@ -169,7 +168,7 @@ class SecurityExtendedTest extends TestCase
             ])
             ->call('authenticate');
 
-        $key = 'login.' . strtolower($admin->username) . '.' . request()->ip();
+        $key = 'login.'.strtolower($admin->username).'.'.request()->ip();
         $this->assertEquals(1, RateLimiter::attempts($key));
 
         Livewire::test(Login::class)

@@ -1,0 +1,1129 @@
+# DOKUMEN DATA DICTIONARY
+
+## Village Website CMS
+
+### Single Village Installation
+
+**Versi Dokumen:** 1.0
+**Status:** Draft Final
+**Penyusun:** Tim Pengembang
+**Tanggal:** Juli 2026
+
+---
+
+# 1. Pendahuluan
+
+## 1.1 Tujuan Dokumen
+
+Dokumen Data Dictionary menjelaskan definisi teknis setiap tabel dan atribut pada basis data Village Website CMS.
+
+Dokumen ini digunakan sebagai acuan untuk:
+
+1. Pembuatan migration Laravel.
+2. Pembuatan model Eloquent.
+3. Penentuan primary key dan foreign key.
+4. Penentuan tipe data PostgreSQL.
+5. Penentuan aturan validasi.
+6. Penentuan indeks dan constraint.
+7. Pembuatan resource pada Filament.
+8. Pengujian struktur basis data.
+
+---
+
+## 1.2 Konvensi Penamaan
+
+Konvensi yang digunakan adalah:
+
+* Nama tabel menggunakan bentuk jamak dan `snake_case`.
+* Nama kolom menggunakan `snake_case`.
+* Primary key menggunakan nama `id`.
+* Foreign key menggunakan pola `{nama_entitas}_id`.
+* Waktu pembuatan menggunakan `created_at`.
+* Waktu perubahan menggunakan `updated_at`.
+* Soft delete menggunakan `deleted_at`.
+* Nilai boolean menggunakan awalan `is_` atau akhiran `_enabled`.
+* Nilai waktu menggunakan tipe `timestamp with time zone`.
+* Data fleksibel menggunakan tipe `jsonb`.
+
+---
+
+## 1.3 Konvensi Tipe Data
+
+| Tipe Logis        | PostgreSQL  | Laravel Migration |
+| ----------------- | ----------- | ----------------- |
+| ID utama          | bigint      | `bigIncrements()` |
+| Foreign key       | bigint      | `foreignId()`     |
+| Teks pendek       | varchar     | `string()`        |
+| Teks panjang      | text        | `text()`          |
+| Boolean           | boolean     | `boolean()`       |
+| Bilangan bulat    | integer     | `integer()`       |
+| Bilangan besar    | bigint      | `bigInteger()`    |
+| Koordinat         | decimal     | `decimal()`       |
+| Data fleksibel    | jsonb       | `jsonb()`         |
+| Tanggal dan waktu | timestamptz | `timestampTz()`   |
+| Soft delete       | timestamptz | `softDeletesTz()` |
+
+---
+
+# 2. Tabel `admins`
+
+## 2.1 Deskripsi
+
+Menyimpan satu akun administrator utama yang digunakan untuk mengakses dashboard.
+
+## 2.2 Struktur Tabel
+
+| Kolom               | Tipe        | Panjang | Null  | Default           | Key | Keterangan                 |
+| ------------------- | ----------- | ------: | ----- | ----------------- | --- | -------------------------- |
+| id                  | bigint      |       – | Tidak | Auto increment    | PK  | ID administrator           |
+| name                | varchar     |     150 | Tidak | –                 | –   | Nama administrator         |
+| username            | varchar     |     100 | Tidak | –                 | UQ  | Username login             |
+| email               | varchar     |     255 | Ya    | null              | UQ  | Email administrator        |
+| password            | varchar     |     255 | Tidak | –                 | –   | Password dalam bentuk hash |
+| totp_secret         | text        |       – | Ya    | null              | –   | Secret TOTP terenkripsi    |
+| totp_enabled        | boolean     |       – | Tidak | false             | –   | Status TOTP                |
+| last_login_at       | timestamptz |       – | Ya    | null              | IDX | Waktu login terakhir       |
+| last_login_ip       | inet        |       – | Ya    | null              | –   | IP login terakhir          |
+| password_changed_at | timestamptz |       – | Ya    | null              | –   | Waktu perubahan password   |
+| remember_token      | varchar     |     100 | Ya    | null              | –   | Token remember session     |
+| created_at          | timestamptz |       – | Tidak | current timestamp | –   | Waktu pembuatan            |
+| updated_at          | timestamptz |       – | Tidak | current timestamp | –   | Waktu perubahan            |
+
+## 2.3 Aturan
+
+1. `username` wajib unik.
+2. `email` wajib unik apabila diisi.
+3. Sistem hanya boleh memiliki satu administrator aktif.
+4. Akun administrator tidak dapat dihapus melalui dashboard.
+5. `password` wajib menggunakan hashing.
+6. `totp_secret` wajib dienkripsi pada tingkat aplikasi.
+
+---
+
+# 3. Tabel `admin_recovery_codes`
+
+## 3.1 Deskripsi
+
+Menyimpan recovery code satu kali pakai untuk autentikasi dua faktor.
+
+## 3.2 Struktur Tabel
+
+| Kolom      | Tipe        | Panjang | Null  | Default           | Key     | Keterangan              |
+| ---------- | ----------- | ------: | ----- | ----------------- | ------- | ----------------------- |
+| id         | bigint      |       – | Tidak | Auto increment    | PK      | ID recovery code        |
+| admin_id   | bigint      |       – | Tidak | –                 | FK, IDX | Referensi administrator |
+| code_hash  | varchar     |     255 | Tidak | –                 | UQ      | Hash recovery code      |
+| used_at    | timestamptz |       – | Ya    | null              | IDX     | Waktu kode digunakan    |
+| created_at | timestamptz |       – | Tidak | current timestamp | –       | Waktu pembuatan         |
+
+## 3.3 Foreign Key
+
+```text
+admin_recovery_codes.admin_id
+→ admins.id
+```
+
+Aksi penghapusan: `CASCADE`.
+
+## 3.4 Aturan
+
+1. Recovery code tidak disimpan sebagai teks biasa.
+2. Recovery code hanya dapat digunakan satu kali.
+3. Kode yang sudah memiliki `used_at` dianggap tidak valid.
+4. Pembuatan recovery code baru dapat menonaktifkan seluruh kode lama.
+
+---
+
+# 4. Tabel `website_settings`
+
+## 4.1 Deskripsi
+
+Menyimpan identitas desa, branding, kontak, SEO, konfigurasi beranda, dan pengaturan sistem.
+
+## 4.2 Struktur Tabel
+
+| Kolom         | Tipe        | Panjang | Null  | Default           | Key | Keterangan               |
+| ------------- | ----------- | ------: | ----- | ----------------- | --- | ------------------------ |
+| id            | bigint      |       – | Tidak | Auto increment    | PK  | ID pengaturan            |
+| setting_key   | varchar     |     150 | Tidak | –                 | UQ  | Kunci pengaturan         |
+| setting_value | jsonb       |       – | Tidak | `{}`              | GIN | Nilai pengaturan         |
+| setting_group | varchar     |     100 | Tidak | `general`         | IDX | Kelompok pengaturan      |
+| is_public     | boolean     |       – | Tidak | false             | IDX | Boleh digunakan frontend |
+| created_at    | timestamptz |       – | Tidak | current timestamp | –   | Waktu pembuatan          |
+| updated_at    | timestamptz |       – | Tidak | current timestamp | –   | Waktu perubahan          |
+
+## 4.3 Contoh Kelompok
+
+* `general`
+* `identity`
+* `branding`
+* `contact`
+* `social_media`
+* `homepage`
+* `email`
+* `seo`
+* `security`
+
+## 4.4 Aturan
+
+1. `setting_key` wajib unik.
+2. Data rahasia tidak boleh diberi `is_public = true`.
+3. Secret, password, token, dan API key tidak disimpan pada tabel ini apabila dapat disimpan melalui environment variable.
+4. Perubahan pengaturan harus tercatat dalam audit log.
+
+---
+
+# 5. Tabel `media`
+
+## 5.1 Deskripsi
+
+Menyimpan metadata gambar, dokumen PDF, thumbnail, dan aset digital lainnya.
+
+## 5.2 Struktur Tabel
+
+| Kolom             | Tipe        | Panjang | Null  | Default           | Key | Keterangan        |
+| ----------------- | ----------- | ------: | ----- | ----------------- | --- | ----------------- |
+| id                | bigint      |       – | Tidak | Auto increment    | PK  | ID media          |
+| disk              | varchar     |      50 | Tidak | `public`          | IDX | Storage disk      |
+| directory         | varchar     |     255 | Tidak | –                 | –   | Direktori file    |
+| filename          | varchar     |     255 | Tidak | –                 | UQ  | Nama file sistem  |
+| original_filename | varchar     |     255 | Tidak | –                 | IDX | Nama asli         |
+| mime_type         | varchar     |     100 | Tidak | –                 | IDX | MIME type         |
+| extension         | varchar     |      20 | Tidak | –                 | IDX | Ekstensi          |
+| size              | bigint      |       – | Tidak | 0                 | –   | Ukuran dalam byte |
+| width             | integer     |       – | Ya    | null              | –   | Lebar gambar      |
+| height            | integer     |       – | Ya    | null              | –   | Tinggi gambar     |
+| alt_text          | varchar     |     255 | Ya    | null              | –   | Teks alternatif   |
+| caption           | text        |       – | Ya    | null              | –   | Keterangan media  |
+| metadata          | jsonb       |       – | Tidak | `{}`              | GIN | Metadata tambahan |
+| checksum          | varchar     |     128 | Ya    | null              | IDX | Hash file         |
+| uploaded_at       | timestamptz |       – | Tidak | current timestamp | IDX | Waktu unggah      |
+| created_at        | timestamptz |       – | Tidak | current timestamp | –   | Waktu pembuatan   |
+| updated_at        | timestamptz |       – | Tidak | current timestamp | –   | Waktu perubahan   |
+| deleted_at        | timestamptz |       – | Ya    | null              | IDX | Soft delete       |
+
+## 5.3 Aturan
+
+1. `size` tidak boleh negatif.
+2. Gambar yang diunggah harus memiliki MIME type yang diizinkan.
+3. Dokumen publik versi awal hanya menerima PDF.
+4. Nama file sistem harus aman dan unik.
+5. Media tidak boleh dihapus permanen apabila masih digunakan.
+6. Alt text diwajibkan untuk gambar yang dipakai pada konten publik, kecuali gambar dekoratif.
+
+---
+
+# 6. Tabel `pages`
+
+## 6.1 Deskripsi
+
+Menyimpan informasi utama halaman dinamis yang dibuat melalui Page Builder.
+
+## 6.2 Struktur Tabel
+
+| Kolom             | Tipe        | Panjang | Null  | Default           | Key     | Keterangan        |
+| ----------------- | ----------- | ------: | ----- | ----------------- | ------- | ----------------- |
+| id                | bigint      |       – | Tidak | Auto increment    | PK      | ID halaman        |
+| title             | varchar     |     255 | Tidak | –                 | IDX     | Judul halaman     |
+| slug              | varchar     |     255 | Tidak | –                 | UQ      | Slug URL          |
+| excerpt           | text        |       – | Ya    | null              | –       | Ringkasan halaman |
+| featured_media_id | bigint      |       – | Ya    | null              | FK, IDX | Media utama       |
+| status            | varchar     |      30 | Tidak | `published`       | IDX     | Status halaman    |
+| is_featured       | boolean     |       – | Tidak | false             | IDX     | Halaman unggulan  |
+| seo_title         | varchar     |     255 | Ya    | null              | –       | Judul SEO         |
+| seo_description   | varchar     |     320 | Ya    | null              | –       | Deskripsi SEO     |
+| published_at      | timestamptz |       – | Ya    | null              | IDX     | Waktu publikasi   |
+| created_at        | timestamptz |       – | Tidak | current timestamp | –       | Waktu pembuatan   |
+| updated_at        | timestamptz |       – | Tidak | current timestamp | IDX     | Waktu perubahan   |
+| deleted_at        | timestamptz |       – | Ya    | null              | IDX     | Soft delete       |
+
+## 6.3 Foreign Key
+
+```text
+pages.featured_media_id
+→ media.id
+```
+
+Aksi penghapusan: `SET NULL`.
+
+## 6.4 Nilai Status
+
+* `published`
+* `archived`
+
+## 6.5 Aturan
+
+1. `slug` wajib unik.
+2. Halaman `archived` tidak tampil di frontend.
+3. Halaman dengan `deleted_at` tidak dapat diakses publik.
+4. `published_at` dapat diisi otomatis saat halaman pertama kali diterbitkan.
+5. Penghapusan halaman menggunakan soft delete.
+
+---
+
+# 7. Tabel `page_sections`
+
+## 7.1 Deskripsi
+
+Menyimpan section atau bagian penyusun sebuah halaman.
+
+## 7.2 Struktur Tabel
+
+| Kolom            | Tipe        | Panjang | Null  | Default           | Key     | Keterangan            |
+| ---------------- | ----------- | ------: | ----- | ----------------- | ------- | --------------------- |
+| id               | bigint      |       – | Tidak | Auto increment    | PK      | ID section            |
+| page_id          | bigint      |       – | Tidak | –                 | FK, IDX | Referensi halaman     |
+| name             | varchar     |     150 | Ya    | null              | –       | Nama internal section |
+| layout_type      | varchar     |      50 | Tidak | `single_column`   | IDX     | Tipe layout           |
+| position         | integer     |       – | Tidak | 0                 | IDX     | Urutan section        |
+| section_settings | jsonb       |       – | Tidak | `{}`              | GIN     | Pengaturan visual     |
+| is_visible       | boolean     |       – | Tidak | true              | IDX     | Status tampil         |
+| created_at       | timestamptz |       – | Tidak | current timestamp | –       | Waktu pembuatan       |
+| updated_at       | timestamptz |       – | Tidak | current timestamp | –       | Waktu perubahan       |
+
+## 7.3 Foreign Key
+
+```text
+page_sections.page_id
+→ pages.id
+```
+
+Aksi penghapusan: `CASCADE`.
+
+## 7.4 Nilai Layout
+
+* `single_column`
+* `two_columns`
+* `three_columns`
+* `hero`
+* `full_width`
+
+## 7.5 Constraint
+
+Kombinasi berikut harus unik:
+
+```text
+page_id + position
+```
+
+## 7.6 Aturan
+
+1. `position` tidak boleh negatif.
+2. Section tersembunyi tetap tersimpan, tetapi tidak dirender.
+3. `section_settings` divalidasi berdasarkan schema aplikasi.
+4. Penghapusan halaman akan menghapus seluruh section terkait.
+
+---
+
+# 8. Tabel `page_components`
+
+## 8.1 Deskripsi
+
+Menyimpan komponen yang ditempatkan dalam section Page Builder.
+
+## 8.2 Struktur Tabel
+
+| Kolom              | Tipe        | Panjang | Null  | Default           | Key     | Keterangan          |
+| ------------------ | ----------- | ------: | ----- | ----------------- | ------- | ------------------- |
+| id                 | bigint      |       – | Tidak | Auto increment    | PK      | ID komponen         |
+| section_id         | bigint      |       – | Tidak | –                 | FK, IDX | Referensi section   |
+| component_type     | varchar     |      50 | Tidak | –                 | IDX     | Jenis komponen      |
+| column_position    | integer     |       – | Tidak | 1                 | IDX     | Nomor kolom         |
+| position           | integer     |       – | Tidak | 0                 | IDX     | Urutan komponen     |
+| content_data       | jsonb       |       – | Tidak | `{}`              | GIN     | Isi komponen        |
+| component_settings | jsonb       |       – | Tidak | `{}`              | GIN     | Pengaturan tampilan |
+| is_visible         | boolean     |       – | Tidak | true              | IDX     | Status tampil       |
+| created_at         | timestamptz |       – | Tidak | current timestamp | –       | Waktu pembuatan     |
+| updated_at         | timestamptz |       – | Tidak | current timestamp | –       | Waktu perubahan     |
+
+## 8.3 Foreign Key
+
+```text
+page_components.section_id
+→ page_sections.id
+```
+
+Aksi penghapusan: `CASCADE`.
+
+## 8.4 Nilai `component_type`
+
+* `heading`
+* `rich_text`
+* `image`
+* `gallery`
+* `statistics`
+* `video`
+* `map`
+* `documents`
+* `cta_button`
+* `card_grid`
+* `contact_block`
+
+## 8.5 Constraint
+
+Kombinasi berikut harus unik:
+
+```text
+section_id + column_position + position
+```
+
+## 8.6 Aturan
+
+1. `column_position` dimulai dari 1.
+2. `position` tidak boleh negatif.
+3. Struktur `content_data` berbeda sesuai `component_type`.
+4. HTML dari rich text harus disanitasi.
+5. Komponen tersembunyi tidak dirender di frontend.
+6. Data yang merujuk media harus divalidasi terhadap tabel `media`.
+
+---
+
+# 9. Tabel `news_categories`
+
+## 9.1 Deskripsi
+
+Menyimpan kategori berita.
+
+## 9.2 Struktur Tabel
+
+| Kolom       | Tipe        | Panjang | Null  | Default           | Key | Keterangan      |
+| ----------- | ----------- | ------: | ----- | ----------------- | --- | --------------- |
+| id          | bigint      |       – | Tidak | Auto increment    | PK  | ID kategori     |
+| name        | varchar     |     150 | Tidak | –                 | UQ  | Nama kategori   |
+| slug        | varchar     |     180 | Tidak | –                 | UQ  | Slug kategori   |
+| description | text        |       – | Ya    | null              | –   | Deskripsi       |
+| created_at  | timestamptz |       – | Tidak | current timestamp | –   | Waktu pembuatan |
+| updated_at  | timestamptz |       – | Tidak | current timestamp | –   | Waktu perubahan |
+
+## 9.3 Aturan
+
+1. Nama kategori harus unik.
+2. Slug kategori harus unik.
+3. Kategori yang masih digunakan tidak boleh dihapus tanpa pemindahan berita.
+
+---
+
+# 10. Tabel `news`
+
+## 10.1 Deskripsi
+
+Menyimpan berita dan publikasi desa.
+
+## 10.2 Struktur Tabel
+
+| Kolom             | Tipe        | Panjang | Null  | Default           | Key     | Keterangan        |
+| ----------------- | ----------- | ------: | ----- | ----------------- | ------- | ----------------- |
+| id                | bigint      |       – | Tidak | Auto increment    | PK      | ID berita         |
+| news_category_id  | bigint      |       – | Ya    | null              | FK, IDX | Kategori berita   |
+| title             | varchar     |     255 | Tidak | –                 | IDX     | Judul             |
+| slug              | varchar     |     255 | Tidak | –                 | UQ      | Slug URL          |
+| excerpt           | text        |       – | Ya    | null              | –       | Ringkasan         |
+| content           | text        |       – | Tidak | –                 | FTS     | Isi berita        |
+| featured_media_id | bigint      |       – | Ya    | null              | FK, IDX | Gambar utama      |
+| status            | varchar     |      30 | Tidak | `published`       | IDX     | Status berita     |
+| is_featured       | boolean     |       – | Tidak | false             | IDX     | Berita unggulan   |
+| seo_title         | varchar     |     255 | Ya    | null              | –       | Judul SEO         |
+| seo_description   | varchar     |     320 | Ya    | null              | –       | Deskripsi SEO     |
+| published_at      | timestamptz |       – | Ya    | null              | IDX     | Tanggal publikasi |
+| created_at        | timestamptz |       – | Tidak | current timestamp | –       | Waktu pembuatan   |
+| updated_at        | timestamptz |       – | Tidak | current timestamp | IDX     | Waktu perubahan   |
+| deleted_at        | timestamptz |       – | Ya    | null              | IDX     | Soft delete       |
+
+## 10.3 Foreign Key
+
+```text
+news.news_category_id
+→ news_categories.id
+```
+
+Aksi penghapusan: `SET NULL`.
+
+```text
+news.featured_media_id
+→ media.id
+```
+
+Aksi penghapusan: `SET NULL`.
+
+## 10.4 Nilai Status
+
+* `published`
+* `archived`
+
+## 10.5 Aturan
+
+1. Slug wajib unik.
+2. Berita arsip tidak tampil di frontend.
+3. Isi berita harus melalui sanitasi HTML.
+4. Hanya berita terbit yang masuk pencarian publik.
+5. Penghapusan menggunakan soft delete.
+
+---
+
+# 11. Tabel `gallery_albums`
+
+## 11.1 Deskripsi
+
+Menyimpan album dokumentasi foto.
+
+## 11.2 Struktur Tabel
+
+| Kolom          | Tipe        | Panjang | Null  | Default           | Key     | Keterangan      |
+| -------------- | ----------- | ------: | ----- | ----------------- | ------- | --------------- |
+| id             | bigint      |       – | Tidak | Auto increment    | PK      | ID album        |
+| title          | varchar     |     255 | Tidak | –                 | IDX     | Judul album     |
+| slug           | varchar     |     255 | Tidak | –                 | UQ      | Slug album      |
+| description    | text        |       – | Ya    | null              | –       | Deskripsi       |
+| cover_media_id | bigint      |       – | Ya    | null              | FK, IDX | Sampul album    |
+| status         | varchar     |      30 | Tidak | `published`       | IDX     | Status album    |
+| is_featured    | boolean     |       – | Tidak | false             | IDX     | Album unggulan  |
+| published_at   | timestamptz |       – | Ya    | null              | IDX     | Waktu publikasi |
+| created_at     | timestamptz |       – | Tidak | current timestamp | –       | Waktu pembuatan |
+| updated_at     | timestamptz |       – | Tidak | current timestamp | –       | Waktu perubahan |
+| deleted_at     | timestamptz |       – | Ya    | null              | IDX     | Soft delete     |
+
+## 11.3 Foreign Key
+
+```text
+gallery_albums.cover_media_id
+→ media.id
+```
+
+Aksi penghapusan: `SET NULL`.
+
+## 11.4 Nilai Status
+
+* `published`
+* `archived`
+
+---
+
+# 12. Tabel `gallery_album_items`
+
+## 12.1 Deskripsi
+
+Menghubungkan album galeri dengan file media.
+
+## 12.2 Struktur Tabel
+
+| Kolom            | Tipe        | Panjang | Null  | Default           | Key     | Keterangan      |
+| ---------------- | ----------- | ------: | ----- | ----------------- | ------- | --------------- |
+| id               | bigint      |       – | Tidak | Auto increment    | PK      | ID item         |
+| gallery_album_id | bigint      |       – | Tidak | –                 | FK, IDX | Album           |
+| media_id         | bigint      |       – | Tidak | –                 | FK, IDX | Media           |
+| caption          | text        |       – | Ya    | null              | –       | Keterangan      |
+| alt_text         | varchar     |     255 | Ya    | null              | –       | Teks alternatif |
+| position         | integer     |       – | Tidak | 0                 | IDX     | Urutan foto     |
+| created_at       | timestamptz |       – | Tidak | current timestamp | –       | Waktu pembuatan |
+| updated_at       | timestamptz |       – | Tidak | current timestamp | –       | Waktu perubahan |
+
+## 12.3 Foreign Key
+
+```text
+gallery_album_items.gallery_album_id
+→ gallery_albums.id
+```
+
+Aksi penghapusan: `CASCADE`.
+
+```text
+gallery_album_items.media_id
+→ media.id
+```
+
+Aksi penghapusan: `RESTRICT`.
+
+## 12.4 Constraint
+
+Kombinasi berikut harus unik:
+
+```text
+gallery_album_id + media_id
+```
+
+Kombinasi urutan berikut juga harus unik:
+
+```text
+gallery_album_id + position
+```
+
+---
+
+# 13. Tabel `document_categories`
+
+## 13.1 Deskripsi
+
+Menyimpan kategori dokumen publik.
+
+## 13.2 Struktur Tabel
+
+| Kolom       | Tipe        | Panjang | Null  | Default           | Key | Keterangan      |
+| ----------- | ----------- | ------: | ----- | ----------------- | --- | --------------- |
+| id          | bigint      |       – | Tidak | Auto increment    | PK  | ID kategori     |
+| name        | varchar     |     150 | Tidak | –                 | UQ  | Nama kategori   |
+| slug        | varchar     |     180 | Tidak | –                 | UQ  | Slug kategori   |
+| description | text        |       – | Ya    | null              | –   | Deskripsi       |
+| created_at  | timestamptz |       – | Tidak | current timestamp | –   | Waktu pembuatan |
+| updated_at  | timestamptz |       – | Tidak | current timestamp | –   | Waktu perubahan |
+
+---
+
+# 14. Tabel `documents`
+
+## 14.1 Deskripsi
+
+Menyimpan metadata dokumen publik.
+
+## 14.2 Struktur Tabel
+
+| Kolom                | Tipe        | Panjang | Null  | Default           | Key     | Keterangan      |
+| -------------------- | ----------- | ------: | ----- | ----------------- | ------- | --------------- |
+| id                   | bigint      |       – | Tidak | Auto increment    | PK      | ID dokumen      |
+| document_category_id | bigint      |       – | Ya    | null              | FK, IDX | Kategori        |
+| title                | varchar     |     255 | Tidak | –                 | IDX     | Judul dokumen   |
+| slug                 | varchar     |     255 | Tidak | –                 | UQ      | Slug URL        |
+| description          | text        |       – | Ya    | null              | FTS     | Deskripsi       |
+| file_media_id        | bigint      |       – | Tidak | –                 | FK, IDX | File PDF        |
+| thumbnail_media_id   | bigint      |       – | Ya    | null              | FK, IDX | Thumbnail       |
+| status               | varchar     |      30 | Tidak | `published`       | IDX     | Status          |
+| published_at         | timestamptz |       – | Ya    | null              | IDX     | Waktu publikasi |
+| download_count       | bigint      |       – | Tidak | 0                 | –       | Jumlah unduhan  |
+| created_at           | timestamptz |       – | Tidak | current timestamp | –       | Waktu pembuatan |
+| updated_at           | timestamptz |       – | Tidak | current timestamp | IDX     | Waktu perubahan |
+| deleted_at           | timestamptz |       – | Ya    | null              | IDX     | Soft delete     |
+
+## 14.3 Foreign Key
+
+```text
+documents.document_category_id
+→ document_categories.id
+```
+
+Aksi penghapusan: `SET NULL`.
+
+```text
+documents.file_media_id
+→ media.id
+```
+
+Aksi penghapusan: `RESTRICT`.
+
+```text
+documents.thumbnail_media_id
+→ media.id
+```
+
+Aksi penghapusan: `SET NULL`.
+
+## 14.4 Aturan
+
+1. File utama harus berformat PDF pada versi pertama.
+2. `download_count` tidak boleh negatif.
+3. Dokumen arsip tidak tampil di frontend.
+4. File media utama tidak boleh dihapus selama masih digunakan.
+
+---
+
+# 15. Tabel `location_categories`
+
+## 15.1 Deskripsi
+
+Menyimpan kategori titik lokasi.
+
+## 15.2 Struktur Tabel
+
+| Kolom       | Tipe        | Panjang | Null  | Default           | Key | Keterangan       |
+| ----------- | ----------- | ------: | ----- | ----------------- | --- | ---------------- |
+| id          | bigint      |       – | Tidak | Auto increment    | PK  | ID kategori      |
+| name        | varchar     |     150 | Tidak | –                 | UQ  | Nama kategori    |
+| slug        | varchar     |     180 | Tidak | –                 | UQ  | Slug kategori    |
+| marker_icon | varchar     |     100 | Ya    | null              | –   | Nama ikon marker |
+| description | text        |       – | Ya    | null              | –   | Deskripsi        |
+| created_at  | timestamptz |       – | Tidak | current timestamp | –   | Waktu pembuatan  |
+| updated_at  | timestamptz |       – | Tidak | current timestamp | –   | Waktu perubahan  |
+
+---
+
+# 16. Tabel `locations`
+
+## 16.1 Deskripsi
+
+Menyimpan titik lokasi yang akan ditampilkan pada peta.
+
+## 16.2 Struktur Tabel
+
+| Kolom                | Tipe        | Presisi | Null  | Default           | Key     | Keterangan      |
+| -------------------- | ----------- | ------: | ----- | ----------------- | ------- | --------------- |
+| id                   | bigint      |       – | Tidak | Auto increment    | PK      | ID lokasi       |
+| location_category_id | bigint      |       – | Ya    | null              | FK, IDX | Kategori lokasi |
+| name                 | varchar     |     255 | Tidak | –                 | IDX     | Nama lokasi     |
+| slug                 | varchar     |     255 | Tidak | –                 | UQ      | Slug            |
+| description          | text        |       – | Ya    | null              | –       | Deskripsi       |
+| address              | text        |       – | Ya    | null              | –       | Alamat          |
+| latitude             | decimal     |    10,7 | Tidak | –                 | IDX     | Lintang         |
+| longitude            | decimal     |    10,7 | Tidak | –                 | IDX     | Bujur           |
+| featured_media_id    | bigint      |       – | Ya    | null              | FK, IDX | Gambar lokasi   |
+| navigation_url       | text        |       – | Ya    | null              | –       | URL navigasi    |
+| status               | varchar     |      30 | Tidak | `published`       | IDX     | Status          |
+| position             | integer     |       – | Tidak | 0                 | IDX     | Urutan          |
+| created_at           | timestamptz |       – | Tidak | current timestamp | –       | Waktu pembuatan |
+| updated_at           | timestamptz |       – | Tidak | current timestamp | –       | Waktu perubahan |
+| deleted_at           | timestamptz |       – | Ya    | null              | IDX     | Soft delete     |
+
+## 16.3 Foreign Key
+
+```text
+locations.location_category_id
+→ location_categories.id
+```
+
+Aksi penghapusan: `SET NULL`.
+
+```text
+locations.featured_media_id
+→ media.id
+```
+
+Aksi penghapusan: `SET NULL`.
+
+## 16.4 Constraint
+
+```text
+latitude BETWEEN -90 AND 90
+```
+
+```text
+longitude BETWEEN -180 AND 180
+```
+
+```text
+position >= 0
+```
+
+---
+
+# 17. Tabel `contact_messages`
+
+## 17.1 Deskripsi
+
+Menyimpan pesan narahubung yang dikirim guest.
+
+## 17.2 Struktur Tabel
+
+| Kolom        | Tipe        | Panjang | Null  | Default           | Key | Keterangan        |
+| ------------ | ----------- | ------: | ----- | ----------------- | --- | ----------------- |
+| id           | bigint      |       – | Tidak | Auto increment    | PK  | ID pesan          |
+| sender_name  | varchar     |     150 | Tidak | –                 | IDX | Nama pengirim     |
+| sender_email | varchar     |     255 | Ya    | null              | IDX | Email pengirim    |
+| sender_phone | varchar     |      30 | Ya    | null              | IDX | Nomor telepon     |
+| subject      | varchar     |     255 | Tidak | –                 | IDX | Subjek            |
+| message      | text        |       – | Tidak | –                 | –   | Isi pesan         |
+| status       | varchar     |      30 | Tidak | `new`             | IDX | Status pesan      |
+| admin_note   | text        |       – | Ya    | null              | –   | Catatan internal  |
+| source_ip    | inet        |       – | Ya    | null              | IDX | IP pengirim       |
+| user_agent   | text        |       – | Ya    | null              | –   | Informasi browser |
+| read_at      | timestamptz |       – | Ya    | null              | –   | Waktu dibaca      |
+| processed_at | timestamptz |       – | Ya    | null              | –   | Waktu diproses    |
+| completed_at | timestamptz |       – | Ya    | null              | –   | Waktu selesai     |
+| archived_at  | timestamptz |       – | Ya    | null              | –   | Waktu arsip       |
+| created_at   | timestamptz |       – | Tidak | current timestamp | IDX | Waktu pengiriman  |
+| updated_at   | timestamptz |       – | Tidak | current timestamp | –   | Waktu perubahan   |
+| deleted_at   | timestamptz |       – | Ya    | null              | IDX | Soft delete       |
+
+## 17.3 Nilai Status
+
+* `new`
+* `read`
+* `processing`
+* `completed`
+* `archived`
+
+## 17.4 Aturan
+
+1. Minimal salah satu dari `sender_email` atau `sender_phone` harus diisi.
+2. Formulir harus menggunakan CAPTCHA atau antirbot.
+3. Pengiriman dibatasi dengan rate limiting.
+4. Pesan tidak dapat diakses publik.
+5. Catatan admin tidak pernah dikirim kepada guest.
+6. Pesan dapat dihapus otomatis berdasarkan kebijakan retensi.
+
+---
+
+# 18. Tabel `menus`
+
+## 18.1 Deskripsi
+
+Menyimpan kelompok navigasi website.
+
+## 18.2 Struktur Tabel
+
+| Kolom       | Tipe        | Panjang | Null  | Default           | Key | Keterangan      |
+| ----------- | ----------- | ------: | ----- | ----------------- | --- | --------------- |
+| id          | bigint      |       – | Tidak | Auto increment    | PK  | ID menu         |
+| name        | varchar     |     150 | Tidak | –                 | UQ  | Nama internal   |
+| location    | varchar     |      50 | Tidak | –                 | UQ  | Posisi menu     |
+| description | text        |       – | Ya    | null              | –   | Deskripsi       |
+| created_at  | timestamptz |       – | Tidak | current timestamp | –   | Waktu pembuatan |
+| updated_at  | timestamptz |       – | Tidak | current timestamp | –   | Waktu perubahan |
+
+## 18.3 Contoh Lokasi
+
+* `header`
+* `footer`
+* `quick_links`
+
+---
+
+# 19. Tabel `menu_items`
+
+## 19.1 Deskripsi
+
+Menyimpan item menu, submenu, tautan internal, dan tautan eksternal.
+
+## 19.2 Struktur Tabel
+
+| Kolom      | Tipe        | Panjang | Null  | Default           | Key     | Keterangan        |
+| ---------- | ----------- | ------: | ----- | ----------------- | ------- | ----------------- |
+| id         | bigint      |       – | Tidak | Auto increment    | PK      | ID item           |
+| menu_id    | bigint      |       – | Tidak | –                 | FK, IDX | Kelompok menu     |
+| parent_id  | bigint      |       – | Ya    | null              | FK, IDX | Parent submenu    |
+| label      | varchar     |     150 | Tidak | –                 | –       | Label menu        |
+| link_type  | varchar     |      50 | Tidak | –                 | IDX     | Jenis tautan      |
+| page_id    | bigint      |       – | Ya    | null              | FK, IDX | Referensi halaman |
+| custom_url | text        |       – | Ya    | null              | –       | URL manual        |
+| target     | varchar     |      20 | Tidak | `_self`           | –       | Target tautan     |
+| position   | integer     |       – | Tidak | 0                 | IDX     | Urutan            |
+| is_visible | boolean     |       – | Tidak | true              | IDX     | Status tampil     |
+| created_at | timestamptz |       – | Tidak | current timestamp | –       | Waktu pembuatan   |
+| updated_at | timestamptz |       – | Tidak | current timestamp | –       | Waktu perubahan   |
+
+## 19.3 Foreign Key
+
+```text
+menu_items.menu_id
+→ menus.id
+```
+
+Aksi penghapusan: `CASCADE`.
+
+```text
+menu_items.parent_id
+→ menu_items.id
+```
+
+Aksi penghapusan: `CASCADE`.
+
+```text
+menu_items.page_id
+→ pages.id
+```
+
+Aksi penghapusan: `SET NULL`.
+
+## 19.4 Nilai `link_type`
+
+* `page`
+* `news_index`
+* `gallery_index`
+* `document_index`
+* `map`
+* `contact`
+* `custom`
+
+## 19.5 Nilai `target`
+
+* `_self`
+* `_blank`
+
+## 19.6 Constraint
+
+Kombinasi berikut harus unik:
+
+```text
+menu_id + parent_id + position
+```
+
+## 19.7 Aturan
+
+1. `page_id` wajib diisi apabila `link_type = page`.
+2. `custom_url` wajib diisi apabila `link_type = custom`.
+3. Item tidak boleh menjadi parent bagi dirinya sendiri.
+4. Kedalaman submenu versi pertama dibatasi maksimal dua tingkat.
+5. Menu yang tidak terlihat tidak dirender di frontend.
+
+---
+
+# 20. Tabel `audit_logs`
+
+## 20.1 Deskripsi
+
+Menyimpan catatan aktivitas administrator dan peristiwa keamanan.
+
+## 20.2 Struktur Tabel
+
+| Kolom        | Tipe        | Panjang | Null  | Default           | Key     | Keterangan          |
+| ------------ | ----------- | ------: | ----- | ----------------- | ------- | ------------------- |
+| id           | bigint      |       – | Tidak | Auto increment    | PK      | ID log              |
+| admin_id     | bigint      |       – | Ya    | null              | FK, IDX | Administrator       |
+| event_type   | varchar     |     100 | Tidak | –                 | IDX     | Jenis aktivitas     |
+| subject_type | varchar     |     150 | Ya    | null              | IDX     | Jenis objek         |
+| subject_id   | bigint      |       – | Ya    | null              | IDX     | ID objek            |
+| description  | text        |       – | Tidak | –                 | –       | Ringkasan aktivitas |
+| old_values   | jsonb       |       – | Ya    | null              | GIN     | Nilai sebelum       |
+| new_values   | jsonb       |       – | Ya    | null              | GIN     | Nilai sesudah       |
+| ip_address   | inet        |       – | Ya    | null              | IDX     | IP                  |
+| user_agent   | text        |       – | Ya    | null              | –       | Browser/perangkat   |
+| request_id   | uuid        |       – | Ya    | null              | IDX     | ID permintaan       |
+| created_at   | timestamptz |       – | Tidak | current timestamp | IDX     | Waktu aktivitas     |
+
+## 20.3 Foreign Key
+
+```text
+audit_logs.admin_id
+→ admins.id
+```
+
+Aksi penghapusan: `SET NULL`.
+
+## 20.4 Contoh `event_type`
+
+* `login_success`
+* `login_failed`
+* `logout`
+* `password_changed`
+* `totp_enabled`
+* `recovery_code_used`
+* `content_created`
+* `content_updated`
+* `content_deleted`
+* `content_archived`
+* `media_uploaded`
+* `settings_updated`
+* `menu_updated`
+* `message_status_changed`
+
+## 20.5 Aturan
+
+1. Audit log tidak memiliki `updated_at`.
+2. Log tidak dapat diubah melalui dashboard.
+3. Log tidak dapat dihapus manual oleh admin.
+4. Password, token, TOTP secret, dan recovery code tidak boleh disimpan dalam log.
+5. Pembersihan log hanya dilakukan scheduled task.
+6. Log keamanan dapat disimpan lebih lama daripada log aktivitas umum.
+
+---
+
+# 21. Tabel `sessions`
+
+## 21.1 Deskripsi
+
+Menyimpan sesi autentikasi apabila Laravel menggunakan database session driver.
+
+## 21.2 Struktur Tabel
+
+| Kolom         | Tipe         | Null  | Key | Keterangan               |
+| ------------- | ------------ | ----- | --- | ------------------------ |
+| id            | varchar(255) | Tidak | PK  | ID sesi                  |
+| user_id       | bigint       | Ya    | IDX | ID administrator         |
+| ip_address    | varchar(45)  | Ya    | –   | Alamat IP                |
+| user_agent    | text         | Ya    | –   | Perangkat                |
+| payload       | text         | Tidak | –   | Data sesi terenkripsi    |
+| last_activity | integer      | Tidak | IDX | Waktu aktivitas terakhir |
+
+## 21.3 Aturan
+
+1. Sesi kedaluwarsa dibersihkan berkala.
+2. Sesi lama dapat dihapus setelah admin mengganti password.
+3. Session cookie wajib memakai `Secure`, `HttpOnly`, dan pengaturan `SameSite`.
+
+---
+
+# 22. Tabel `jobs`
+
+## 22.1 Deskripsi
+
+Menyimpan pekerjaan antrean Laravel.
+
+## 22.2 Penggunaan
+
+* Pengiriman email notifikasi.
+* Optimasi gambar.
+* Pembuatan thumbnail.
+* Pembersihan log.
+* Pembersihan soft delete.
+* Proses sistem lainnya.
+
+Struktur mengikuti migration queue standar Laravel.
+
+---
+
+# 23. Tabel `failed_jobs`
+
+## 23.1 Deskripsi
+
+Menyimpan pekerjaan antrean yang gagal.
+
+## 23.2 Penggunaan
+
+* Pemeriksaan kegagalan email.
+* Pemeriksaan kegagalan optimasi media.
+* Menjalankan ulang pekerjaan.
+* Diagnosis masalah deployment.
+
+Struktur mengikuti migration queue standar Laravel.
+
+---
+
+# 24. Ringkasan Foreign Key
+
+| Tabel                | Kolom                | Referensi              | On Delete |
+| -------------------- | -------------------- | ---------------------- | --------- |
+| admin_recovery_codes | admin_id             | admins.id              | CASCADE   |
+| pages                | featured_media_id    | media.id               | SET NULL  |
+| page_sections        | page_id              | pages.id               | CASCADE   |
+| page_components      | section_id           | page_sections.id       | CASCADE   |
+| news                 | news_category_id     | news_categories.id     | SET NULL  |
+| news                 | featured_media_id    | media.id               | SET NULL  |
+| gallery_albums       | cover_media_id       | media.id               | SET NULL  |
+| gallery_album_items  | gallery_album_id     | gallery_albums.id      | CASCADE   |
+| gallery_album_items  | media_id             | media.id               | RESTRICT  |
+| documents            | document_category_id | document_categories.id | SET NULL  |
+| documents            | file_media_id        | media.id               | RESTRICT  |
+| documents            | thumbnail_media_id   | media.id               | SET NULL  |
+| locations            | location_category_id | location_categories.id | SET NULL  |
+| locations            | featured_media_id    | media.id               | SET NULL  |
+| menu_items           | menu_id              | menus.id               | CASCADE   |
+| menu_items           | parent_id            | menu_items.id          | CASCADE   |
+| menu_items           | page_id              | pages.id               | SET NULL  |
+| audit_logs           | admin_id             | admins.id              | SET NULL  |
+
+---
+
+# 25. Ringkasan Unique Constraint
+
+| Tabel                | Kolom atau Kombinasi                    |
+| -------------------- | --------------------------------------- |
+| admins               | username                                |
+| admins               | email                                   |
+| admin_recovery_codes | code_hash                               |
+| website_settings     | setting_key                             |
+| media                | filename                                |
+| pages                | slug                                    |
+| page_sections        | page_id + position                      |
+| page_components      | section_id + column_position + position |
+| news_categories      | name                                    |
+| news_categories      | slug                                    |
+| news                 | slug                                    |
+| gallery_albums       | slug                                    |
+| gallery_album_items  | gallery_album_id + media_id             |
+| gallery_album_items  | gallery_album_id + position             |
+| document_categories  | name                                    |
+| document_categories  | slug                                    |
+| documents            | slug                                    |
+| location_categories  | name                                    |
+| location_categories  | slug                                    |
+| locations            | slug                                    |
+| menus                | name                                    |
+| menus                | location                                |
+| menu_items           | menu_id + parent_id + position          |
+
+---
+
+# 26. Ringkasan Check Constraint
+
+| Tabel            | Constraint                              |
+| ---------------- | --------------------------------------- |
+| media            | size ≥ 0                                |
+| page_sections    | position ≥ 0                            |
+| page_components  | column_position ≥ 1                     |
+| page_components  | position ≥ 0                            |
+| documents        | download_count ≥ 0                      |
+| locations        | latitude antara -90 dan 90              |
+| locations        | longitude antara -180 dan 180           |
+| locations        | position ≥ 0                            |
+| menu_items       | position ≥ 0                            |
+| contact_messages | email atau nomor telepon harus tersedia |
+
+---
+
+# 27. Strategi Full-Text Search
+
+Pencarian publik mencakup:
+
+* Judul, ringkasan, dan konten halaman.
+* Judul, ringkasan, dan isi berita.
+* Judul dan deskripsi dokumen.
+
+Karena konten Page Builder disimpan dalam `JSONB`, sistem perlu membuat teks terindeks dari komponen yang memang dapat dicari.
+
+Terdapat dua alternatif implementasi:
+
+## Alternatif Awal
+
+Mengambil konten melalui query aplikasi dan menggunakan `ILIKE`.
+
+Cocok untuk:
+
+* Data kecil.
+* Tahap awal.
+* Hosting ekonomis.
+
+## Alternatif Lanjutan
+
+Menambahkan kolom pencarian terdenormalisasi, misalnya:
+
+```text
+searchable_text
+```
+
+atau:
+
+```text
+search_vector
+```
+
+yang diisi dari judul, ringkasan, dan komponen halaman.
+
+Untuk versi pertama, pendekatan `ILIKE` dapat digunakan terlebih dahulu. Full-text search PostgreSQL dapat ditambahkan ketika volume konten meningkat.
+
+---
+
+# 28. Aturan Validasi Tingkat Aplikasi
+
+Selain constraint basis data, aplikasi wajib melakukan validasi berikut:
+
+1. Slug dibuat dalam format URL yang aman.
+2. Slug harus unik sebelum penyimpanan.
+3. URL eksternal harus memiliki protokol yang diizinkan.
+4. Rich text harus melalui sanitasi HTML.
+5. File harus divalidasi berdasarkan MIME type.
+6. Ukuran file harus mengikuti batas konfigurasi.
+7. Data Page Builder harus mengikuti schema masing-masing komponen.
+8. Gambar publik harus memiliki alt text atau ditandai dekoratif.
+9. Koordinat harus valid.
+10. Pesan narahubung harus melewati antirbot.
+11. Status hanya boleh memakai nilai yang telah ditentukan.
+12. Media yang masih digunakan tidak boleh dihapus permanen.
+13. Admin wajib memasukkan password lama dan TOTP ketika mengganti password.
+14. Data rahasia tidak boleh dimasukkan ke audit log.
+15. Tautan menu harus sesuai dengan `link_type`.
+
+---
+
+# 29. Kesimpulan
+
+Data Dictionary Village Website CMS mendefinisikan struktur teknis basis data PostgreSQL yang akan digunakan dalam implementasi Laravel.
+
+Struktur basis data dirancang agar:
+
+* Mendukung Page Builder berbasis `JSONB`.
+* Mudah digunakan ulang pada instalasi desa lain.
+* Menjaga konsistensi relasi data.
+* Mendukung soft delete dan pengarsipan.
+* Mengamankan akun administrator.
+* Mengelola media secara terpusat.
+* Menyimpan audit log yang tidak dapat diubah admin.
+* Mendukung pencarian konten.
+* Dapat dijalankan pada infrastruktur awal yang ekonomis.
+
+Dokumen ini menjadi acuan utama untuk pembuatan migration, model, relationship, validation rule, dan resource Filament.

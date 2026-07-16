@@ -1,0 +1,639 @@
+# ADDENDUM PERSYARATAN WATERMARK TAK TERLIHAT DAN PERLINDUNGAN MEDIA
+
+## Village Website CMS
+
+### Single Village Installation
+
+**Versi Dokumen:** 1.1
+**Status:** Draft Final
+**Penyusun:** Tim Pengembang
+**Tanggal:** Juli 2026
+
+---
+
+# 1. Perubahan Kebijakan Watermark
+
+Village Website CMS menerapkan dua jenis watermark:
+
+1. Watermark tak terlihat.
+2. Watermark terlihat.
+
+Watermark tak terlihat wajib diterapkan secara otomatis pada seluruh media yang masuk ke dalam sistem.
+
+Watermark terlihat merupakan fitur tambahan yang dapat diaktifkan atau dinonaktifkan sesuai konfigurasi administrator.
+
+---
+
+# 2. Watermark Tak Terlihat
+
+## 2.1 Definisi
+
+Watermark tak terlihat merupakan informasi identifikasi yang ditanam pada file media tanpa menghasilkan tanda visual yang mengganggu tampilan normal media.
+
+Watermark ini digunakan untuk:
+
+1. Mengidentifikasi sumber media.
+2. Menghubungkan media dengan instalasi website.
+3. Mengidentifikasi file meskipun nama file telah berubah.
+4. Membantu pemeriksaan penggunaan ulang media.
+5. Menyediakan bukti teknis bahwa media pernah diproses melalui sistem.
+6. Melengkapi metadata provenance dan digital fingerprint.
+
+---
+
+## 2.2 Sifat Wajib
+
+Watermark tak terlihat:
+
+* Aktif secara default.
+* Tidak dapat dinonaktifkan oleh administrator.
+* Tidak memiliki pengaturan pengecualian per media.
+* Diterapkan pada seluruh media yang diunggah.
+* Diterapkan sebelum media tersedia untuk digunakan.
+* Diterapkan kembali apabila media publik dibuat ulang.
+* Berlaku pada media yang digunakan maupun yang belum digunakan.
+* Berlaku pada media yang ditampilkan secara publik maupun disimpan secara privat.
+
+Administrator tidak memiliki tombol untuk menonaktifkan atau melewati proses watermark tak terlihat.
+
+---
+
+# 3. Cakupan Media
+
+Watermark tak terlihat wajib diterapkan pada seluruh tipe media yang didukung sistem.
+
+## 3.1 Gambar
+
+Mencakup:
+
+* JPG.
+* JPEG.
+* PNG.
+* WebP.
+* Thumbnail.
+* Gambar hasil optimasi.
+* Gambar galeri.
+* Gambar berita.
+* Gambar lokasi.
+* Gambar Page Builder.
+* Banner.
+* Logo yang diunggah ke Media Library.
+* Gambar dekoratif.
+* Poster dan infografis.
+
+## 3.2 Dokumen
+
+Mencakup:
+
+* PDF.
+* PDF hasil pemrosesan ulang.
+* Dokumen publik.
+* Formulir.
+* Lampiran informasi.
+
+## 3.3 Pengembangan Format Berikutnya
+
+Apabila sistem mendukung media baru, seperti:
+
+* Video.
+* Audio.
+* SVG.
+* Dokumen perkantoran.
+
+media tersebut juga wajib melewati mekanisme identifikasi tak terlihat yang sesuai dengan formatnya.
+
+Tidak semua format menggunakan algoritma watermark yang sama. Sistem harus menggunakan pemroses khusus berdasarkan jenis media.
+
+---
+
+# 4. Identitas Watermark
+
+Setiap media memiliki payload identifikasi yang unik.
+
+Payload minimal mencakup:
+
+* ID instalasi.
+* ID media.
+* Versi watermark.
+* Waktu pemrosesan.
+* Identifier unik.
+* Checksum atau hash referensi.
+
+Contoh struktur logis:
+
+```json id="a7304u"
+{
+  "installation_id": "VWCM-KERTAJAYA-001",
+  "media_id": 152,
+  "watermark_version": "1.0",
+  "watermark_identifier": "26f57d80-5c55-4a41-a59c-a1c6da5df513",
+  "processed_at": "2026-07-15T10:30:00+07:00"
+}
+```
+
+Payload sebenarnya tidak harus disimpan sebagai teks terbuka dalam file. Sistem dapat mengubahnya menjadi bentuk biner atau kode yang sesuai dengan algoritma watermark.
+
+---
+
+# 5. Identitas Instalasi
+
+Setiap instalasi Village Website CMS wajib memiliki identifier unik.
+
+Identifier tersebut disebut:
+
+```text id="zrn93v"
+installation_id
+```
+
+Contoh:
+
+```text id="s1fscu"
+VWCM-KERTAJAYA-001
+```
+
+Identifier instalasi:
+
+* Dibuat ketika sistem pertama kali dikonfigurasi.
+* Tidak dapat diubah melalui dashboard biasa.
+* Tidak bergantung pada domain.
+* Tetap sama ketika website dipindahkan ke domain atau server lain.
+* Digunakan sebagai bagian dari identitas watermark.
+* Disimpan secara aman dalam konfigurasi sistem.
+
+Dengan demikian, media tetap dapat diidentifikasi meskipun website telah berganti:
+
+* Domain.
+* Hosting.
+* Nama desa.
+* Logo.
+* Pengelola.
+
+---
+
+# 6. Strategi Perlindungan Berlapis
+
+Watermark tak terlihat tidak menggunakan satu mekanisme tunggal.
+
+Sistem menerapkan tiga lapisan identifikasi.
+
+## 6.1 Lapisan Pertama — Watermark dalam Isi Media
+
+Informasi identifikasi ditanam ke dalam:
+
+* Pixel gambar.
+* Struktur atau objek dokumen.
+* Data media lain sesuai format.
+
+Watermark dirancang agar tidak terlihat pada penggunaan normal.
+
+## 6.2 Lapisan Kedua — Metadata Provenance
+
+Sistem menambahkan metadata yang menjelaskan:
+
+* Sumber.
+* Waktu pemrosesan.
+* Identifier media.
+* Identifier instalasi.
+* Riwayat proses.
+* Checksum.
+
+Apabila memungkinkan, implementasi dapat mengikuti atau dipersiapkan agar kompatibel dengan standar provenance seperti C2PA.
+
+## 6.3 Lapisan Ketiga — Digital Fingerprint
+
+Sistem menghasilkan sidik digital dari media.
+
+Fingerprint dapat berupa:
+
+* Cryptographic hash.
+* Perceptual hash.
+* Checksum file.
+* Identitas turunan media.
+
+Cryptographic hash digunakan untuk memeriksa file yang identik.
+
+Perceptual hash dapat digunakan untuk membantu menemukan versi media yang telah mengalami perubahan ringan.
+
+---
+
+# 7. Alur Pemrosesan Seluruh Media
+
+```text id="h19bag"
+Administrator mengunggah media
+        ↓
+Sistem memvalidasi tipe dan ukuran
+        ↓
+Sistem melakukan pemeriksaan keamanan
+        ↓
+Sistem membuat media_id
+        ↓
+Sistem membuat watermark_identifier
+        ↓
+Sistem menghasilkan checksum dan fingerprint
+        ↓
+Sistem menerapkan watermark tak terlihat
+        ↓
+Sistem menyimpan master terlindungi
+        ↓
+Sistem membuat versi teroptimasi
+        ↓
+Sistem menerapkan watermark tak terlihat
+pada setiap versi turunan
+        ↓
+Apakah watermark terlihat diaktifkan?
+    ├── Ya
+    │     ↓
+    │   Sistem menerapkan watermark terlihat
+    │
+    └── Tidak
+          ↓
+        Tidak ada watermark visual
+        ↓
+Sistem menyimpan hasil pemrosesan
+        ↓
+Sistem memverifikasi watermark
+        ↓
+Apakah verifikasi berhasil?
+    ├── Tidak
+    │     ↓
+    │   Status media menjadi failed
+    │     ↓
+    │   Media tidak dapat dipublikasikan
+    │
+    └── Ya
+          ↓
+        Status media menjadi completed
+          ↓
+        Media tersedia untuk digunakan
+```
+
+---
+
+# 8. Pemrosesan File Asli
+
+File yang pertama kali diunggah tidak langsung disediakan kepada frontend.
+
+Sistem membuat:
+
+1. Salinan unggahan awal untuk backup internal, apabila diperlukan.
+2. Master media yang telah diberi watermark tak terlihat.
+3. Versi teroptimasi.
+4. Thumbnail.
+5. Versi publik.
+6. Versi dengan watermark terlihat jika diaktifkan.
+
+Semua versi yang dapat dipakai atau diekspor dari sistem wajib mengandung watermark tak terlihat.
+
+File unggahan mentah yang belum memiliki watermark:
+
+* Tidak boleh tersedia pada URL publik.
+* Tidak boleh digunakan dalam konten.
+* Tidak boleh diunduh melalui dashboard biasa.
+* Tidak boleh dipindahkan ke penyimpanan publik.
+* Hanya boleh dipertahankan sebagai backup teknis yang sangat terbatas apabila memang diperlukan.
+
+---
+
+# 9. Watermark Terlihat
+
+Watermark terlihat tetap bersifat opsional.
+
+Administrator dapat mengatur:
+
+* Aktif atau tidak aktif.
+* Logo.
+* Teks.
+* Posisi.
+* Transparansi.
+* Ukuran.
+* Margin.
+* Penggunaan berdasarkan konteks media.
+
+Watermark terlihat dapat dikecualikan untuk media tertentu.
+
+Pengecualian watermark terlihat tidak memengaruhi watermark tak terlihat.
+
+Contoh:
+
+| Media                | Watermark Terlihat | Watermark Tak Terlihat |
+| -------------------- | -----------------: | ---------------------: |
+| Foto galeri          |              Aktif |                  Wajib |
+| Foto berita          |              Aktif |                  Wajib |
+| Logo desa            |        Tidak aktif |                  Wajib |
+| Favicon              |        Tidak aktif |                  Wajib |
+| Poster instansi lain |        Tidak aktif |                  Wajib |
+| Dokumen PDF          |           Opsional |                  Wajib |
+| Gambar dekoratif     |        Tidak aktif |                  Wajib |
+
+---
+
+# 10. Verifikasi Watermark
+
+Sistem menyediakan proses verifikasi internal.
+
+Administrator dapat:
+
+1. Memilih media.
+2. Menjalankan pemeriksaan watermark.
+3. Melihat hasil deteksi.
+4. Melihat identifier yang ditemukan.
+5. Membandingkan dengan data media.
+6. Melihat checksum dan fingerprint.
+7. Melihat riwayat pemrosesan.
+
+Hasil verifikasi:
+
+* `verified`
+* `partially_verified`
+* `not_detected`
+* `invalid`
+* `unsupported`
+
+Verifikasi tidak boleh mengubah file media.
+
+---
+
+# 11. Pengunduhan Media oleh Administrator
+
+Media yang diunduh dari dashboard tetap harus mengandung watermark tak terlihat.
+
+Pilihan pengunduhan:
+
+* Versi publik.
+* Versi teroptimasi.
+* Versi dengan watermark terlihat.
+* Master terlindungi.
+
+File mentah tanpa watermark tidak disediakan melalui dashboard.
+
+Akses terhadap file mentah, apabila dipertahankan, hanya dapat dilakukan melalui prosedur teknis khusus oleh pemilik sistem.
+
+---
+
+# 12. Perubahan Data Dictionary Tabel `media`
+
+Tabel `media` memperoleh kolom tambahan berikut:
+
+| Kolom                            | Tipe         | Null  | Default   | Keterangan          |
+| -------------------------------- | ------------ | ----- | --------- | ------------------- |
+| watermark_identifier             | uuid         | Tidak | Generated | ID watermark unik   |
+| invisible_watermark_version      | varchar(30)  | Tidak | `1.0`     | Versi algoritma     |
+| invisible_watermark_status       | varchar(30)  | Tidak | `pending` | Status watermark    |
+| invisible_watermark_applied_at   | timestamptz  | Ya    | null      | Waktu penerapan     |
+| invisible_watermark_verified_at  | timestamptz  | Ya    | null      | Waktu verifikasi    |
+| invisible_watermark_payload_hash | varchar(128) | Ya    | null      | Hash payload        |
+| perceptual_hash                  | varchar(255) | Ya    | null      | Fingerprint visual  |
+| file_checksum                    | varchar(128) | Tidak | –         | Checksum file       |
+| provenance_data                  | jsonb        | Tidak | `{}`      | Metadata provenance |
+| processing_status                | varchar(30)  | Tidak | `pending` | Status pemrosesan   |
+| processing_error                 | text         | Ya    | null      | Pesan kegagalan     |
+| processed_at                     | timestamptz  | Ya    | null      | Waktu selesai       |
+
+Nilai `invisible_watermark_status`:
+
+* `pending`
+* `processing`
+* `applied`
+* `verified`
+* `failed`
+* `unsupported`
+
+---
+
+# 13. Tabel Baru `media_derivatives`
+
+## 13.1 Tujuan
+
+Menyimpan setiap versi turunan media.
+
+## 13.2 Struktur
+
+| Kolom                      | Tipe         | Null  | Keterangan        |
+| -------------------------- | ------------ | ----- | ----------------- |
+| id                         | bigint       | Tidak | Primary key       |
+| media_id                   | bigint       | Tidak | Foreign key media |
+| derivative_type            | varchar(50)  | Tidak | Jenis versi       |
+| file_path                  | varchar(500) | Tidak | Lokasi file       |
+| mime_type                  | varchar(100) | Tidak | MIME type         |
+| width                      | integer      | Ya    | Lebar             |
+| height                     | integer      | Ya    | Tinggi            |
+| size                       | bigint       | Tidak | Ukuran            |
+| checksum                   | varchar(128) | Tidak | Hash file         |
+| invisible_watermark_status | varchar(30)  | Tidak | Status watermark  |
+| visible_watermark_applied  | boolean      | Tidak | Watermark visual  |
+| processed_at               | timestamptz  | Ya    | Waktu proses      |
+| created_at                 | timestamptz  | Tidak | Waktu pembuatan   |
+| updated_at                 | timestamptz  | Tidak | Waktu perubahan   |
+
+Nilai `derivative_type`:
+
+* `protected_master`
+* `optimized`
+* `thumbnail`
+* `public`
+* `public_visible_watermark`
+* `pdf_preview`
+
+## 13.3 Aturan
+
+1. Setiap derivative wajib memiliki watermark tak terlihat.
+2. Derivative tidak boleh tersedia apabila proses verifikasi gagal.
+3. Derivative dapat dibuat ulang dari protected master.
+4. Penghapusan media menghapus derivative setelah masa retensi.
+5. Checksum setiap derivative disimpan terpisah.
+
+---
+
+# 14. Tabel Baru `watermark_verification_logs`
+
+## 14.1 Tujuan
+
+Menyimpan hasil pemeriksaan watermark.
+
+## 14.2 Struktur
+
+| Kolom               | Tipe         | Null  | Keterangan            |
+| ------------------- | ------------ | ----- | --------------------- |
+| id                  | bigint       | Tidak | Primary key           |
+| media_id            | bigint       | Ya    | Referensi media       |
+| media_derivative_id | bigint       | Ya    | Referensi derivative  |
+| verification_status | varchar(30)  | Tidak | Hasil verifikasi      |
+| detected_identifier | uuid         | Ya    | Identifier terdeteksi |
+| confidence_score    | decimal(5,4) | Ya    | Tingkat keyakinan     |
+| verification_data   | jsonb        | Tidak | Detail verifikasi     |
+| verified_at         | timestamptz  | Tidak | Waktu verifikasi      |
+| created_at          | timestamptz  | Tidak | Waktu pencatatan      |
+
+## 14.3 Aturan
+
+1. Log verifikasi tidak dapat diubah admin.
+2. Log dapat dibersihkan secara otomatis sesuai retensi.
+3. Nilai confidence hanya digunakan jika algoritma mendukungnya.
+4. Hasil verifikasi harus dicatat pada audit log apabila dijalankan manual oleh admin.
+
+---
+
+# 15. Kebutuhan Fungsional Tambahan
+
+| Kode   | Kebutuhan                                                                        |
+| ------ | -------------------------------------------------------------------------------- |
+| FR-035 | Sistem wajib menerapkan watermark tak terlihat pada seluruh media                |
+| FR-036 | Watermark tak terlihat tidak dapat dinonaktifkan oleh admin                      |
+| FR-037 | Sistem wajib membuat identifier watermark unik untuk setiap media                |
+| FR-038 | Sistem wajib menerapkan watermark tak terlihat pada seluruh derivative           |
+| FR-039 | Sistem wajib memverifikasi watermark sebelum media tersedia                      |
+| FR-040 | Sistem harus menghasilkan checksum untuk setiap file                             |
+| FR-041 | Sistem harus menghasilkan fingerprint media apabila format mendukung             |
+| FR-042 | Admin dapat menjalankan verifikasi watermark                                     |
+| FR-043 | Admin dapat melihat hasil verifikasi                                             |
+| FR-044 | Sistem harus menyimpan metadata provenance                                       |
+| FR-045 | Media dengan watermark gagal tidak dapat dipublikasikan                          |
+| FR-046 | File yang diunduh melalui dashboard tetap memiliki watermark tak terlihat        |
+| FR-047 | Sistem harus mencatat kegagalan pemrosesan watermark                             |
+| FR-048 | Sistem dapat membuat ulang derivative tanpa menghilangkan watermark tak terlihat |
+
+---
+
+# 16. Kebutuhan Nonfungsional Tambahan
+
+| Kode    | Kebutuhan                                                                          |
+| ------- | ---------------------------------------------------------------------------------- |
+| NFR-026 | Watermark tak terlihat tidak boleh mengganggu tampilan normal media                |
+| NFR-027 | Watermark harus dirancang tahan terhadap kompresi ringan                           |
+| NFR-028 | Watermark harus dirancang tahan terhadap perubahan ukuran wajar                    |
+| NFR-029 | Watermark harus tetap dapat diverifikasi setelah optimasi sistem                   |
+| NFR-030 | Sistem tidak boleh memublikasikan media sebelum verifikasi berhasil                |
+| NFR-031 | Pemrosesan media harus dilakukan melalui queue                                     |
+| NFR-032 | Kegagalan watermark tidak boleh menghapus file sumber                              |
+| NFR-033 | Sistem harus mendukung perubahan versi algoritma watermark                         |
+| NFR-034 | Identifier instalasi tidak boleh bergantung pada domain                            |
+| NFR-035 | Informasi rahasia algoritma atau signing key tidak boleh tersimpan pada repository |
+| NFR-036 | Sistem harus menyediakan audit trail pemrosesan media                              |
+| NFR-037 | Watermark wajib diterapkan secara konsisten pada seluruh tipe media yang didukung  |
+
+---
+
+# 17. Aturan Bisnis Tambahan
+
+| Kode   | Aturan                                                       |
+| ------ | ------------------------------------------------------------ |
+| BR-021 | Semua media wajib memiliki watermark tak terlihat            |
+| BR-022 | Tidak ada pengecualian watermark tak terlihat                |
+| BR-023 | Admin tidak dapat menonaktifkan watermark tak terlihat       |
+| BR-024 | Watermark terlihat tidak menggantikan watermark tak terlihat |
+| BR-025 | Semua derivative wajib memiliki watermark tak terlihat       |
+| BR-026 | Media gagal watermark tidak boleh dipublikasikan             |
+| BR-027 | Pengunduhan media tetap menggunakan file terlindungi         |
+| BR-028 | Identifier instalasi tetap sama setelah migrasi domain       |
+| BR-029 | Setiap media memiliki identifier watermark berbeda           |
+| BR-030 | File mentah tanpa watermark tidak tersedia melalui dashboard |
+| BR-031 | Perubahan algoritma tidak mengubah identitas media           |
+| BR-032 | Riwayat watermark dan verifikasi harus dapat diaudit         |
+
+---
+
+# 18. Perubahan Modul Media Library
+
+Media Library harus menampilkan:
+
+* Thumbnail.
+* Nama file.
+* Tipe media.
+* Status pemrosesan.
+* Status watermark tak terlihat.
+* Status watermark terlihat.
+* Waktu pemrosesan.
+* Hasil verifikasi terakhir.
+* Penggunaan media.
+* Tombol verifikasi.
+* Tombol pemrosesan ulang jika gagal.
+
+Media Library tidak menyediakan:
+
+* Tombol menonaktifkan watermark tak terlihat.
+* Tombol mengunduh file mentah.
+* Tombol melewati proses watermark.
+* Tombol memublikasikan media yang belum terverifikasi.
+
+---
+
+# 19. Batasan Teknis
+
+1. Algoritma watermark gambar tidak dapat langsung digunakan pada PDF, video, atau audio.
+2. Setiap format memerlukan pemroses khusus.
+3. Ketahanan watermark bergantung pada algoritma yang digunakan.
+4. Rekonstruksi media berat dapat menghilangkan watermark.
+5. Beberapa algoritma watermark membutuhkan lisensi atau layanan eksternal.
+6. Implementasi mandiri harus diuji terhadap kompresi, crop, resize, dan perubahan format.
+7. Metadata provenance dapat hilang apabila platform menghapus metadata.
+8. Fingerprint tidak menggantikan watermark, tetapi digunakan sebagai lapisan pendukung.
+9. Sistem harus menyimpan versi algoritma agar media lama tetap dapat diverifikasi.
+10. Key atau secret watermark harus dikelola di luar source code.
+
+---
+
+# 20. Strategi Implementasi Bertahap
+
+## Tahap 1 — Fondasi Wajib
+
+* Identifier instalasi.
+* Identifier unik per media.
+* Checksum.
+* Perceptual hash untuk gambar.
+* Metadata provenance.
+* Pipeline media wajib.
+* Status pemrosesan.
+* Larangan publikasi sebelum selesai.
+* Watermark tak terlihat pada gambar.
+* Verifikasi gambar.
+* Watermark terlihat opsional.
+
+## Tahap 2 — Dokumen PDF
+
+* Identifier unik PDF.
+* Metadata provenance PDF.
+* Watermark tak terlihat pada isi atau struktur PDF.
+* Verifikasi PDF.
+* Preview PDF terlindungi.
+
+## Tahap 3 — Ketahanan dan Interoperabilitas
+
+* Pengujian terhadap crop.
+* Pengujian terhadap resize.
+* Pengujian terhadap kompresi.
+* Pengujian terhadap konversi format.
+* Dukungan provenance standar.
+* Pengembangan alat verifikasi eksternal.
+* Dukungan tipe media tambahan.
+
+Seluruh media tetap harus masuk melalui pipeline wajib. Jika suatu format belum memiliki algoritma watermark tak terlihat yang didukung, media tersebut tidak boleh diterbitkan sampai dukungannya tersedia.
+
+---
+
+# 21. Kesimpulan
+
+Village Website CMS menerapkan watermark tak terlihat sebagai persyaratan wajib dan tidak dapat dinonaktifkan.
+
+Arsitektur perlindungan media menjadi:
+
+```text id="l9tt10"
+Media Diunggah
+      ↓
+Identitas Unik
+      ↓
+Checksum dan Fingerprint
+      ↓
+Watermark Tak Terlihat
+      ↓
+Metadata Provenance
+      ↓
+Verifikasi
+      ↓
+Versi Turunan Terlindungi
+      ↓
+Watermark Terlihat Opsional
+      ↓
+Publikasi
+```
+
+Dengan kebijakan tersebut, seluruh media yang digunakan sistem memiliki identitas teknis yang dapat ditelusuri tanpa bergantung pada watermark visual.

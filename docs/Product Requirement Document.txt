@@ -1,0 +1,466 @@
+# PRODUCT REQUIREMENTS DOCUMENT (PRD)
+
+## Village Website CMS (Single Village Installation)
+
+### Versi Dokumen
+
+Versi: 1.0
+
+### Status
+
+Draft Final
+
+### Penyusun
+
+Tim Pengembang
+
+### Tanggal
+
+Juli 2026
+
+---
+
+# 1. Ringkasan Produk
+
+Village Website CMS merupakan sistem manajemen website desa yang dirancang untuk mempermudah pengelolaan informasi publik desa melalui antarmuka administrasi yang mudah digunakan tanpa memerlukan kemampuan pemrograman.
+
+Sistem dikembangkan sebagai Content Management System (CMS) yang dapat digunakan kembali oleh berbagai desa melalui instalasi terpisah. Setiap instalasi hanya melayani satu desa dan memiliki identitas, konten, serta konfigurasi yang berbeda.
+
+Website yang dihasilkan harus mampu berfungsi sebagai media informasi resmi desa, pusat publikasi berita, penyimpanan dokumen publik, media promosi potensi desa, serta sarana komunikasi antara masyarakat dan pemerintah desa.
+
+---
+
+# 2. Latar Belakang
+
+Banyak desa belum memiliki website resmi yang mudah dikelola secara mandiri. Sebagian website yang telah tersedia sering kali bergantung pada pengembang untuk melakukan perubahan konten, sehingga pembaruan informasi menjadi lambat dan tidak berkelanjutan.
+
+Selain itu, kebutuhan setiap desa sangat beragam. Struktur informasi, potensi wilayah, layanan, maupun jenis konten yang ingin ditampilkan dapat berbeda antara satu desa dengan desa lainnya.
+
+Oleh karena itu diperlukan sistem yang fleksibel, mudah digunakan, memiliki tampilan profesional, dan dapat digunakan kembali tanpa memerlukan perubahan kode program setiap kali diterapkan pada desa yang berbeda.
+
+---
+
+# 3. Permasalahan yang Diselesaikan
+
+Produk ini dikembangkan untuk menyelesaikan permasalahan berikut:
+
+1. Sulitnya pengelolaan website desa tanpa bantuan pengembang.
+2. Keterbatasan fleksibilitas website desa yang bersifat statis.
+3. Sulitnya memperbarui informasi secara cepat.
+4. Tidak tersedianya media publikasi yang terstruktur.
+5. Tidak tersedianya pusat penyimpanan dokumen publik.
+6. Tidak tersedianya media komunikasi digital antara masyarakat dan desa.
+7. Tingginya biaya pengembangan website baru untuk setiap desa.
+
+---
+
+# 4. Tujuan Produk
+
+## Tujuan Utama
+
+Menyediakan sistem website desa yang modern, fleksibel, mudah digunakan, dan dapat diimplementasikan pada berbagai desa tanpa perubahan kode sumber utama.
+
+## Tujuan Khusus
+
+1. Memungkinkan admin mengelola seluruh konten secara mandiri.
+2. Menyediakan page builder berbasis blok tanpa coding.
+3. Menyediakan sistem berita dan publikasi.
+4. Menyediakan galeri dokumentasi desa.
+5. Menyediakan pusat dokumen publik.
+6. Menyediakan layanan narahubung.
+7. Menyediakan pengelolaan lokasi dan peta.
+8. Menyediakan sistem audit log.
+9. Menyediakan tampilan yang responsif dan modern.
+10. Menyediakan fondasi yang dapat dikembangkan lebih lanjut di masa depan.
+
+---
+
+# 5. Target Pengguna
+
+## 5.1 Pengunjung (Guest)
+
+Karakteristik:
+
+* Tidak memerlukan akun.
+* Mengakses informasi publik.
+* Menggunakan perangkat desktop maupun mobile.
+
+Tujuan:
+
+* Mencari informasi desa.
+* Membaca berita.
+* Mengunduh dokumen.
+* Menghubungi pihak desa.
+
+---
+
+## 5.2 Administrator
+
+Karakteristik:
+
+* Operator website desa.
+* Tidak harus memiliki kemampuan teknis.
+
+Tujuan:
+
+* Mengelola seluruh isi website.
+* Menambah dan memperbarui informasi.
+* Mengelola media dan dokumen.
+* Menanggapi pesan yang masuk.
+
+---
+
+# 6. Ruang Lingkup Produk
+
+Produk mencakup:
+
+* Website publik.
+* Dashboard administrasi.
+* Sistem autentikasi admin.
+* Website settings.
+* Menu builder.
+* Page builder.
+* News management.
+* Gallery management.
+* Document management.
+* Media library.
+* Maps management.
+* Contact messages.
+* Search engine.
+* Audit log.
+
+Produk tidak mencakup:
+
+* Sistem administrasi kependudukan.
+* Sistem surat menyurat.
+* Sistem bantuan sosial.
+* Sistem pembayaran.
+* Sistem multi-desa.
+* Sistem multi-admin.
+* Aplikasi mobile.
+* Integrasi dengan Dukcapil.
+* Workflow persetujuan konten.
+
+---
+
+# 7. Modul Produk
+
+## 7.1 Authentication Module
+
+### Deskripsi
+
+Modul yang digunakan untuk mengamankan akses administrator.
+
+### Fitur
+
+* Login.
+* Logout.
+* Ubah password.
+* TOTP authentication.
+* Rate limiting.
+* CAPTCHA.
+* Session timeout.
+
+---
+
+## 7.2 Dashboard Module
+
+### Deskripsi
+
+Modul yang menampilkan ringkasan kondisi website.
+
+### Fitur
+
+* Statistik konten.
+* Aktivitas terbaru.
+* Pesan terbaru.
+* Informasi sistem.
+
+---
+
+## 7.3 Website Settings Module
+
+### Deskripsi
+
+Modul pengaturan identitas website.
+
+### Fitur
+
+* Nama website.
+* Nama desa.
+* Logo.
+* Favicon.
+* Banner.
+* Alamat.
+* Kontak.
+* Email.
+* Media sosial.
+* Warna utama.
+
+---
+
+## 7.4 Menu Builder Module
+
+### Deskripsi
+
+Modul untuk mengelola navigasi website.
+
+### Fitur
+
+* Tambah menu.
+* Edit menu.
+* Hapus menu.
+* Submenu.
+* Pengaturan urutan menu.
+* Internal link.
+* External link.
+
+---
+
+## 7.5 Page Builder Module
+
+### Deskripsi
+
+Modul utama untuk membuat halaman tanpa coding.
+
+### Konsep
+
+Halaman dibangun menggunakan kombinasi section dan component.
+
+### Layout Section
+
+* 1 Column.
+* 2 Columns.
+* 3 Columns.
+* Hero Layout.
+* Full Width Layout.
+
+### Komponen
+
+* Heading.
+* Rich Text.
+* Image.
+* Gallery.
+* Statistics.
+* Video.
+* Map.
+* Documents.
+* CTA Button.
+* Card Grid.
+* Contact Block.
+
+### Fitur
+
+* Drag and drop.
+* Preview.
+* Publish.
+* Archive.
+
+---
+
+## 7.6 News Module
+
+### Deskripsi
+
+Modul pengelolaan berita.
+
+### Fitur
+
+* Kategori berita.
+* Thumbnail.
+* Konten berita.
+* Featured news.
+* Archive.
+
+---
+
+## 7.7 Gallery Module
+
+### Deskripsi
+
+Modul pengelolaan dokumentasi foto.
+
+### Fitur
+
+* Album.
+* Upload foto.
+* Caption.
+* Cover album.
+
+---
+
+## 7.8 Document Module
+
+### Deskripsi
+
+Modul pengelolaan dokumen publik.
+
+### Fitur
+
+* Kategori dokumen.
+* Upload PDF.
+* Preview.
+* Download.
+
+---
+
+## 7.9 Media Library Module
+
+### Deskripsi
+
+Repositori aset digital yang dapat digunakan kembali.
+
+### Fitur
+
+* Upload media.
+* Search.
+* Preview.
+* Reuse asset.
+
+---
+
+## 7.10 Maps Module
+
+### Deskripsi
+
+Modul pengelolaan lokasi.
+
+### Fitur
+
+* Multi location.
+* Kategori lokasi.
+* Deskripsi lokasi.
+* Integrasi OpenStreetMap.
+
+---
+
+## 7.11 Contact Messages Module
+
+### Deskripsi
+
+Modul penerimaan pesan dari pengunjung.
+
+### Fitur
+
+* Form pesan.
+* Dashboard pesan.
+* Status pesan.
+* Email notification.
+* Arsip pesan.
+
+---
+
+## 7.12 Search Module
+
+### Deskripsi
+
+Modul pencarian informasi.
+
+### Fitur
+
+* Pencarian halaman.
+* Pencarian berita.
+* Pencarian dokumen.
+
+---
+
+## 7.13 Audit Log Module
+
+### Deskripsi
+
+Modul pencatatan aktivitas sistem.
+
+### Aktivitas yang Dicatat
+
+* Login.
+* Logout.
+* Gagal login.
+* Perubahan password.
+* Perubahan konten.
+* Penghapusan konten.
+* Perubahan pengaturan.
+
+---
+
+# 8. User Stories
+
+### Sebagai Guest
+
+Saya ingin mencari informasi desa sehingga saya dapat memperoleh informasi yang saya butuhkan dengan cepat.
+
+### Sebagai Guest
+
+Saya ingin mengunduh dokumen publik sehingga saya tidak perlu datang langsung ke kantor desa.
+
+### Sebagai Guest
+
+Saya ingin menghubungi pihak desa sehingga saya dapat memperoleh bantuan atau informasi lebih lanjut.
+
+### Sebagai Admin
+
+Saya ingin membuat halaman baru tanpa coding sehingga saya dapat menambah informasi secara mandiri.
+
+### Sebagai Admin
+
+Saya ingin mengelola menu website sehingga struktur navigasi dapat disesuaikan dengan kebutuhan desa.
+
+### Sebagai Admin
+
+Saya ingin mengunggah dokumen dan media sehingga konten dapat dipublikasikan secara mudah.
+
+---
+
+# 9. Kriteria Keberhasilan Produk
+
+Produk dianggap berhasil apabila:
+
+1. Admin dapat mengelola website tanpa bantuan pengembang.
+2. Website dapat digunakan pada perangkat desktop dan mobile.
+3. Website dapat digunakan ulang pada desa lain.
+4. Konten dapat ditambahkan tanpa coding.
+5. Sistem berjalan pada hosting ekonomis.
+6. Pengunjung dapat menemukan informasi dengan mudah.
+7. Pengunjung dapat menghubungi pihak desa melalui website.
+8. Seluruh modul MVP berfungsi dengan baik.
+
+---
+
+# 10. Roadmap Pengembangan
+
+## Versi 1.0 (MVP)
+
+* Authentication.
+* Dashboard.
+* Website Settings.
+* Menu Builder.
+* Page Builder.
+* News.
+* Gallery.
+* Documents.
+* Media Library.
+* Maps.
+* Contact Messages.
+* Search.
+* Audit Log.
+
+tambahan:
+Memperbarui modul Media Library.
+Menambahkan media processing status.
+Menambahkan watermark settings.
+Menambahkan watermark verification.
+Menambahkan media derivative management.
+
+## Versi 2.0
+
+* Multi role admin.
+* Workflow approval.
+* Advanced analytics.
+* Tema tambahan.
+* Statistik pengunjung.
+
+## Versi 3.0
+
+* Multi village.
+* Integrasi layanan pemerintahan.
+* Mobile application.
+* GIS lanjutan.

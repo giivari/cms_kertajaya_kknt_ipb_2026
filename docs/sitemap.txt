@@ -1,0 +1,479 @@
+# DOKUMEN SITEMAP DAN ARSITEKTUR INFORMASI
+
+## Village Website CMS (Single Village Installation)
+
+### Versi Dokumen
+
+Versi: 1.0
+
+### Status
+
+Draft Final
+
+### Penyusun
+
+Tim Pengembang
+
+### Tanggal
+
+Juli 2026
+
+---
+
+# 1. Pendahuluan
+
+## 1.1 Tujuan Dokumen
+
+Dokumen ini menjelaskan struktur navigasi, hierarki halaman, organisasi informasi, serta hubungan antarhalaman pada Village Website CMS.
+
+Dokumen sitemap digunakan sebagai dasar untuk:
+
+* Perancangan user experience (UX).
+* Perancangan antarmuka (UI).
+* Penyusunan wireframe.
+* Penyusunan use case.
+* Perancangan database.
+* Implementasi frontend dan backend.
+
+---
+
+## 1.2 Ruang Lingkup
+
+Dokumen ini mencakup:
+
+1. Struktur website publik (frontend).
+2. Struktur dashboard administrator (backend).
+3. Struktur halaman dinamis.
+4. Struktur URL.
+5. Hubungan antarhalaman.
+
+Dokumen ini tidak membahas desain visual maupun struktur database.
+
+---
+
+# 2. Prinsip Arsitektur Informasi
+
+Village Website CMS menggunakan pendekatan:
+
+**Content Driven Architecture**
+
+Konten menjadi pusat pengelolaan sistem dan seluruh informasi dapat diperbarui melalui dashboard administrator tanpa memerlukan perubahan source code.
+
+Struktur sistem dibagi menjadi:
+
+1. Website publik.
+2. Dashboard administrator.
+
+---
+
+# 3. Sitemap Website Publik
+
+## 3.1 Struktur Utama
+
+```text
+Beranda
+│
+├── Tentang Desa
+│   ├── Profil Desa
+│   ├── Sejarah Desa
+│   ├── Visi dan Misi
+│   ├── Struktur Organisasi
+│   └── Halaman Dinamis
+│
+├── Wilayah
+│   ├── Topografi
+│   ├── Kependudukan
+│   ├── Dusun
+│   └── Halaman Dinamis
+│
+├── Potensi Desa
+│   ├── Pertanian
+│   ├── Pertambangan
+│   ├── UMKM
+│   ├── Pariwisata
+│   └── Halaman Dinamis
+│
+├── Pelayanan
+│   ├── Informasi Pelayanan
+│   ├── Persyaratan
+│   ├── Formulir
+│   └── Halaman Dinamis
+│
+├── Berita
+│   ├── Daftar Berita
+│   └── Detail Berita
+│
+├── Galeri
+│   ├── Daftar Album
+│   └── Detail Album
+│
+├── Dokumen
+│   ├── Daftar Dokumen
+│   └── Detail Dokumen
+│
+├── Peta Desa
+│
+├── Narahubung
+│
+├── Pencarian
+│
+└── Halaman Dinamis
+```
+
+---
+
+## 3.2 Deskripsi Halaman
+
+### Beranda
+
+Halaman utama website yang menampilkan:
+
+* Banner utama.
+* Informasi singkat desa.
+* Berita terbaru.
+* Informasi unggulan.
+* Akses cepat ke layanan.
+* Potensi desa.
+* Galeri unggulan.
+* Kontak dan narahubung.
+
+---
+
+### Tentang Desa
+
+Kelompok halaman yang menjelaskan identitas desa.
+
+Konten dapat berupa:
+
+* Profil desa.
+* Sejarah desa.
+* Visi dan misi.
+* Struktur organisasi.
+* Informasi umum lainnya.
+
+---
+
+### Wilayah
+
+Kelompok halaman yang menjelaskan kondisi wilayah desa.
+
+Konten dapat berupa:
+
+* Topografi.
+* Kependudukan.
+* Informasi dusun.
+* Informasi geografis lainnya.
+
+---
+
+### Potensi Desa
+
+Kelompok halaman yang menjelaskan potensi desa.
+
+Konten dapat berupa:
+
+* Pertanian.
+* Pertambangan.
+* UMKM.
+* Pariwisata.
+* Potensi lain yang ditambahkan administrator.
+
+---
+
+### Pelayanan
+
+Kelompok halaman yang menjelaskan layanan yang tersedia.
+
+Konten dapat berupa:
+
+* Persyaratan layanan.
+* Alur pelayanan.
+* Formulir.
+* Informasi administrasi.
+
+---
+
+### Berita
+
+Menampilkan informasi dan publikasi terbaru.
+
+Terdiri atas:
+
+* Halaman daftar berita.
+* Halaman detail berita.
+
+---
+
+### Galeri
+
+Menampilkan dokumentasi visual.
+
+Terdiri atas:
+
+* Daftar album.
+* Detail album.
+
+---
+
+### Dokumen
+
+Menampilkan dokumen publik.
+
+Terdiri atas:
+
+* Daftar dokumen.
+* Detail dokumen.
+
+---
+
+### Peta Desa
+
+Menampilkan lokasi penting yang telah ditentukan administrator.
+
+Contoh:
+
+* Kantor desa.
+* Fasilitas umum.
+* Tempat wisata.
+* Titik evakuasi.
+
+---
+
+### Narahubung
+
+Halaman komunikasi antara pengunjung dan pihak desa.
+
+Pengunjung dapat:
+
+* Mengirim pesan.
+* Menyampaikan pertanyaan.
+* Menyampaikan saran.
+
+---
+
+### Pencarian
+
+Halaman yang menampilkan hasil pencarian.
+
+Pencarian mencakup:
+
+* Halaman.
+* Berita.
+* Dokumen.
+
+---
+
+# 4. Halaman Dinamis
+
+## 4.1 Konsep
+
+Village Website CMS menggunakan sistem Page Builder.
+
+Administrator dapat membuat halaman baru tanpa coding.
+
+Contoh:
+
+* Program Ketahanan Pangan.
+* Desa Tangguh Bencana.
+* BUMDes.
+* Wisata Desa.
+* Program Kerja Pemerintah Desa.
+
+---
+
+## 4.2 Perilaku Sistem
+
+Setiap halaman baru yang dibuat administrator dapat:
+
+* Ditampilkan pada menu.
+* Ditampilkan pada submenu.
+* Ditampilkan pada beranda.
+* Diarsipkan.
+* Dipublikasikan.
+
+---
+
+# 5. Struktur URL
+
+## 5.1 Halaman Utama
+
+```text
+/
+```
+
+---
+
+## 5.2 Berita
+
+```text
+/berita
+```
+
+Daftar berita.
+
+```text
+/berita/{slug}
+```
+
+Detail berita.
+
+---
+
+## 5.3 Galeri
+
+```text
+/galeri
+```
+
+Daftar album.
+
+```text
+/galeri/{slug}
+```
+
+Detail album.
+
+---
+
+## 5.4 Dokumen
+
+```text
+/dokumen
+```
+
+Daftar dokumen.
+
+```text
+/dokumen/{slug}
+```
+
+Detail dokumen.
+
+---
+
+## 5.5 Halaman Dinamis
+
+```text
+/halaman/{slug}
+```
+
+Contoh:
+
+```text
+/halaman/profil-desa
+```
+
+```text
+/halaman/sejarah-desa
+```
+
+```text
+/halaman/bumdes
+```
+
+---
+
+## 5.6 Peta
+
+```text
+/peta
+```
+
+---
+
+## 5.7 Narahubung
+
+```text
+/narahubung
+```
+
+---
+
+## 5.8 Pencarian
+
+```text
+/pencarian
+```
+
+---
+
+# 6. Sitemap Dashboard Administrator
+
+## 6.1 Struktur Utama
+
+```text
+Dashboard
+│
+├── Pages
+│   ├── Semua Halaman
+│   ├── Tambah Halaman
+│   └── Arsip
+│
+├── Berita
+│   ├── Semua Berita
+│   ├── Tambah Berita
+│   ├── Kategori
+│   └── Arsip
+│
+├── Galeri
+│   ├── Album
+│   ├── Foto
+│   └── Arsip
+│
+├── Dokumen
+│   ├── Semua Dokumen
+│   ├── Kategori
+│   └── Arsip
+│
+├── Media Library
+│
+├── Peta
+│
+├── Narahubung
+│
+├── Menu Builder
+│
+├── Website Settings
+│
+├── Audit Log
+│
+└── Akun
+    ├── Profil Admin
+    ├── Ubah Password
+    └── Pengaturan Keamanan
+```
+
+---
+
+# 7. Hubungan Antar Modul
+
+| Modul            | Digunakan Oleh                 |
+| ---------------- | ------------------------------ |
+| Media Library    | Pages, Berita, Galeri, Dokumen |
+| Menu Builder     | Website Publik                 |
+| Website Settings | Website Publik                 |
+| Maps             | Pages dan Peta Desa            |
+| Contact Messages | Narahubung                     |
+| Audit Log        | Seluruh Modul                  |
+| Search           | Pages, Berita, Dokumen         |
+| Page Builder     | Halaman Dinamis                |
+
+---
+
+# 8. Aturan Navigasi
+
+1. Pengunjung tidak perlu login untuk mengakses website publik.
+2. Administrator wajib login untuk mengakses dashboard.
+3. Halaman yang diarsipkan tidak ditampilkan pada website publik.
+4. Halaman yang belum dipublikasikan tidak dapat diakses pengunjung.
+5. Menu dan submenu dapat diatur melalui Menu Builder.
+6. Halaman dinamis dapat ditempatkan pada lokasi navigasi yang ditentukan administrator.
+7. Sistem harus mendukung navigasi responsif pada perangkat mobile dan desktop.
+
+---
+
+# 9. Kesimpulan
+
+Sitemap Village Website CMS dirancang menggunakan pendekatan modular dan content-driven architecture sehingga administrator dapat mengelola struktur informasi tanpa melakukan perubahan source code.
+
+Arsitektur ini memungkinkan sistem digunakan kembali pada berbagai desa dengan konfigurasi, konten, dan identitas yang berbeda tanpa memerlukan modifikasi inti sistem.

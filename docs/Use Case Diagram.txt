@@ -1,0 +1,547 @@
+# SOFTWARE USE CASE SPECIFICATION
+
+## Village Website CMS (Single Village Installation)
+
+### Versi Dokumen
+
+Versi: 1.0
+
+### Status
+
+Draft Final
+
+### Penyusun
+
+Tim Pengembang
+
+### Tanggal
+
+Juli 2026
+
+---
+
+# 1. Pendahuluan
+
+## 1.1 Tujuan Dokumen
+
+Dokumen Use Case Specification digunakan untuk menjelaskan interaksi antara aktor dan sistem pada Village Website CMS.
+
+Dokumen ini bertujuan untuk:
+
+* Mendefinisikan fungsi sistem secara rinci.
+* Menjadi dasar penyusunan Use Case Diagram.
+* Menjadi dasar penyusunan Activity Diagram.
+* Menjadi dasar perancangan database.
+* Menjadi dasar implementasi sistem.
+
+---
+
+## 1.2 Ruang Lingkup
+
+Dokumen ini mencakup seluruh proses bisnis yang terjadi pada Village Website CMS, baik pada sisi pengunjung website (Guest) maupun administrator sistem (Admin).
+
+---
+
+# 2. Aktor Sistem
+
+## 2.1 Guest
+
+Guest merupakan pengunjung website yang tidak memerlukan akun untuk mengakses informasi publik.
+
+### Hak Akses
+
+* Mengakses website publik.
+* Membaca halaman informasi.
+* Membaca berita.
+* Melihat galeri.
+* Mengunduh dokumen publik.
+* Menggunakan fitur pencarian.
+* Melihat peta lokasi.
+* Mengirim pesan melalui narahubung.
+
+---
+
+## 2.2 Admin
+
+Admin merupakan pengelola website yang memiliki akses penuh terhadap dashboard administrasi.
+
+### Hak Akses
+
+* Login dan logout.
+* Mengelola halaman.
+* Mengelola berita.
+* Mengelola galeri.
+* Mengelola dokumen.
+* Mengelola media library.
+* Mengelola menu.
+* Mengelola pengaturan website.
+* Mengelola lokasi peta.
+* Mengelola pesan narahubung.
+* Melihat audit log.
+
+---
+
+# 3. Daftar Use Case
+
+## 3.1 Use Case Guest
+
+| ID     | Nama Use Case             |
+| ------ | ------------------------- |
+| UC-G01 | Melihat Beranda           |
+| UC-G02 | Melihat Halaman Informasi |
+| UC-G03 | Membaca Berita            |
+| UC-G04 | Melihat Galeri            |
+| UC-G05 | Mengunduh Dokumen         |
+| UC-G06 | Menggunakan Pencarian     |
+| UC-G07 | Melihat Peta              |
+| UC-G08 | Mengirim Pesan Narahubung |
+
+---
+
+## 3.2 Use Case Admin
+
+| ID     | Nama Use Case                |
+| ------ | ---------------------------- |
+| UC-A01 | Login                        |
+| UC-A02 | Logout                       |
+| UC-A03 | Mengubah Password            |
+| UC-A04 | Mengelola Halaman            |
+| UC-A05 | Mengelola Section Halaman    |
+| UC-A06 | Mengelola Komponen Halaman   |
+| UC-A07 | Preview Halaman              |
+| UC-A08 | Mengarsipkan Halaman         |
+| UC-A09 | Mengelola Berita             |
+| UC-A10 | Mengelola Kategori Berita    |
+| UC-A11 | Mengelola Galeri             |
+| UC-A12 | Mengelola Dokumen            |
+| UC-A13 | Mengelola Media Library      |
+| UC-A14 | Mengelola Menu               |
+| UC-A15 | Mengelola Pengaturan Website |
+| UC-A16 | Mengelola Lokasi Peta        |
+| UC-A17 | Melihat Pesan Narahubung     |
+| UC-A18 | Mengubah Status Pesan        |
+| UC-A19 | Melihat Audit Log            |
+| UC-A20 | Mengelola Konten Unggulan    |
+
+---
+
+# 4. Spesifikasi Use Case
+
+---
+
+## UC-A01 – Login
+
+### Deskripsi
+
+Use case ini memungkinkan administrator mengakses dashboard sistem.
+
+### Aktor
+
+Admin
+
+### Prasyarat
+
+1. Akun administrator telah tersedia.
+2. Administrator mengetahui kredensial login.
+3. Administrator memiliki akses terhadap perangkat autentikasi TOTP.
+
+### Alur Utama
+
+1. Administrator membuka halaman login.
+2. Administrator memasukkan username.
+3. Administrator memasukkan password.
+4. Sistem memverifikasi kredensial.
+5. Sistem meminta kode autentikasi TOTP.
+6. Administrator memasukkan kode TOTP.
+7. Sistem memverifikasi kode.
+8. Sistem menampilkan dashboard.
+
+### Alur Alternatif
+
+#### A1 – Password Tidak Valid
+
+1. Sistem menolak proses login.
+2. Sistem menampilkan pesan kesalahan.
+3. Sistem mencatat aktivitas ke audit log.
+
+#### A2 – Kode TOTP Tidak Valid
+
+1. Sistem menolak proses login.
+2. Sistem meminta kode TOTP kembali.
+3. Sistem mencatat aktivitas ke audit log.
+
+### Pasca Kondisi
+
+Administrator berhasil masuk ke dashboard.
+
+---
+
+## UC-A04 – Mengelola Halaman
+
+### Deskripsi
+
+Use case ini memungkinkan administrator membuat dan mengelola halaman website.
+
+### Aktor
+
+Admin
+
+### Prasyarat
+
+Administrator telah login.
+
+### Alur Utama
+
+1. Administrator membuka modul Pages.
+2. Administrator memilih tambah halaman.
+3. Administrator mengisi informasi halaman.
+4. Administrator menyimpan data.
+5. Sistem membuat halaman baru.
+
+### Pasca Kondisi
+
+Halaman tersimpan dan dapat diedit lebih lanjut.
+
+---
+
+## UC-A05 – Mengelola Section Halaman
+
+### Deskripsi
+
+Use case ini memungkinkan administrator menyusun struktur halaman menggunakan section.
+
+### Aktor
+
+Admin
+
+### Prasyarat
+
+Halaman telah tersedia.
+
+### Alur Utama
+
+1. Administrator membuka editor halaman.
+2. Administrator menambahkan section baru.
+3. Administrator memilih layout section.
+4. Administrator menyimpan section.
+5. Sistem menampilkan hasil perubahan.
+
+### Pasca Kondisi
+
+Section tersimpan pada halaman.
+
+---
+
+## UC-A06 – Mengelola Komponen Halaman
+
+### Deskripsi
+
+Use case ini memungkinkan administrator menambahkan komponen ke dalam section.
+
+### Aktor
+
+Admin
+
+### Prasyarat
+
+Section telah tersedia.
+
+### Alur Utama
+
+1. Administrator memilih section.
+2. Administrator menambahkan komponen.
+3. Administrator mengisi data komponen.
+4. Administrator menyimpan perubahan.
+5. Sistem menampilkan preview.
+
+### Komponen yang Didukung
+
+* Heading
+* Rich Text
+* Image
+* Gallery
+* Statistics
+* Video
+* Map
+* Documents
+* CTA Button
+* Card Grid
+* Contact Block
+
+### Pasca Kondisi
+
+Komponen tersimpan pada section.
+
+---
+
+## UC-A07 – Preview Halaman
+
+### Deskripsi
+
+Use case ini memungkinkan administrator melihat tampilan halaman sebelum dipublikasikan.
+
+### Aktor
+
+Admin
+
+### Prasyarat
+
+Halaman telah dibuat.
+
+### Alur Utama
+
+1. Administrator membuka halaman.
+2. Administrator memilih menu Preview.
+3. Sistem membangun tampilan halaman.
+4. Sistem menampilkan preview halaman.
+
+### Pasca Kondisi
+
+Tidak ada perubahan data yang disimpan.
+
+---
+
+## UC-A09 – Mengelola Berita
+
+### Deskripsi
+
+Use case ini memungkinkan administrator mengelola konten berita.
+
+### Aktor
+
+Admin
+
+### Prasyarat
+
+Administrator telah login.
+
+### Alur Utama
+
+1. Membuat berita.
+2. Mengubah berita.
+3. Menghapus berita.
+4. Mengarsipkan berita.
+5. Menandai berita unggulan.
+
+### Data yang Dikelola
+
+* Judul
+* Slug
+* Thumbnail
+* Ringkasan
+* Isi Berita
+* Kategori
+
+### Pasca Kondisi
+
+Berita berhasil diperbarui.
+
+---
+
+## UC-A11 – Mengelola Galeri
+
+### Deskripsi
+
+Use case ini memungkinkan administrator mengelola dokumentasi foto.
+
+### Aktor
+
+Admin
+
+### Alur Utama
+
+1. Membuat album.
+2. Mengunggah foto.
+3. Menentukan cover album.
+4. Menambahkan caption.
+5. Menyimpan album.
+
+### Pasca Kondisi
+
+Album tersimpan dan dapat diakses publik.
+
+---
+
+## UC-A12 – Mengelola Dokumen
+
+### Deskripsi
+
+Use case ini memungkinkan administrator mengelola dokumen publik.
+
+### Aktor
+
+Admin
+
+### Alur Utama
+
+1. Mengunggah dokumen.
+2. Menentukan kategori.
+3. Menambahkan deskripsi.
+4. Menyimpan dokumen.
+
+### Pasca Kondisi
+
+Dokumen tersedia untuk diunduh pengunjung.
+
+---
+
+## UC-A14 – Mengelola Menu
+
+### Deskripsi
+
+Use case ini memungkinkan administrator mengatur navigasi website.
+
+### Aktor
+
+Admin
+
+### Alur Utama
+
+1. Menambahkan menu.
+2. Mengubah menu.
+3. Menghapus menu.
+4. Menentukan urutan menu.
+5. Membuat submenu.
+
+### Pasca Kondisi
+
+Struktur navigasi website diperbarui.
+
+---
+
+## UC-A15 – Mengelola Pengaturan Website
+
+### Deskripsi
+
+Use case ini memungkinkan administrator mengelola identitas website.
+
+### Data yang Dikelola
+
+* Nama Website
+* Nama Desa
+* Logo
+* Favicon
+* Banner
+* Alamat
+* Kontak
+* Email
+* Media Sosial
+* Warna Utama
+
+### Pasca Kondisi
+
+Identitas website diperbarui.
+
+---
+
+## UC-A16 – Mengelola Lokasi Peta
+
+### Deskripsi
+
+Use case ini memungkinkan administrator mengelola titik lokasi pada peta.
+
+### Alur Utama
+
+1. Menambahkan lokasi.
+2. Menentukan koordinat.
+3. Menentukan kategori lokasi.
+4. Menambahkan deskripsi.
+5. Menyimpan lokasi.
+
+### Pasca Kondisi
+
+Lokasi tersedia pada peta publik.
+
+---
+
+## UC-G08 – Mengirim Pesan Narahubung
+
+### Deskripsi
+
+Use case ini memungkinkan pengunjung menghubungi pihak desa.
+
+### Aktor
+
+Guest
+
+### Alur Utama
+
+1. Pengunjung membuka halaman narahubung.
+2. Pengunjung mengisi formulir.
+3. Pengunjung mengirim pesan.
+4. Sistem melakukan validasi.
+5. Sistem menyimpan pesan.
+6. Sistem mengirim notifikasi email kepada administrator.
+7. Sistem menampilkan pesan sukses.
+
+### Data yang Dikirim
+
+* Nama
+* Email
+* Nomor Telepon
+* Subjek
+* Isi Pesan
+
+### Pasca Kondisi
+
+Pesan tersimpan dan dapat ditindaklanjuti administrator.
+
+---
+
+## UC-A19 – Melihat Audit Log
+
+### Deskripsi
+
+Use case ini memungkinkan administrator memantau aktivitas sistem.
+
+### Aktor
+
+Admin
+
+### Alur Utama
+
+1. Administrator membuka modul Audit Log.
+2. Sistem menampilkan daftar aktivitas.
+3. Administrator melakukan pencarian atau filter.
+
+### Aktivitas yang Dicatat
+
+* Login
+* Logout
+* Gagal Login
+* Ubah Password
+* Tambah Konten
+* Edit Konten
+* Hapus Konten
+* Upload Media
+* Ubah Pengaturan
+
+### Aturan Bisnis
+
+Audit log tidak dapat dihapus oleh administrator.
+
+### Pasca Kondisi
+
+Administrator memperoleh informasi aktivitas sistem.
+
+---
+
+# 5. Matriks Relasi Aktor dan Use Case
+
+| Aktor | Use Case             |
+| ----- | -------------------- |
+| Guest | UC-G01 sampai UC-G08 |
+| Admin | UC-A01 sampai UC-A20 |
+
+---
+
+# 6. Kesimpulan
+
+Dokumen Use Case Specification ini mendefinisikan seluruh interaksi antara pengguna dan sistem pada Village Website CMS. Seluruh use case yang tercantum menjadi dasar penyusunan Use Case Diagram, Activity Diagram, Entity Relationship Diagram (ERD), Data Dictionary, serta implementasi sistem pada tahap pengembangan berikutnya.
+
+Tambahan:
+Mengunggah media.
+Memproses watermark otomatis.
+Memverifikasi watermark.
+Memproses ulang media gagal.
+Mengatur watermark terlihat.

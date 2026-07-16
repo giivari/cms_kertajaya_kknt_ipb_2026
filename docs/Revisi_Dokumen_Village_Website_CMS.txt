@@ -1,0 +1,126 @@
+REVISI DOKUMEN VILLAGE WEBSITE CMS (YANG WAJIB SAJA)
+
+1. HAPUS TABEL admin_recovery_codes
+- Hapus dari ERD
+- Hapus dari Data Dictionary
+- Hapus dari SRS
+- Hapus dari Use Case
+Alasan:
+- Sistem hanya memiliki 1 admin.
+- Tidak ada fitur lupa password.
+- Tidak ada recovery berbasis email.
+
+2. HAPUS remember_token
+- Hapus kolom remember_token pada tabel admins.
+- Tidak perlu fitur Remember Me.
+Alasan:
+- Dashboard bersifat eksklusif.
+- Keamanan lebih penting daripada kenyamanan login.
+
+3. EMAIL ADMIN BERSIFAT OPSIONAL
+- Email tidak digunakan untuk autentikasi.
+- Login hanya menggunakan:
+  - Username
+  - Password
+  - TOTP
+- Email boleh digunakan untuk notifikasi pesan narahubung.
+
+4. PERTAHANKAN STATUS KONTEN SEDERHANA
+Status yang digunakan:
+- published
+- archived
+- deleted (soft delete)
+
+Jangan menambahkan:
+- draft
+- scheduled
+- review
+- pending
+
+5. SEO TETAP SEDERHANA
+Pertahankan:
+- seo_title
+- seo_description
+
+Tidak perlu:
+- custom canonical
+- custom robots
+- custom schema markup
+- custom open graph per halaman
+
+6. MENU BUILDER TETAP SEDERHANA
+Pertahankan:
+- menu
+- submenu
+- urutan
+
+Tidak perlu:
+- mega menu
+- multi level tanpa batas
+- role based menu
+
+7. WATERMARK PDF DITUNDA
+MVP:
+- Watermark gambar terlihat
+- Watermark gambar tidak terlihat
+
+Backlog:
+- Watermark PDF
+
+8. SEARCH DIPERSEDERHANA
+MVP cukup mencari:
+- Judul halaman
+- Judul berita
+- Judul dokumen
+
+Tidak perlu:
+- Elasticsearch
+- Algolia
+- Vector Search
+
+9. MAPS DIPERTAHANKAN SEDERHANA
+Fitur:
+- Kategori lokasi
+- Titik lokasi
+- Koordinat
+
+Tidak perlu:
+- GIS
+- Polygon
+- GeoJSON editor
+
+10. AUDIT LOG DIPERSEMPIT
+Catat:
+- Login
+- Logout
+- Gagal Login
+- Ubah Password
+- Tambah Konten
+- Edit Konten
+- Hapus Konten
+- Ubah Pengaturan
+
+Tidak perlu mencatat aktivitas minor seperti preview atau navigasi dashboard.
+
+11. TAMBAHKAN FITUR TEMPLATE HALAMAN (WAJIB)
+Template bawaan:
+- Profil Desa
+- Sejarah Desa
+- Visi Misi
+- Potensi Desa
+- Informasi Dusun
+- Pelayanan
+- BUMDes
+- Rawan Bencana
+
+Alur:
+Buat Halaman → Pilih Template → Isi Konten
+
+KESIMPULAN
+Prioritas revisi:
+1. Hapus admin_recovery_codes
+2. Hapus remember_token
+3. Tambahkan Template Halaman
+4. Tunda Watermark PDF
+
+Setelah revisi ini, dokumentasi siap masuk tahap User Flow dan Wireframe.

@@ -1,0 +1,924 @@
+# DOKUMEN WIREFRAME SPECIFICATION
+
+## Village Website CMS
+
+### Single Village Installation
+
+**Versi Dokumen:** 1.0
+**Status:** Draft Final
+**Penyusun:** Tim Pengembang
+**Tanggal:** Juli 2026
+
+---
+
+# 1. Pendahuluan
+
+## 1.1 Tujuan
+
+Dokumen Wireframe Specification digunakan sebagai acuan perancangan antarmuka Village Website CMS sebelum memasuki tahap desain visual (UI Design) dan implementasi sistem.
+
+Dokumen ini menjelaskan:
+
+* Struktur layar.
+* Hierarki informasi.
+* Tata letak komponen.
+* Navigasi.
+* Interaksi utama.
+* Hubungan antarhalaman.
+
+Dokumen ini tidak membahas:
+
+* Warna.
+* Tipografi.
+* Ikon final.
+* Branding visual.
+
+---
+
+# 2. Prinsip Desain
+
+## 2.1 Mobile First
+
+Website dirancang dengan pendekatan:
+
+```text id="8lqpvk"
+Mobile First
+```
+
+karena mayoritas pengunjung website desa akan menggunakan perangkat seluler.
+
+---
+
+## 2.2 Accessibility
+
+Sistem harus mendukung:
+
+* Navigasi keyboard.
+* Alt text gambar.
+* Kontras warna yang baik.
+* Struktur heading yang benar.
+* Responsive design.
+
+---
+
+## 2.3 Simplicity
+
+Fokus utama:
+
+* Mudah digunakan masyarakat.
+* Mudah dikelola operator desa.
+* Tidak membingungkan.
+* Minim klik.
+
+---
+
+# 3. Struktur Frontend
+
+---
+
+# 3.1 Beranda
+
+## Tujuan
+
+Menjadi pusat informasi utama website desa.
+
+---
+
+## Struktur Layout
+
+```text id="a4mh5l"
+HEADER
+│
+├─ Logo Desa
+├─ Nama Desa
+├─ Tombol Menu
+└─ Search
+│
+HERO SECTION
+│
+├─ Banner Utama
+├─ Judul Desa
+└─ Tombol Aksi
+│
+QUICK MENU
+│
+├─ Profil
+├─ Berita
+├─ Galeri
+├─ Dokumen
+├─ Peta
+└─ Narahubung
+│
+BERITA TERBARU
+│
+GALERI TERBARU
+│
+DOKUMEN TERBARU
+│
+PETA SINGKAT
+│
+POTENSI DESA
+│
+FOOTER
+```
+
+---
+
+## Komponen
+
+### Header
+
+* Logo.
+* Nama desa.
+* Tombol menu.
+* Search.
+
+---
+
+### Hero
+
+* Banner.
+* Judul.
+* Deskripsi singkat.
+* Tombol aksi.
+
+---
+
+### Quick Menu
+
+Berbentuk card atau icon grid.
+
+---
+
+### Berita Terbaru
+
+Maksimal:
+
+```text id="h04z40"
+6 berita
+```
+
+---
+
+### Galeri Terbaru
+
+Maksimal:
+
+```text id="2wktjq"
+8 foto
+```
+
+---
+
+### Dokumen Terbaru
+
+Maksimal:
+
+```text id="tf95h9"
+5 dokumen
+```
+
+---
+
+### Footer
+
+* Kontak.
+* Alamat.
+* Media sosial.
+* Copyright.
+* Statistik pengunjung.
+
+---
+
+# 3.2 Halaman Dinamis
+
+## Tujuan
+
+Menampilkan informasi desa yang dibuat melalui Page Builder.
+
+---
+
+## Struktur Layout
+
+```text id="1a3r0u"
+HEADER
+│
+BREADCRUMB
+│
+JUDUL HALAMAN
+│
+KONTEN PAGE BUILDER
+│
+RELATED CONTENT
+│
+FOOTER
+```
+
+---
+
+## Area Page Builder
+
+Komponen yang dapat muncul:
+
+* Heading.
+* Text.
+* Image.
+* Gallery.
+* Map.
+* CTA.
+* Statistics.
+* Documents.
+* Video.
+
+---
+
+# 3.3 Daftar Berita
+
+## Struktur Layout
+
+```text id="uvt0qz"
+HEADER
+│
+JUDUL HALAMAN
+│
+FILTER KATEGORI
+│
+SEARCH BERITA
+│
+GRID BERITA
+│
+PAGINATION
+│
+FOOTER
+```
+
+---
+
+## Card Berita
+
+Menampilkan:
+
+* Thumbnail.
+* Judul.
+* Ringkasan.
+* Tanggal.
+
+---
+
+# 3.4 Detail Berita
+
+## Struktur Layout
+
+```text id="pc8v76"
+HEADER
+│
+BREADCRUMB
+│
+JUDUL
+│
+META INFORMASI
+│
+FEATURED IMAGE
+│
+ISI BERITA
+│
+BERITA TERKAIT
+│
+FOOTER
+```
+
+---
+
+## Meta Informasi
+
+Menampilkan:
+
+* Tanggal.
+* Kategori.
+* Jumlah dilihat (opsional).
+
+---
+
+# 3.5 Daftar Album
+
+## Struktur Layout
+
+```text id="1fh7r4"
+HEADER
+│
+JUDUL HALAMAN
+│
+GRID ALBUM
+│
+PAGINATION
+│
+FOOTER
+```
+
+---
+
+## Card Album
+
+Menampilkan:
+
+* Cover.
+* Nama album.
+* Jumlah foto.
+
+---
+
+# 3.6 Detail Album
+
+## Struktur Layout
+
+```text id="x7v3iv"
+HEADER
+│
+BREADCRUMB
+│
+JUDUL ALBUM
+│
+DESKRIPSI
+│
+PHOTO GRID
+│
+LIGHTBOX
+│
+FOOTER
+```
+
+---
+
+# 3.7 Daftar Dokumen
+
+## Struktur Layout
+
+```text id="ymc89j"
+HEADER
+│
+JUDUL HALAMAN
+│
+FILTER
+│
+SEARCH
+│
+LIST DOKUMEN
+│
+PAGINATION
+│
+FOOTER
+```
+
+---
+
+## Item Dokumen
+
+Menampilkan:
+
+* Judul.
+* Kategori.
+* Ukuran file.
+* Tombol Download.
+
+---
+
+# 3.8 Peta Desa
+
+## Struktur Layout
+
+```text id="n0z5ut"
+HEADER
+│
+JUDUL
+│
+PETA INTERAKTIF
+│
+FILTER KATEGORI
+│
+DETAIL LOKASI
+│
+FOOTER
+```
+
+---
+
+## Interaksi
+
+Klik marker:
+
+```text id="j6vq7t"
+Marker
+↓
+Popup
+↓
+Detail Lokasi
+```
+
+---
+
+# 3.9 Narahubung
+
+## Struktur Layout
+
+```text id="odg8q4"
+HEADER
+│
+INFORMASI KONTAK
+│
+FORMULIR
+│
+CAPTCHA
+│
+TOMBOL KIRIM
+│
+FOOTER
+```
+
+---
+
+## Form
+
+Field:
+
+* Nama.
+* Email.
+* Nomor HP.
+* Subjek.
+* Pesan.
+
+---
+
+# 3.10 Hasil Pencarian
+
+## Struktur Layout
+
+```text id="1wvsl5"
+HEADER
+│
+SEARCH BAR
+│
+HASIL
+│
+PAGINATION
+│
+FOOTER
+```
+
+---
+
+## Menampilkan
+
+* Halaman.
+* Berita.
+* Dokumen.
+
+---
+
+# 3.11 Halaman Error
+
+## 404
+
+```text id="e6m2gq"
+Ilustrasi
+↓
+Halaman Tidak Ditemukan
+↓
+Kembali ke Beranda
+```
+
+---
+
+## 500
+
+```text id="gh6lxy"
+Terjadi Kesalahan
+↓
+Coba Lagi
+```
+
+---
+
+# 4. Struktur Backend
+
+---
+
+# 4.1 Login
+
+## Layout
+
+```text id="3l2m7g"
+Logo
+↓
+Username
+↓
+Password
+↓
+CAPTCHA
+↓
+Login
+```
+
+---
+
+## Setelah Login
+
+```text id="q4l8r0"
+TOTP Verification
+```
+
+---
+
+# 4.2 Dashboard
+
+## Layout
+
+```text id="ab3d2j"
+SIDEBAR
+│
+TOPBAR
+│
+STATISTICS
+│
+AKTIVITAS TERBARU
+│
+KONTEN TERBARU
+```
+
+---
+
+## Statistik
+
+Menampilkan:
+
+* Jumlah halaman.
+* Jumlah berita.
+* Jumlah dokumen.
+* Jumlah media.
+* Jumlah pesan.
+
+---
+
+# 4.3 Manajemen Halaman
+
+## Layout
+
+```text id="4m2y7t"
+HEADER
+│
+FILTER
+│
+SEARCH
+│
+TABEL HALAMAN
+│
+PAGINATION
+```
+
+---
+
+## Tombol
+
+* Tambah.
+* Edit.
+* Arsipkan.
+* Hapus.
+
+---
+
+# 4.4 Form Halaman
+
+## Layout
+
+```text id="t5q8m1"
+Informasi Dasar
+│
+SEO
+│
+Template
+│
+Tombol Lanjut ke Builder
+```
+
+---
+
+# 4.5 Page Builder
+
+## Layout
+
+```text id="4b1s8x"
+SIDEBAR KOMPONEN
+│
+KANVAS HALAMAN
+│
+PANEL PROPERTI
+```
+
+---
+
+## Sidebar Komponen
+
+* Heading.
+* Text.
+* Image.
+* Gallery.
+* CTA.
+* Documents.
+* Statistics.
+* Map.
+* Video.
+
+---
+
+## Kanvas
+
+Drag and drop section.
+
+---
+
+## Panel Properti
+
+Mengatur:
+
+* Layout.
+* Margin.
+* Padding.
+* Visibility.
+
+---
+
+# 4.6 Manajemen Berita
+
+## Layout
+
+```text id="3n8y5u"
+SEARCH
+│
+FILTER
+│
+TABEL BERITA
+```
+
+---
+
+## Tombol
+
+* Tambah.
+* Edit.
+* Arsipkan.
+* Hapus.
+
+---
+
+# 4.7 Editor Berita
+
+## Layout
+
+```text id="0v8m5r"
+Judul
+│
+Kategori
+│
+Thumbnail
+│
+Editor Konten
+│
+SEO
+│
+Preview
+│
+Publish
+```
+
+---
+
+# 4.8 Manajemen Galeri
+
+## Layout
+
+```text id="8w5x1j"
+DAFTAR ALBUM
+│
+TAMBAH ALBUM
+```
+
+---
+
+## Detail Album
+
+```text id="q2g4ly"
+Informasi Album
+│
+Upload Foto
+│
+Urutan Foto
+```
+
+---
+
+# 4.9 Manajemen Dokumen
+
+## Layout
+
+```text id="7d2z3m"
+SEARCH
+│
+FILTER
+│
+TABEL DOKUMEN
+```
+
+---
+
+# 4.10 Media Library
+
+## Layout
+
+```text id="f1q8m3"
+FILTER
+│
+SEARCH
+│
+GRID MEDIA
+│
+DETAIL MEDIA
+```
+
+---
+
+## Detail Media
+
+Menampilkan:
+
+* Preview.
+* Status watermark.
+* Status verifikasi.
+* Metadata.
+* Penggunaan media.
+
+---
+
+# 4.11 Menu Builder
+
+## Layout
+
+```text id="p8d3w0"
+STRUKTUR MENU
+│
+DETAIL MENU
+```
+
+---
+
+## Interaksi
+
+Drag and drop urutan menu.
+
+---
+
+# 4.12 Manajemen Lokasi
+
+## Layout
+
+```text id="4v6r0x"
+PETA
+│
+FORM LOKASI
+│
+DAFTAR LOKASI
+```
+
+---
+
+# 4.13 Manajemen Pesan
+
+## Layout
+
+```text id="s7k2p4"
+FILTER STATUS
+│
+DAFTAR PESAN
+│
+DETAIL PESAN
+```
+
+---
+
+## Status
+
+* New
+* Read
+* Processing
+* Completed
+* Archived
+
+---
+
+# 4.14 Pengaturan Website
+
+## Struktur
+
+```text id="3t8n5u"
+Identitas Desa
+│
+Kontak
+│
+Media
+│
+Watermark
+│
+SEO Dasar
+│
+Keamanan
+```
+
+---
+
+# 4.15 Audit Log
+
+## Layout
+
+```text id="5g9m2d"
+FILTER
+│
+SEARCH
+│
+TABEL LOG
+│
+DETAIL LOG
+```
+
+---
+
+## Aktivitas
+
+* Login.
+* Logout.
+* Gagal Login.
+* Ubah Password.
+* Tambah Konten.
+* Edit Konten.
+* Hapus Konten.
+* Ubah Pengaturan.
+
+---
+
+# 4.16 Profil Administrator
+
+## Layout
+
+```text id="2f4y7x"
+Informasi Akun
+│
+Ubah Password
+│
+Pengaturan TOTP
+```
+
+---
+
+# 5. Responsive Behavior
+
+## Mobile
+
+Navigasi menggunakan:
+
+```text id="0r2v7c"
+Hamburger Menu
+```
+
+---
+
+## Tablet
+
+Menggunakan:
+
+```text id="4p7m3a"
+Sidebar Collapse
+```
+
+---
+
+## Desktop
+
+Menggunakan:
+
+```text id="7x8j5t"
+Sidebar Permanen
+```
+
+---
+
+# 6. Kesimpulan
+
+Wireframe Specification Village Website CMS mendefinisikan struktur seluruh layar yang akan dibangun pada sistem.
+
+Dokumen ini menjadi dasar untuk:
+
+* Information Architecture Final.
+* High Fidelity Wireframe.
+* Desain UI Figma.
+* Design System.
+* Implementasi Laravel + Filament.
+* Pengujian UI/UX.
+
+Setelah dokumen ini disetujui, tahap berikutnya adalah **UI Architecture & Design System Specification**, yang akan menentukan komponen desain, grid, spacing, typography, warna, ikon, dan standar visual sebelum mulai membuat desain Figma secara detail.

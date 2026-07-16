@@ -1,0 +1,703 @@
+# SECURITY SPECIFICATION DOCUMENT
+
+## Village Website CMS
+
+**Versi Dokumen:** 1.0
+**Status:** Approved Draft
+**Jenis Dokumen:** Security Architecture Specification
+**Berlaku Untuk:** Seluruh Implementasi Village Website CMS
+**Tanggal:** Juli 2026
+
+---
+
+# 1. Pendahuluan
+
+## 1.1 Tujuan
+
+Dokumen ini mendefinisikan standar keamanan yang diterapkan pada Village Website CMS.
+
+Tujuan utama:
+
+* Melindungi dashboard admin.
+* Melindungi data website.
+* Melindungi media dan dokumen.
+* Mengurangi risiko serangan umum.
+* Menyediakan standar keamanan yang realistis untuk website desa.
+
+---
+
+# 2. Filosofi Keamanan
+
+Village Website CMS menggunakan pendekatan:
+
+```text
+Secure by Default
+```
+
+Artinya:
+
+* Fitur keamanan aktif secara bawaan.
+* Administrator tidak perlu konfigurasi rumit.
+* Sistem tetap aman meskipun operator non-teknis.
+
+---
+
+# 3. Model Akses
+
+## Guest
+
+Hak akses:
+
+* Read Only
+
+Dapat:
+
+* melihat halaman
+* melihat berita
+* melihat galeri
+* mengunduh dokumen publik
+* mengirim pesan
+
+Tidak dapat:
+
+* mengubah data
+* mengakses dashboard
+
+---
+
+## Admin
+
+Hak akses:
+
+* Full Access
+
+Jumlah:
+
+```text
+1 akun admin
+```
+
+Tidak mendukung:
+
+* multi admin
+* role management
+* permission hierarchy
+
+---
+
+# 4. Dashboard Protection
+
+## URL Admin Terpisah
+
+Dashboard tidak menggunakan:
+
+```text
+/admin
+```
+
+secara langsung.
+
+Contoh:
+
+```text
+/desa-dashboard
+```
+
+atau:
+
+```text
+/portal-kelola
+```
+
+---
+
+## Authentication Layer
+
+Login wajib melalui:
+
+```text
+Username
+Password
+CAPTCHA
+TOTP
+```
+
+---
+
+## Session Security
+
+Session:
+
+* HttpOnly
+* Secure Cookie
+* SameSite Strict
+
+---
+
+## Session Timeout
+
+Idle timeout:
+
+```text
+30 menit
+```
+
+Absolute timeout:
+
+```text
+8 jam
+```
+
+---
+
+# 5. Password Policy
+
+## Minimum
+
+```text
+12 karakter
+```
+
+---
+
+## Wajib Mengandung
+
+* Huruf besar
+* Huruf kecil
+* Angka
+
+---
+
+## Disarankan
+
+* Simbol
+
+---
+
+## Penyimpanan
+
+Password tidak pernah disimpan dalam bentuk asli.
+
+Menggunakan:
+
+```text
+Argon2id
+```
+
+---
+
+# 6. Two Factor Authentication
+
+Menggunakan:
+
+```text
+TOTP
+```
+
+---
+
+## Aplikasi
+
+* Google Authenticator
+* Microsoft Authenticator
+* Aegis
+* Authy
+
+---
+
+## Ketentuan
+
+* Wajib aktif.
+* Tidak dapat dinonaktifkan.
+
+---
+
+# 7. CAPTCHA Protection
+
+Diterapkan pada:
+
+* Login
+* Narahubung
+
+---
+
+## Tujuan
+
+Melindungi dari:
+
+* bot
+* spam
+* brute force
+
+---
+
+# 8. Brute Force Protection
+
+---
+
+## Login Attempt Limit
+
+Maksimal:
+
+```text
+5 percobaan
+```
+
+---
+
+## Lockout
+
+```text
+15 menit
+```
+
+---
+
+## Progressive Delay
+
+Percobaan gagal berturut-turut:
+
+```text
+1 detik
+3 detik
+5 detik
+10 detik
+```
+
+---
+
+# 9. CSRF Protection
+
+Seluruh form menggunakan:
+
+```text
+CSRF Token
+```
+
+---
+
+## Berlaku Pada
+
+* Login
+* CRUD
+* Settings
+* Upload
+* Contact Management
+
+---
+
+# 10. XSS Protection
+
+Input pengguna harus melalui:
+
+* sanitization
+* escaping
+
+---
+
+## Berlaku Pada
+
+* berita
+* halaman
+* pesan
+* metadata
+
+---
+
+# 11. SQL Injection Protection
+
+Seluruh query menggunakan:
+
+```text
+ORM
+```
+
+atau:
+
+```text
+Parameterized Query
+```
+
+---
+
+## Dilarang
+
+```sql
+SELECT * FROM users
+WHERE username='$input'
+```
+
+---
+
+# 12. File Upload Security
+
+---
+
+## Validasi MIME Type
+
+Sistem memeriksa:
+
+* extension
+* mime type
+
+---
+
+## Maksimum Ukuran
+
+Gambar:
+
+```text
+10 MB
+```
+
+---
+
+Dokumen:
+
+```text
+20 MB
+```
+
+---
+
+## Dilarang
+
+* exe
+* bat
+* cmd
+* php
+* js
+* sh
+
+---
+
+# 13. Media Protection
+
+---
+
+## Watermark Tak Terlihat
+
+Wajib.
+
+---
+
+## Watermark Terlihat
+
+Opsional.
+
+---
+
+## Original File
+
+Tidak tersedia untuk publik.
+
+---
+
+## Public File
+
+Hanya derivative.
+
+---
+
+# 14. Anti Hotlink Protection
+
+Menggunakan:
+
+* Cloudflare
+* Referrer validation
+
+---
+
+## Tujuan
+
+Mencegah website lain menggunakan media desa secara langsung.
+
+---
+
+# 15. Contact Form Protection
+
+---
+
+## Validasi
+
+* CAPTCHA
+* Rate limit
+* Input sanitization
+
+---
+
+## Rate Limit
+
+```text
+5 pesan / jam / IP
+```
+
+---
+
+# 16. Audit Logging
+
+Dicatat:
+
+* Login
+* Logout
+* Login gagal
+* Ubah password
+* Tambah data
+* Edit data
+* Hapus data
+* Ubah setting
+
+---
+
+## Tidak Dicatat
+
+* View halaman
+* Scroll
+* Hover
+
+---
+
+# 17. Security Headers
+
+Wajib mengaktifkan:
+
+```text
+X-Frame-Options
+```
+
+---
+
+```text
+X-Content-Type-Options
+```
+
+---
+
+```text
+Referrer-Policy
+```
+
+---
+
+```text
+Content-Security-Policy
+```
+
+---
+
+```text
+Permissions-Policy
+```
+
+---
+
+# 18. HTTPS Requirement
+
+Seluruh website wajib menggunakan:
+
+```text
+HTTPS
+```
+
+---
+
+## HTTP
+
+Otomatis redirect.
+
+---
+
+# 19. Backup Security
+
+Backup harus mencakup:
+
+* database
+* media
+* settings
+
+---
+
+## Retensi
+
+Harian:
+
+```text
+7 hari
+```
+
+---
+
+Mingguan:
+
+```text
+4 minggu
+```
+
+---
+
+Bulanan:
+
+```text
+6 bulan
+```
+
+---
+
+# 20. Server Security
+
+Server harus:
+
+* update rutin
+* firewall aktif
+* SSH key authentication
+* non-root deployment
+
+---
+
+## Dilarang
+
+Deploy menggunakan:
+
+```text
+root
+```
+
+---
+
+# 21. Cloudflare Layer
+
+Menggunakan:
+
+* DNS
+* SSL
+* WAF
+* Rate Limiting
+
+---
+
+## Mode
+
+```text
+Full Strict SSL
+```
+
+---
+
+# 22. Data Retention
+
+---
+
+## Audit Log
+
+Retensi:
+
+```text
+180 hari
+```
+
+---
+
+## Pesan Narahubung
+
+Retensi:
+
+```text
+2 tahun
+```
+
+---
+
+## Deleted Content
+
+Retensi:
+
+```text
+30 hari
+```
+
+---
+
+# 23. Disaster Recovery
+
+Jika terjadi:
+
+* server rusak
+* database rusak
+* website diretas
+
+maka sistem harus dapat dipulihkan menggunakan backup.
+
+---
+
+## Recovery Target
+
+Website aktif kembali:
+
+```text
+< 24 jam
+```
+
+---
+
+# 24. Security Checklist Sebelum Go Live
+
+## Authentication
+
+* Password kuat
+* TOTP aktif
+* CAPTCHA aktif
+
+---
+
+## Server
+
+* HTTPS aktif
+* Firewall aktif
+
+---
+
+## Database
+
+* Backup aktif
+
+---
+
+## Cloudflare
+
+* SSL aktif
+* WAF aktif
+
+---
+
+## Media
+
+* Watermark aktif
+* Hotlink protection aktif
+
+---
+
+# 25. Kesimpulan
+
+Village Website CMS menggunakan pendekatan keamanan berlapis:
+
+```text
+Cloudflare
+↓
+HTTPS
+↓
+Authentication
+↓
+TOTP
+↓
+Rate Limiting
+↓
+Application Security
+↓
+Media Protection
+↓
+Audit Logging
+↓
+Backup
+```
+
+Pendekatan ini memberikan tingkat keamanan yang tinggi untuk kebutuhan website desa tanpa menambah kompleksitas berlebihan bagi operator.

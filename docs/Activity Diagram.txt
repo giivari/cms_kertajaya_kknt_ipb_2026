@@ -1,0 +1,1088 @@
+# DOKUMEN ACTIVITY DIAGRAM
+
+## Village Website CMS
+
+### Single Village Installation
+
+**Versi Dokumen:** 1.0
+**Status:** Draft Final
+**Penyusun:** Tim Pengembang
+**Tanggal:** Juli 2026
+
+---
+
+# 1. Pendahuluan
+
+## 1.1 Tujuan Dokumen
+
+Dokumen Activity Diagram menjelaskan alur aktivitas utama yang terjadi dalam Village Website CMS.
+
+Dokumen ini digunakan sebagai dasar untuk:
+
+1. Memahami urutan proses pada sistem.
+2. Mengidentifikasi keputusan dan kondisi alternatif.
+3. Menentukan interaksi antara Guest, Admin, dan Sistem.
+4. Menjadi dasar perancangan antarmuka.
+5. Menjadi dasar implementasi controller, service, dan validation.
+6. Menjadi dasar penyusunan test case.
+7. Melengkapi dokumen Use Case Specification.
+
+---
+
+## 1.2 Ruang Lingkup
+
+Activity Diagram mencakup proses berikut:
+
+1. Login administrator.
+2. Logout administrator.
+3. Mengubah password.
+4. Membuat dan memublikasikan halaman.
+5. Mengelola section dan komponen halaman.
+6. Mengarsipkan halaman.
+7. Mengelola berita.
+8. Mengelola galeri.
+9. Mengelola dokumen.
+10. Mengelola Media Library.
+11. Mengelola menu.
+12. Mengelola lokasi peta.
+13. Mengirim pesan narahubung.
+14. Mengelola pesan narahubung.
+15. Menggunakan pencarian.
+16. Pencatatan audit log.
+
+---
+
+# 2. Notasi Activity Diagram
+
+Notasi yang digunakan:
+
+| Simbol        | Keterangan                                 |
+| ------------- | ------------------------------------------ |
+| Initial Node  | Menandai awal proses                       |
+| Activity      | Menunjukkan aktivitas                      |
+| Decision Node | Menunjukkan percabangan keputusan          |
+| Merge Node    | Menggabungkan kembali alur alternatif      |
+| Fork          | Memulai beberapa aktivitas paralel         |
+| Join          | Menggabungkan aktivitas paralel            |
+| Final Node    | Menandai akhir proses                      |
+| Swimlane      | Memisahkan tanggung jawab aktor dan sistem |
+
+Swimlane utama terdiri atas:
+
+* Guest.
+* Admin.
+* Sistem.
+* Email Service, jika diperlukan.
+
+---
+
+# 3. Activity Diagram Login Administrator
+
+## 3.1 Tujuan
+
+Menggambarkan proses autentikasi administrator menggunakan username, password, CAPTCHA, dan TOTP.
+
+## 3.2 Alur Aktivitas
+
+```text
+Mulai
+  ↓
+Admin membuka URL khusus dashboard
+  ↓
+Sistem menampilkan formulir login
+  ↓
+Admin memasukkan username dan password
+  ↓
+Admin menyelesaikan CAPTCHA
+  ↓
+Sistem memvalidasi input
+  ↓
+Apakah format input valid?
+  ├── Tidak
+  │     ↓
+  │   Sistem menampilkan pesan kesalahan
+  │     ↓
+  │   Sistem mencatat login gagal
+  │     ↓
+  │   Kembali ke formulir login
+  │
+  └── Ya
+        ↓
+      Sistem memverifikasi username dan password
+        ↓
+      Apakah kredensial valid?
+        ├── Tidak
+        │     ↓
+        │   Sistem menambah jumlah percobaan gagal
+        │     ↓
+        │   Sistem mencatat login gagal
+        │     ↓
+        │   Apakah batas percobaan tercapai?
+        │     ├── Ya
+        │     │     ↓
+        │     │   Sistem memblokir sementara proses login
+        │     │     ↓
+        │     │   Sistem menampilkan pemberitahuan
+        │     │
+        │     └── Tidak
+        │           ↓
+        │         Kembali ke formulir login
+        │
+        └── Ya
+              ↓
+            Sistem meminta kode TOTP
+              ↓
+            Admin memasukkan kode TOTP
+              ↓
+            Sistem memverifikasi kode TOTP
+              ↓
+            Apakah kode valid?
+              ├── Tidak
+              │     ↓
+              │   Sistem mencatat kegagalan TOTP
+              │     ↓
+              │   Kembali ke input TOTP
+              │
+              └── Ya
+                    ↓
+                  Sistem membuat session baru
+                    ↓
+                  Sistem memperbarui waktu dan IP login
+                    ↓
+                  Sistem mencatat login berhasil
+                    ↓
+                  Sistem menampilkan dashboard
+                    ↓
+                  Selesai
+```
+
+## 3.3 Kondisi Khusus
+
+1. Jika session admin masih aktif, sistem dapat langsung mengarahkan ke dashboard.
+2. Jika CAPTCHA gagal, proses validasi kredensial tidak dijalankan.
+3. Jika batas login gagal tercapai, sistem menerapkan rate limiting.
+4. Session ID harus diperbarui setelah login berhasil.
+5. Semua percobaan login dicatat dalam audit log.
+
+---
+
+# 4. Activity Diagram Logout Administrator
+
+## 4.1 Alur Aktivitas
+
+```text
+Mulai
+  ↓
+Admin memilih menu Logout
+  ↓
+Sistem meminta konfirmasi
+  ↓
+Apakah admin mengonfirmasi?
+  ├── Tidak
+  │     ↓
+  │   Kembali ke dashboard
+  │
+  └── Ya
+        ↓
+      Sistem menghapus session aktif
+        ↓
+      Sistem mencatat aktivitas logout
+        ↓
+      Sistem mengarahkan ke halaman login
+        ↓
+      Selesai
+```
+
+---
+
+# 5. Activity Diagram Mengubah Password
+
+## 5.1 Tujuan
+
+Menggambarkan proses perubahan password administrator secara aman.
+
+## 5.2 Alur Aktivitas
+
+```text
+Mulai
+  ↓
+Admin membuka Pengaturan Akun
+  ↓
+Admin memilih Ubah Password
+  ↓
+Sistem menampilkan formulir
+  ↓
+Admin memasukkan password lama
+  ↓
+Admin memasukkan password baru
+  ↓
+Admin mengonfirmasi password baru
+  ↓
+Admin memasukkan kode TOTP
+  ↓
+Sistem melakukan validasi
+  ↓
+Apakah password lama benar?
+  ├── Tidak
+  │     ↓
+  │   Sistem menampilkan pesan kesalahan
+  │     ↓
+  │   Sistem mencatat kegagalan perubahan password
+  │
+  └── Ya
+        ↓
+      Apakah password baru memenuhi kebijakan?
+        ├── Tidak
+        │     ↓
+        │   Sistem menampilkan ketentuan password
+        │
+        └── Ya
+              ↓
+            Apakah konfirmasi password sesuai?
+              ├── Tidak
+              │     ↓
+              │   Sistem menampilkan pesan kesalahan
+              │
+              └── Ya
+                    ↓
+                  Apakah kode TOTP valid?
+                    ├── Tidak
+                    │     ↓
+                    │   Sistem menolak perubahan
+                    │
+                    └── Ya
+                          ↓
+                        Sistem melakukan hashing password baru
+                          ↓
+                        Sistem memperbarui password
+                          ↓
+                        Sistem memperbarui password_changed_at
+                          ↓
+                        Sistem menghapus session lain
+                          ↓
+                        Sistem mencatat perubahan password
+                          ↓
+                        Sistem menampilkan pesan berhasil
+                          ↓
+                        Selesai
+```
+
+---
+
+# 6. Activity Diagram Membuat Halaman
+
+## 6.1 Tujuan
+
+Menggambarkan proses pembuatan halaman baru melalui Page Builder.
+
+## 6.2 Alur Aktivitas
+
+```text
+Mulai
+  ↓
+Admin membuka modul Halaman
+  ↓
+Admin memilih Tambah Halaman
+  ↓
+Sistem menampilkan formulir informasi halaman
+  ↓
+Admin mengisi judul, slug, ringkasan, dan SEO
+  ↓
+Sistem memvalidasi data
+  ↓
+Apakah data valid?
+  ├── Tidak
+  │     ↓
+  │   Sistem menampilkan pesan validasi
+  │     ↓
+  │   Admin memperbaiki data
+  │
+  └── Ya
+        ↓
+      Sistem menyimpan halaman
+        ↓
+      Sistem mencatat pembuatan halaman
+        ↓
+      Sistem membuka Page Builder
+        ↓
+      Admin dapat menambahkan section
+        ↓
+      Selesai
+```
+
+## 6.3 Catatan
+
+Halaman dapat dibuat meskipun belum memiliki section atau komponen. Halaman kosong tetap tidak menimbulkan error pada sistem.
+
+---
+
+# 7. Activity Diagram Mengelola Section Halaman
+
+## 7.1 Alur Aktivitas
+
+```text
+Mulai
+  ↓
+Admin membuka Page Builder
+  ↓
+Admin memilih Tambah Section
+  ↓
+Sistem menampilkan pilihan layout
+  ↓
+Admin memilih layout
+  ↓
+Admin mengatur background, spacing, dan visibilitas
+  ↓
+Sistem memvalidasi pengaturan
+  ↓
+Apakah valid?
+  ├── Tidak
+  │     ↓
+  │   Sistem menampilkan pesan kesalahan
+  │
+  └── Ya
+        ↓
+      Sistem menyimpan section
+        ↓
+      Sistem menentukan posisi section
+        ↓
+      Sistem memperbarui preview
+        ↓
+      Sistem mencatat aktivitas
+        ↓
+      Selesai
+```
+
+---
+
+# 8. Activity Diagram Mengelola Komponen Halaman
+
+## 8.1 Alur Aktivitas
+
+```text
+Mulai
+  ↓
+Admin memilih section
+  ↓
+Admin memilih kolom
+  ↓
+Admin memilih Tambah Komponen
+  ↓
+Sistem menampilkan daftar komponen
+  ↓
+Admin memilih jenis komponen
+  ↓
+Sistem menampilkan form sesuai jenis komponen
+  ↓
+Admin mengisi isi dan pengaturan komponen
+  ↓
+Sistem memvalidasi content_data
+  ↓
+Apakah data valid?
+  ├── Tidak
+  │     ↓
+  │   Sistem menampilkan pesan kesalahan
+  │
+  └── Ya
+        ↓
+      Sistem menyimpan komponen
+        ↓
+      Sistem memperbarui urutan
+        ↓
+      Sistem memperbarui preview
+        ↓
+      Sistem mencatat aktivitas
+        ↓
+      Selesai
+```
+
+## 8.2 Aktivitas Tambahan
+
+Admin dapat:
+
+* Memindahkan komponen.
+* Mengubah komponen.
+* Menyembunyikan komponen.
+* Menghapus komponen.
+* Menggandakan komponen jika fitur diterapkan.
+
+Setiap perubahan harus memperbarui preview halaman.
+
+---
+
+# 9. Activity Diagram Preview dan Publikasi Halaman
+
+## 9.1 Alur Aktivitas
+
+```text
+Mulai
+  ↓
+Admin membuka halaman
+  ↓
+Admin memilih Preview
+  ↓
+Sistem memuat halaman beserta section dan komponen
+  ↓
+Sistem merender halaman dalam mode preview
+  ↓
+Admin memeriksa hasil
+  ↓
+Apakah perlu diperbaiki?
+  ├── Ya
+  │     ↓
+  │   Admin kembali ke Page Builder
+  │     ↓
+  │   Admin melakukan perubahan
+  │     ↓
+  │   Kembali ke Preview
+  │
+  └── Tidak
+        ↓
+      Admin memilih Simpan dan Terbitkan
+        ↓
+      Sistem memvalidasi halaman
+        ↓
+      Apakah halaman valid?
+        ├── Tidak
+        │     ↓
+        │   Sistem menampilkan bagian yang harus diperbaiki
+        │
+        └── Ya
+              ↓
+            Sistem mengubah status menjadi published
+              ↓
+            Sistem mengisi published_at jika belum tersedia
+              ↓
+            Sistem memperbarui indeks pencarian
+              ↓
+            Sistem mencatat publikasi
+              ↓
+            Halaman tersedia untuk Guest
+              ↓
+            Selesai
+```
+
+---
+
+# 10. Activity Diagram Mengarsipkan Halaman
+
+## 10.1 Alur Aktivitas
+
+```text
+Mulai
+  ↓
+Admin memilih halaman
+  ↓
+Admin memilih Arsipkan
+  ↓
+Sistem meminta konfirmasi
+  ↓
+Apakah dikonfirmasi?
+  ├── Tidak
+  │     ↓
+  │   Proses dibatalkan
+  │
+  └── Ya
+        ↓
+      Sistem mengubah status menjadi archived
+        ↓
+      Sistem menghapus halaman dari pencarian publik
+        ↓
+      Sistem tidak lagi menampilkan halaman
+        ↓
+      Sistem mencatat aktivitas
+        ↓
+      Selesai
+```
+
+---
+
+# 11. Activity Diagram Menghapus Konten
+
+## 11.1 Alur Aktivitas
+
+```text
+Mulai
+  ↓
+Admin memilih konten
+  ↓
+Admin memilih Hapus
+  ↓
+Sistem menampilkan peringatan
+  ↓
+Admin mengetik atau menekan konfirmasi
+  ↓
+Apakah konfirmasi valid?
+  ├── Tidak
+  │     ↓
+  │   Penghapusan dibatalkan
+  │
+  └── Ya
+        ↓
+      Sistem melakukan soft delete
+        ↓
+      Sistem menyembunyikan konten dari frontend
+        ↓
+      Sistem menghapus konten dari pencarian
+        ↓
+      Sistem mencatat aktivitas penghapusan
+        ↓
+      Sistem menjadwalkan permanent delete sesuai retensi
+        ↓
+      Selesai
+```
+
+---
+
+# 12. Activity Diagram Mengelola Berita
+
+## 12.1 Alur Aktivitas
+
+```text
+Mulai
+  ↓
+Admin membuka modul Berita
+  ↓
+Admin memilih tambah atau edit berita
+  ↓
+Admin mengisi judul, kategori, ringkasan, isi, dan gambar
+  ↓
+Sistem memvalidasi data
+  ↓
+Apakah data valid?
+  ├── Tidak
+  │     ↓
+  │   Sistem menampilkan kesalahan
+  │
+  └── Ya
+        ↓
+      Admin memilih Preview
+        ↓
+      Sistem menampilkan preview berita
+        ↓
+      Admin memilih Terbitkan
+        ↓
+      Sistem menyimpan berita
+        ↓
+      Sistem membuat atau memvalidasi slug
+        ↓
+      Sistem memperbarui indeks pencarian
+        ↓
+      Sistem mencatat aktivitas
+        ↓
+      Berita tersedia untuk Guest
+        ↓
+      Selesai
+```
+
+---
+
+# 13. Activity Diagram Mengelola Galeri
+
+## 13.1 Alur Aktivitas
+
+```text
+Mulai
+  ↓
+Admin membuka modul Galeri
+  ↓
+Admin memilih Tambah Album
+  ↓
+Admin mengisi judul dan deskripsi
+  ↓
+Admin memilih media dari Media Library
+  atau mengunggah media baru
+  ↓
+Sistem memvalidasi media
+  ↓
+Apakah media valid?
+  ├── Tidak
+  │     ↓
+  │   Sistem menolak media
+  │
+  └── Ya
+        ↓
+      Admin menentukan cover album
+        ↓
+      Admin mengatur caption dan urutan
+        ↓
+      Sistem menyimpan album dan item galeri
+        ↓
+      Sistem mencatat aktivitas
+        ↓
+      Album dapat dipublikasikan
+        ↓
+      Selesai
+```
+
+---
+
+# 14. Activity Diagram Mengelola Dokumen
+
+## 14.1 Alur Aktivitas
+
+```text
+Mulai
+  ↓
+Admin membuka modul Dokumen
+  ↓
+Admin memilih Tambah Dokumen
+  ↓
+Admin mengisi judul, kategori, dan deskripsi
+  ↓
+Admin memilih file PDF
+  ↓
+Sistem memvalidasi MIME type dan ukuran file
+  ↓
+Apakah file valid?
+  ├── Tidak
+  │     ↓
+  │   Sistem menolak upload
+  │
+  └── Ya
+        ↓
+      Sistem menyimpan file melalui Media Library
+        ↓
+      Admin memilih thumbnail jika diperlukan
+        ↓
+      Sistem menyimpan metadata dokumen
+        ↓
+      Sistem mencatat aktivitas
+        ↓
+      Dokumen dapat dipublikasikan
+        ↓
+      Selesai
+```
+
+---
+
+# 15. Activity Diagram Mengelola Media Library
+
+## 15.1 Alur Aktivitas
+
+```text
+Mulai
+  ↓
+Admin membuka Media Library
+  ↓
+Admin memilih Upload Media
+  ↓
+Admin memilih file
+  ↓
+Sistem memvalidasi jenis, ukuran, dan keamanan file
+  ↓
+Apakah file valid?
+  ├── Tidak
+  │     ↓
+  │   Sistem menampilkan alasan penolakan
+  │
+  └── Ya
+        ↓
+      Sistem membuat nama file aman
+        ↓
+      Sistem menyimpan file
+        ↓
+      Jika gambar:
+        ├── Kompresi
+        ├── Pembuatan thumbnail
+        └── Konversi WebP jika diterapkan
+        ↓
+      Sistem menyimpan metadata media
+        ↓
+      Sistem mencatat upload
+        ↓
+      Media tersedia untuk digunakan ulang
+        ↓
+      Selesai
+```
+
+---
+
+# 16. Activity Diagram Menghapus Media
+
+## 16.1 Alur Aktivitas
+
+```text
+Mulai
+  ↓
+Admin memilih media
+  ↓
+Admin memilih Hapus
+  ↓
+Sistem memeriksa penggunaan media
+  ↓
+Apakah media masih digunakan?
+  ├── Ya
+  │     ↓
+  │   Sistem menolak penghapusan
+  │     ↓
+  │   Sistem menampilkan daftar penggunaan
+  │
+  └── Tidak
+        ↓
+      Sistem meminta konfirmasi
+        ↓
+      Admin mengonfirmasi
+        ↓
+      Sistem melakukan soft delete
+        ↓
+      Sistem mencatat aktivitas
+        ↓
+      Selesai
+```
+
+---
+
+# 17. Activity Diagram Mengelola Menu
+
+## 17.1 Alur Aktivitas
+
+```text
+Mulai
+  ↓
+Admin membuka Menu Builder
+  ↓
+Admin memilih kelompok menu
+  ↓
+Admin menambah, mengubah, atau memindahkan item
+  ↓
+Admin menentukan jenis tautan
+  ↓
+Apakah jenis tautan Page?
+  ├── Ya
+  │     ↓
+  │   Admin memilih halaman
+  │
+  └── Tidak
+        ↓
+      Apakah jenis tautan Custom?
+        ├── Ya
+        │     ↓
+        │   Admin memasukkan URL
+        │
+        └── Tidak
+              ↓
+            Admin memilih route sistem
+  ↓
+Sistem memvalidasi struktur menu
+  ↓
+Apakah menu valid?
+  ├── Tidak
+  │     ↓
+  │   Sistem menampilkan kesalahan
+  │
+  └── Ya
+        ↓
+      Sistem menyimpan urutan dan parent
+        ↓
+      Sistem mencatat perubahan menu
+        ↓
+      Navigasi frontend diperbarui
+        ↓
+      Selesai
+```
+
+## 17.2 Aturan
+
+1. Item tidak boleh menjadi parent bagi dirinya sendiri.
+2. Kedalaman submenu dibatasi dua tingkat.
+3. Posisi item dalam parent yang sama harus unik.
+4. Tautan halaman harus mengarah ke halaman yang masih tersedia.
+
+---
+
+# 18. Activity Diagram Mengelola Lokasi Peta
+
+## 18.1 Alur Aktivitas
+
+```text
+Mulai
+  ↓
+Admin membuka modul Peta
+  ↓
+Admin memilih Tambah Lokasi
+  ↓
+Admin mengisi nama, kategori, alamat, dan deskripsi
+  ↓
+Admin menentukan koordinat melalui peta atau input
+  ↓
+Sistem memvalidasi latitude dan longitude
+  ↓
+Apakah koordinat valid?
+  ├── Tidak
+  │     ↓
+  │   Sistem menampilkan kesalahan
+  │
+  └── Ya
+        ↓
+      Admin memilih gambar opsional
+        ↓
+      Sistem menyimpan lokasi
+        ↓
+      Sistem memperbarui peta publik
+        ↓
+      Sistem mencatat aktivitas
+        ↓
+      Selesai
+```
+
+---
+
+# 19. Activity Diagram Guest Mengirim Pesan Narahubung
+
+## 19.1 Alur Aktivitas
+
+```text
+Mulai
+  ↓
+Guest membuka halaman Narahubung
+  ↓
+Sistem menampilkan formulir
+  ↓
+Guest mengisi nama, kontak, subjek, dan pesan
+  ↓
+Guest menyelesaikan CAPTCHA
+  ↓
+Guest menekan Kirim
+  ↓
+Sistem memvalidasi input
+  ↓
+Apakah input valid?
+  ├── Tidak
+  │     ↓
+  │   Sistem menampilkan pesan validasi
+  │     ↓
+  │   Guest memperbaiki data
+  │
+  └── Ya
+        ↓
+      Apakah lolos rate limiting dan antispam?
+        ├── Tidak
+        │     ↓
+        │   Sistem menolak pengiriman
+        │
+        └── Ya
+              ↓
+            Sistem menyimpan pesan
+              ↓
+            Sistem memasukkan email notifikasi ke queue
+              ↓
+            Sistem menampilkan pesan sukses
+              ↓
+            Email Service mengirim notifikasi
+              ↓
+            Selesai
+```
+
+---
+
+# 20. Activity Diagram Admin Mengelola Pesan Narahubung
+
+## 20.1 Alur Aktivitas
+
+```text
+Mulai
+  ↓
+Admin membuka modul Narahubung
+  ↓
+Sistem menampilkan daftar pesan
+  ↓
+Admin memilih pesan
+  ↓
+Sistem menampilkan detail pesan
+  ↓
+Jika status masih new:
+  Sistem mengubah status menjadi read
+  ↓
+Admin memeriksa pesan
+  ↓
+Admin memilih tindakan
+  ├── Ubah status menjadi processing
+  ├── Ubah status menjadi completed
+  ├── Tambahkan catatan internal
+  └── Arsipkan pesan
+  ↓
+Sistem menyimpan perubahan
+  ↓
+Sistem mencatat perubahan status
+  ↓
+Selesai
+```
+
+---
+
+# 21. Activity Diagram Pencarian Publik
+
+## 21.1 Alur Aktivitas
+
+```text
+Mulai
+  ↓
+Guest memasukkan kata kunci
+  ↓
+Sistem membersihkan dan memvalidasi kata kunci
+  ↓
+Apakah kata kunci memenuhi panjang minimum?
+  ├── Tidak
+  │     ↓
+  │   Sistem meminta kata kunci yang lebih spesifik
+  │
+  └── Ya
+        ↓
+      Sistem mencari pada halaman terbit
+        ↓
+      Sistem mencari pada berita terbit
+        ↓
+      Sistem mencari pada dokumen terbit
+        ↓
+      Sistem menggabungkan hasil
+        ↓
+      Sistem mengurutkan berdasarkan relevansi
+        ↓
+      Apakah hasil ditemukan?
+        ├── Tidak
+        │     ↓
+        │   Sistem menampilkan status tanpa hasil
+        │
+        └── Ya
+              ↓
+            Sistem menampilkan daftar hasil
+              ↓
+            Guest memilih hasil
+              ↓
+            Sistem menampilkan konten
+              ↓
+            Selesai
+```
+
+---
+
+# 22. Activity Diagram Audit Log
+
+## 22.1 Pencatatan Otomatis
+
+```text
+Aktivitas sistem terjadi
+  ↓
+Sistem menentukan jenis event
+  ↓
+Sistem mengambil admin, objek, IP, dan user agent
+  ↓
+Sistem menyaring data sensitif
+  ↓
+Sistem menyimpan audit log
+  ↓
+Proses utama dilanjutkan
+```
+
+## 22.2 Admin Melihat Audit Log
+
+```text
+Mulai
+  ↓
+Admin membuka Audit Log
+  ↓
+Sistem menampilkan daftar log terbaru
+  ↓
+Admin melakukan pencarian atau filter
+  ↓
+Sistem menampilkan hasil
+  ↓
+Admin membuka detail log
+  ↓
+Sistem menampilkan informasi aktivitas
+  ↓
+Selesai
+```
+
+## 22.3 Pembersihan Otomatis
+
+```text
+Scheduled Task dijalankan
+  ↓
+Sistem mengambil kebijakan retensi
+  ↓
+Sistem mencari log yang melewati masa simpan
+  ↓
+Sistem menghapus log yang memenuhi syarat
+  ↓
+Sistem mencatat hasil pemeliharaan pada server log
+  ↓
+Selesai
+```
+
+Administrator tidak terlibat dalam penghapusan audit log.
+
+---
+
+# 23. Matriks Aktivitas dan Aktor
+
+| Proses            | Guest | Admin | Sistem | Email Service |
+| ----------------- | :---: | :---: | :----: | :-----------: |
+| Login             |   –   |   Ya  |   Ya   |       –       |
+| Logout            |   –   |   Ya  |   Ya   |       –       |
+| Ubah password     |   –   |   Ya  |   Ya   |       –       |
+| Membuat halaman   |   –   |   Ya  |   Ya   |       –       |
+| Page Builder      |   –   |   Ya  |   Ya   |       –       |
+| Mengelola berita  |   –   |   Ya  |   Ya   |       –       |
+| Mengelola galeri  |   –   |   Ya  |   Ya   |       –       |
+| Mengelola dokumen |   –   |   Ya  |   Ya   |       –       |
+| Mengelola media   |   –   |   Ya  |   Ya   |       –       |
+| Mengelola menu    |   –   |   Ya  |   Ya   |       –       |
+| Mengelola lokasi  |   –   |   Ya  |   Ya   |       –       |
+| Mengirim pesan    |   Ya  |   –   |   Ya   |       Ya      |
+| Mengelola pesan   |   –   |   Ya  |   Ya   |       –       |
+| Pencarian         |   Ya  |   –   |   Ya   |       –       |
+| Audit log         |   –   |   Ya  |   Ya   |       –       |
+
+---
+
+# 24. Hubungan Activity Diagram dengan Use Case
+
+| Activity Diagram      | Use Case Terkait  |
+| --------------------- | ----------------- |
+| Login administrator   | UC-A01            |
+| Logout administrator  | UC-A02            |
+| Mengubah password     | UC-A03            |
+| Membuat halaman       | UC-A04            |
+| Mengelola section     | UC-A05            |
+| Mengelola komponen    | UC-A06            |
+| Preview dan publikasi | UC-A07            |
+| Mengarsipkan halaman  | UC-A08            |
+| Mengelola berita      | UC-A09 dan UC-A10 |
+| Mengelola galeri      | UC-A11            |
+| Mengelola dokumen     | UC-A12            |
+| Mengelola media       | UC-A13            |
+| Mengelola menu        | UC-A14            |
+| Mengelola pengaturan  | UC-A15            |
+| Mengelola lokasi      | UC-A16            |
+| Melihat pesan         | UC-A17            |
+| Mengubah status pesan | UC-A18            |
+| Melihat audit log     | UC-A19            |
+| Mengelola unggulan    | UC-A20            |
+| Mengirim narahubung   | UC-G08            |
+| Pencarian publik      | UC-G06            |
+
+---
+
+# 25. Kesimpulan
+
+Activity Diagram Village Website CMS menggambarkan alur proses utama antara Guest, Admin, Sistem, dan layanan pendukung.
+
+Diagram aktivitas menunjukkan bahwa:
+
+1. Website publik dapat digunakan tanpa login.
+2. Akses administrator dilindungi oleh autentikasi berlapis.
+3. Halaman dapat dibuat secara fleksibel melalui Page Builder.
+4. Publikasi konten dilakukan setelah proses validasi dan preview.
+5. Media digunakan secara terpusat melalui Media Library.
+6. Pesan narahubung disimpan dan diteruskan sebagai notifikasi email.
+7. Aktivitas penting administrator dicatat secara otomatis.
+8. Konten arsip dan soft delete tidak dapat diakses oleh Guest.
+9. Sistem tetap dapat berjalan meskipun belum memiliki konten.
+10. Seluruh alur dapat diterjemahkan ke dalam antarmuka, service, controller, dan test case.
+
+Tambahan:
+Alur upload media wajib melewati watermark tak terlihat.
+Media tidak langsung tersedia setelah upload.
+Media harus berstatus verified sebelum dapat dipublikasikan.

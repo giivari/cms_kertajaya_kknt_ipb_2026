@@ -1,0 +1,727 @@
+# DEPLOYMENT SPECIFICATION DOCUMENT
+
+## Village Website CMS
+
+**Versi Dokumen:** 1.0
+**Status:** Approved Draft
+**Jenis Dokumen:** Deployment & Infrastructure Specification
+**Berlaku Untuk:** Seluruh Implementasi Village Website CMS
+**Tanggal:** Juli 2026
+
+---
+
+# 1. Pendahuluan
+
+## 1.1 Tujuan
+
+Dokumen ini mendefinisikan standar deployment, infrastruktur, hosting, domain, backup, dan operasional Village Website CMS.
+
+Dokumen ini dirancang untuk memenuhi dua kebutuhan:
+
+### Tahap 1
+
+Deployment murah selama masa KKN.
+
+### Tahap 2
+
+Migrasi ke infrastruktur resmi desa setelah website diterima dan digunakan secara permanen.
+
+---
+
+# 2. Filosofi Infrastruktur
+
+Village Website CMS menggunakan prinsip:
+
+```text id="4wnnys"
+Start Small
+Scale Later
+```
+
+Artinya:
+
+* murah saat awal;
+* mudah dipindahkan;
+* tidak bergantung vendor tertentu;
+* siap ditingkatkan ketika kebutuhan bertambah.
+
+---
+
+# 3. Arsitektur Deployment
+
+## Arsitektur Logis
+
+```text id="ttjlwm"
+Visitor
+    ↓
+Cloudflare
+    ↓
+Web Server
+    ↓
+Laravel Application
+    ↓
+PostgreSQL
+    ↓
+Storage
+```
+
+---
+
+## Komponen
+
+### Frontend
+
+Laravel Blade
+
+---
+
+### Backend
+
+Laravel
+
+---
+
+### Admin Panel
+
+Filament
+
+---
+
+### Database
+
+PostgreSQL
+
+---
+
+### Storage
+
+Local Storage
+
+atau
+
+Object Storage di masa depan
+
+---
+
+# 4. Technology Stack
+
+## Framework
+
+```text id="a2jlwm"
+Laravel 12
+```
+
+---
+
+## Admin Panel
+
+```text id="nk3q9m"
+Filament 4
+```
+
+---
+
+## Database
+
+```text id="zx77hy"
+PostgreSQL
+```
+
+---
+
+## Styling
+
+```text id="zqz5e9"
+Tailwind CSS
+```
+
+---
+
+## Runtime
+
+```text id="l9c0f8"
+PHP 8.3+
+```
+
+---
+
+## Server
+
+```text id="4vxzwd"
+Nginx
+```
+
+---
+
+# 5. Lingkungan Deployment
+
+---
+
+# 5.1 Development
+
+Digunakan oleh developer.
+
+## Domain
+
+```text id="uzxqjk"
+localhost
+```
+
+---
+
+## Database
+
+Lokal.
+
+---
+
+## Storage
+
+Lokal.
+
+---
+
+# 5.2 Staging
+
+Opsional.
+
+Digunakan untuk testing sebelum produksi.
+
+---
+
+Contoh:
+
+```text id="zv5wxy"
+staging.domain.com
+```
+
+---
+
+# 5.3 Production
+
+Digunakan masyarakat umum.
+
+---
+
+Contoh:
+
+```text id="9yypu0"
+desakertajaya.id
+```
+
+---
+
+# 6. Tahap Deployment KKN
+
+Karena status proyek masih milik pengembang.
+
+---
+
+## Domain
+
+Gunakan domain murah.
+
+Contoh:
+
+```text id="52m1hv"
+desakertajaya.my.id
+```
+
+atau
+
+```text id="zsh4fi"
+desakertajaya.web.id
+```
+
+---
+
+## Hosting
+
+Shared Hosting.
+
+Atau VPS kecil.
+
+---
+
+## Target Biaya
+
+```text id="jjg9qf"
+< Rp100.000 / tahun
+```
+
+jika memungkinkan.
+
+---
+
+## Tujuan
+
+Membuktikan konsep.
+
+Bukan infrastruktur final.
+
+---
+
+# 7. Tahap Produksi Desa
+
+Apabila desa menerima website.
+
+---
+
+## Domain
+
+Menggunakan domain resmi.
+
+Contoh:
+
+```text id="s6n6eu"
+desakertajaya.id
+```
+
+---
+
+atau:
+
+```text id="p8cxn4"
+kertajaya-simpenan.desa.id
+```
+
+---
+
+## Hosting
+
+Minimal VPS.
+
+---
+
+## Target
+
+Website menjadi aset desa.
+
+---
+
+# 8. Domain Strategy
+
+---
+
+## Tahap Awal
+
+Domain dimiliki pengembang.
+
+---
+
+## Tahap Akhir
+
+Domain dapat dipindahkan kepada desa.
+
+---
+
+## Struktur
+
+```text id="9ic9wz"
+Registran
+↓
+Pemerintah Desa
+```
+
+---
+
+setelah serah terima.
+
+---
+
+# 9. Cloudflare Architecture
+
+Seluruh domain wajib menggunakan:
+
+```text id="31e2y7"
+Cloudflare
+```
+
+---
+
+## Fungsi
+
+* DNS
+* SSL
+* WAF
+* Rate Limiting
+* Caching
+
+---
+
+## SSL Mode
+
+```text id="kzjlwm"
+Full Strict
+```
+
+---
+
+# 10. Storage Strategy
+
+---
+
+## Struktur
+
+```text id="75hf7m"
+/storage
+    /media
+    /documents
+    /gallery
+    /watermark
+```
+
+---
+
+## Original File
+
+Private.
+
+---
+
+## Public File
+
+Derivative.
+
+---
+
+# 11. Backup Strategy
+
+---
+
+## Database
+
+Backup harian.
+
+---
+
+## Media
+
+Backup mingguan.
+
+---
+
+## Konfigurasi
+
+Backup mingguan.
+
+---
+
+# 12. Recovery Strategy
+
+---
+
+## Recovery Time Objective
+
+```text id="g6z52f"
+24 jam
+```
+
+---
+
+## Recovery Point Objective
+
+```text id="p6l7o9"
+24 jam
+```
+
+---
+
+# 13. Environment Variables
+
+Tidak boleh masuk repository.
+
+---
+
+Contoh:
+
+```text id="2f4lnv"
+APP_KEY
+DB_PASSWORD
+MAIL_PASSWORD
+CLOUDFLARE_KEY
+```
+
+---
+
+# 14. Deployment Workflow
+
+---
+
+## Developer
+
+```text id="w0qf6j"
+Git Commit
+↓
+GitHub
+↓
+Deploy
+↓
+Migration
+↓
+Cache
+↓
+Production
+```
+
+---
+
+# 15. Release Strategy
+
+---
+
+## Versioning
+
+Menggunakan:
+
+```text id="n3ckht"
+Semantic Versioning
+```
+
+---
+
+Contoh:
+
+```text id="dgr88i"
+1.0.0
+1.1.0
+1.2.0
+2.0.0
+```
+
+---
+
+# 16. Monitoring
+
+---
+
+## Monitoring Minimal
+
+* Uptime
+* Error Log
+* Disk Usage
+* Backup Status
+
+---
+
+# 17. Logging
+
+---
+
+## Application Log
+
+Laravel Log.
+
+---
+
+## Security Log
+
+Audit Log.
+
+---
+
+## Server Log
+
+Nginx Log.
+
+---
+
+# 18. Email Strategy
+
+---
+
+## Tahap Awal
+
+SMTP gratis.
+
+---
+
+Contoh:
+
+```text id="g8vsm5"
+Brevo
+```
+
+---
+
+atau:
+
+```text id="f3dkk9"
+Resend
+```
+
+---
+
+## Tahap Lanjut
+
+Email resmi desa.
+
+---
+
+Contoh:
+
+```text id="qjlwmz"
+admin@desakertajaya.id
+```
+
+---
+
+# 19. Scalability Plan
+
+---
+
+## Fase 1
+
+Shared Hosting.
+
+Target:
+
+```text id="t8wm2w"
+< 500 pengunjung/hari
+```
+
+---
+
+## Fase 2
+
+VPS.
+
+Target:
+
+```text id="dzmqpj"
+500–5.000 pengunjung/hari
+```
+
+---
+
+## Fase 3
+
+Object Storage.
+
+CDN.
+
+Multi-server.
+
+---
+
+# 20. Ownership Model
+
+Selama KKN:
+
+```text id="98ov5h"
+Developer Owned
+```
+
+---
+
+Setelah Serah Terima:
+
+```text id="bjlwm8"
+Village Owned
+```
+
+---
+
+# 21. Handover Requirement
+
+Saat website diserahkan.
+
+Dokumen yang harus diberikan:
+
+* Source Code.
+* Database Backup.
+* Deployment Guide.
+* User Manual.
+* Admin Manual.
+* Domain Information.
+* Hosting Information.
+
+---
+
+# 22. Deployment Checklist
+
+Sebelum Go Live.
+
+---
+
+## Domain
+
+* DNS aktif.
+* SSL aktif.
+
+---
+
+## Server
+
+* HTTPS aktif.
+* Backup aktif.
+
+---
+
+## Database
+
+* Backup berhasil.
+
+---
+
+## Cloudflare
+
+* WAF aktif.
+
+---
+
+## Website
+
+* Watermark aktif.
+* Search aktif.
+* Narahubung aktif.
+
+---
+
+## Admin
+
+* Password kuat.
+* TOTP aktif.
+
+---
+
+# 23. Migrasi ke Desa Lain
+
+Village Website CMS harus dapat digunakan ulang.
+
+---
+
+## Yang Berubah
+
+* Logo.
+* Nama Desa.
+* Domain.
+* Konten.
+* Theme.
+
+---
+
+## Yang Tetap
+
+* Source Code.
+* Database Structure.
+* Dashboard.
+* Security.
+* CMS Core.
+
+---
+
+# 24. Kesimpulan
+
+Deployment Village Website CMS menggunakan pendekatan:
+
+```text id="rf0f3v"
+Murah Saat KKN
+↓
+Stabil Saat Digunakan
+↓
+Mudah Diserahkan
+↓
+Mudah Digunakan Ulang
+```
+
+dengan tujuan utama memastikan website dapat berjalan selama program KKN, mudah dipelihara oleh desa, dan siap berkembang menjadi website resmi desa di masa mendatang tanpa perlu membangun ulang sistem dari awal.

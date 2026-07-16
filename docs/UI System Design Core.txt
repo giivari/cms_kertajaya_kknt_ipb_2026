@@ -1,0 +1,901 @@
+# UI ARCHITECTURE & DESIGN SYSTEM CORE
+
+## Village Website CMS
+
+**Versi Dokumen:** 1.0
+**Status:** Approved Draft
+**Jenis Dokumen:** Core Design System
+**Berlaku Untuk:** Seluruh Implementasi Village Website CMS
+**Tanggal:** Juli 2026
+
+---
+
+# 1. Pendahuluan
+
+## 1.1 Tujuan
+
+Dokumen ini mendefinisikan standar desain inti (Core Design System) yang digunakan oleh seluruh implementasi Village Website CMS.
+
+Dokumen ini tidak mengatur:
+
+* warna tema;
+* font tema;
+* branding desa;
+* gaya fotografi;
+* gaya visual spesifik.
+
+Seluruh elemen tersebut diatur pada dokumen Theme Specification.
+
+---
+
+## 1.2 Ruang Lingkup
+
+Core Design System mengatur:
+
+* layout;
+* spacing;
+* grid;
+* komponen UI;
+* navigasi;
+* responsive behavior;
+* accessibility;
+* struktur dashboard;
+* struktur frontend.
+
+---
+
+# 2. Arsitektur Desain
+
+Village Website CMS menggunakan pendekatan:
+
+```text
+Core Design System
+        +
+Theme Layer
+        +
+Content Layer
+        =
+Website Desa Final
+```
+
+---
+
+## Core Design System
+
+Mengatur:
+
+* struktur;
+* konsistensi;
+* perilaku komponen.
+
+---
+
+## Theme Layer
+
+Mengatur:
+
+* warna;
+* font;
+* branding.
+
+---
+
+## Content Layer
+
+Mengatur:
+
+* data;
+* halaman;
+* berita;
+* galeri;
+* dokumen.
+
+---
+
+# 3. Prinsip Desain
+
+## Mobile First
+
+Desain selalu dimulai dari ukuran mobile terlebih dahulu.
+
+---
+
+## Content First
+
+Konten lebih penting daripada dekorasi visual.
+
+---
+
+## Accessibility First
+
+Website harus dapat digunakan oleh seluruh lapisan masyarakat.
+
+---
+
+## Reusability
+
+Komponen harus dapat digunakan ulang pada banyak halaman dan banyak desa.
+
+---
+
+## Simplicity
+
+Antarmuka harus mudah dipahami tanpa pelatihan khusus.
+
+---
+
+# 4. Layout System
+
+## Layout Publik
+
+Struktur standar:
+
+```text
+Header
+↓
+Main Content
+↓
+Footer
+```
+
+---
+
+## Layout Dashboard
+
+Struktur standar:
+
+```text
+Sidebar
+│
+Topbar
+│
+Main Content
+```
+
+---
+
+# 5. Grid System
+
+Menggunakan:
+
+```text
+8 Point Grid System
+```
+
+---
+
+## Base Unit
+
+```text
+8px
+```
+
+---
+
+## Scale
+
+```text
+4px
+8px
+16px
+24px
+32px
+40px
+48px
+64px
+80px
+96px
+128px
+```
+
+---
+
+# 6. Container System
+
+## Desktop
+
+```text
+Max Width: 1280px
+```
+
+---
+
+## Tablet
+
+```text
+Max Width: 960px
+```
+
+---
+
+## Mobile
+
+```text
+Width: 100%
+```
+
+---
+
+## Horizontal Padding
+
+Mobile:
+
+```text
+16px
+```
+
+Tablet:
+
+```text
+24px
+```
+
+Desktop:
+
+```text
+32px
+```
+
+---
+
+# 7. Responsive Breakpoints
+
+## Mobile
+
+```text
+0px - 767px
+```
+
+---
+
+## Tablet
+
+```text
+768px - 1023px
+```
+
+---
+
+## Desktop
+
+```text
+1024px+
+```
+
+---
+
+# 8. Navigation System
+
+## Public Navigation
+
+Komponen:
+
+* logo;
+* menu;
+* search;
+* CTA.
+
+---
+
+## Mobile Navigation
+
+Menggunakan:
+
+```text
+Hamburger Menu
+```
+
+---
+
+## Dashboard Navigation
+
+Menggunakan:
+
+```text
+Sidebar Navigation
+```
+
+---
+
+# 9. Header System
+
+## Public Header
+
+Komponen:
+
+```text
+Logo
+Site Title
+Menu
+Search
+Primary Action
+```
+
+---
+
+## Sticky Header
+
+Header selalu terlihat saat pengguna melakukan scroll.
+
+---
+
+# 10. Footer System
+
+Komponen minimum:
+
+```text
+Alamat
+Kontak
+Media Sosial
+Copyright
+Navigasi Tambahan
+```
+
+---
+
+# 11. Hero System
+
+Hero merupakan area informasi utama.
+
+---
+
+## Struktur
+
+```text
+Background
+Overlay
+Content
+Action
+```
+
+---
+
+## Komponen
+
+* headline;
+* subheadline;
+* CTA;
+* visual utama.
+
+---
+
+## Hero Variant
+
+### Variant A
+
+Single Image Hero
+
+---
+
+### Variant B
+
+Image + Statistics
+
+---
+
+### Variant C
+
+Image + Highlight Information
+
+---
+
+# 12. Section System
+
+Seluruh halaman dibangun menggunakan section.
+
+---
+
+## Struktur
+
+```text
+Section
+ └─ Container
+      └─ Components
+```
+
+---
+
+## Jenis Section
+
+* Hero
+* Content
+* Statistics
+* Gallery
+* News
+* Documents
+* CTA
+* Contact
+* Custom
+
+---
+
+# 13. Card System
+
+Card digunakan untuk:
+
+* berita;
+* galeri;
+* dokumen;
+* potensi;
+* statistik.
+
+---
+
+## Struktur
+
+```text
+Media
+↓
+Title
+↓
+Description
+↓
+Action
+```
+
+---
+
+## Card Variant
+
+### Informational Card
+
+Konten umum.
+
+---
+
+### Media Card
+
+Galeri.
+
+---
+
+### Statistic Card
+
+Data numerik.
+
+---
+
+### Action Card
+
+CTA.
+
+---
+
+# 14. Button System
+
+## Variant
+
+### Primary
+
+Aksi utama.
+
+---
+
+### Secondary
+
+Aksi pendukung.
+
+---
+
+### Outline
+
+Aksi alternatif.
+
+---
+
+### Ghost
+
+Aksi minimal.
+
+---
+
+## State
+
+* Default
+* Hover
+* Active
+* Focus
+* Disabled
+* Loading
+
+---
+
+# 15. Form System
+
+---
+
+## Komponen
+
+* Input
+* Textarea
+* Select
+* Checkbox
+* Radio
+* Upload
+* CAPTCHA
+
+---
+
+## State
+
+* Default
+* Focus
+* Success
+* Error
+* Disabled
+
+---
+
+# 16. Table System
+
+Digunakan pada dashboard.
+
+---
+
+## Struktur
+
+```text
+Header
+Rows
+Pagination
+Actions
+```
+
+---
+
+## Fitur
+
+* Search
+* Sort
+* Filter
+* Pagination
+
+---
+
+# 17. Modal System
+
+Digunakan untuk:
+
+* konfirmasi;
+* preview;
+* detail data.
+
+---
+
+## Ukuran
+
+### Small
+
+Konfirmasi.
+
+---
+
+### Medium
+
+Form sederhana.
+
+---
+
+### Large
+
+Preview konten.
+
+---
+
+# 18. Empty State System
+
+Wajib tersedia.
+
+---
+
+## Contoh
+
+```text
+Belum ada data.
+```
+
+```text
+Belum ada berita.
+```
+
+```text
+Belum ada dokumen.
+```
+
+---
+
+# 19. Error State System
+
+---
+
+## 404
+
+Halaman tidak ditemukan.
+
+---
+
+## 403
+
+Akses ditolak.
+
+---
+
+## 500
+
+Kesalahan sistem.
+
+---
+
+# 20. Feedback System
+
+---
+
+## Success
+
+Tindakan berhasil.
+
+---
+
+## Warning
+
+Peringatan.
+
+---
+
+## Error
+
+Terjadi kesalahan.
+
+---
+
+## Info
+
+Informasi umum.
+
+---
+
+# 21. Media System
+
+Seluruh media berasal dari Media Library.
+
+---
+
+## Rasio Standar
+
+### Hero
+
+```text
+16:9
+```
+
+---
+
+### Berita
+
+```text
+4:3
+```
+
+---
+
+### Galeri
+
+```text
+1:1
+```
+
+---
+
+### Dokumen
+
+```text
+3:4
+```
+
+---
+
+# 22. Dashboard Architecture
+
+## Struktur
+
+```text
+Sidebar
+Topbar
+Content Area
+```
+
+---
+
+## Modul
+
+* Dashboard
+* Halaman
+* Berita
+* Galeri
+* Dokumen
+* Media
+* Menu
+* Lokasi
+* Pesan
+* Pengaturan
+* Audit Log
+
+---
+
+# 23. Page Builder Architecture
+
+## Struktur
+
+```text
+Page
+ └─ Sections
+      └─ Components
+```
+
+---
+
+## Komponen Inti
+
+* Heading
+* Text
+* Image
+* Gallery
+* Video
+* Documents
+* Statistics
+* CTA
+* Map
+
+---
+
+# 24. Accessibility Standard
+
+Target:
+
+```text
+WCAG AA
+```
+
+---
+
+## Wajib
+
+* keyboard navigation;
+* focus state;
+* alt text;
+* semantic HTML;
+* screen reader support;
+* responsive design.
+
+---
+
+# 25. Animation System
+
+Prinsip:
+
+```text
+Subtle Motion
+```
+
+---
+
+## Diizinkan
+
+* Fade
+* Slide
+* Hover
+* Scale ringan
+
+---
+
+## Tidak Diizinkan
+
+* Bounce
+* Flash
+* Spin
+* Motion berlebihan
+
+---
+
+# 26. Theme Integration
+
+Core Design System tidak mengetahui warna atau font tertentu.
+
+Theme menyediakan:
+
+```text
+theme.colors.*
+theme.fonts.*
+theme.radius.*
+theme.shadows.*
+theme.icons.*
+```
+
+Seluruh komponen harus mengambil nilai dari Theme Layer.
+
+---
+
+# 27. Design Token Architecture
+
+Contoh:
+
+```text
+theme.primary
+theme.secondary
+theme.accent
+
+theme.font.primary
+theme.font.display
+
+theme.radius.card
+
+theme.shadow.medium
+```
+
+Komponen tidak boleh menggunakan nilai hardcoded.
+
+---
+
+# 28. Reusability Rules
+
+Seluruh komponen harus:
+
+* reusable;
+* configurable;
+* independent;
+* tidak bergantung pada satu desa tertentu.
+
+---
+
+# 29. Hubungan dengan Theme Specification
+
+```text
+Core Design System
+        +
+Theme Specification
+        +
+Content
+        =
+Final Website
+```
+
+Core Design System bersifat universal.
+
+Theme Specification bersifat spesifik terhadap identitas visual tertentu.
+
+---
+
+# 30. Kesimpulan
+
+UI Architecture & Design System Core merupakan fondasi visual dan struktural Village Website CMS.
+
+Dokumen ini menjamin bahwa:
+
+* seluruh desa menggunakan pengalaman pengguna yang konsisten;
+* seluruh tema dapat diterapkan tanpa mengubah struktur sistem;
+* frontend dan dashboard memiliki standar yang sama;
+* sistem tetap scalable untuk pengembangan jangka panjang.
+
+tambahan
+Icon Library Standard
+
+Primary:
+Lucide
+
+Secondary:
+Heroicons
+
+Style:
+Rounded Outline
+
+Filled Icon:
+Tidak digunakan kecuali badge atau status.
+
+Icon Size:
+16px
+20px
+24px
+32px
+
+Stroke Width:
+2px

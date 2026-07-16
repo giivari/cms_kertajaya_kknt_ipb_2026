@@ -1,0 +1,439 @@
+# Software Requirements Specification (SRS) v1.0
+
+## Village Website CMS (Single Village Installation)
+
+### 1. Tujuan Sistem
+
+Village Website CMS merupakan sistem manajemen website desa yang dirancang untuk memungkinkan sebuah desa memiliki website resmi yang dapat dikelola tanpa kemampuan pemrograman.
+
+Sistem bersifat reusable, sehingga source code yang sama dapat digunakan oleh desa lain dengan hanya mengganti identitas, konten, dan konfigurasi website.
+
+---
+
+# 2. Ruang Lingkup Sistem
+
+Sistem menyediakan:
+
+* Website publik untuk masyarakat.
+* Dashboard administrasi untuk pengelolaan konten.
+* Page Builder berbasis blok.
+* Pengelolaan berita.
+* Pengelolaan dokumen.
+* Pengelolaan galeri.
+* Pengelolaan pesan narahubung.
+* Pengelolaan menu website.
+* Pengelolaan identitas website.
+* Audit log aktivitas.
+
+Sistem tidak mencakup:
+
+* Sistem administrasi kependudukan.
+* Sistem surat menyurat otomatis.
+* Sistem bantuan sosial.
+* Sistem pembayaran.
+* Sistem multi-desa.
+* Sistem multi-admin.
+
+---
+
+# 3. Aktor Sistem
+
+## Guest
+
+Pengunjung website yang tidak perlu login.
+
+Hak akses:
+
+* Melihat seluruh konten publik.
+* Mengunduh dokumen publik.
+* Menggunakan pencarian.
+* Mengirim pesan melalui narahubung.
+
+## Admin
+
+Pengelola website.
+
+Hak akses:
+
+* Login dashboard.
+* Mengelola seluruh konten.
+* Mengelola menu.
+* Mengelola media.
+* Mengelola pengaturan website.
+* Melihat log aktivitas.
+* Mengelola pesan narahubung.
+
+---
+
+# 4. Arsitektur Sistem
+
+Model:
+
+Single Village CMS
+
+Setiap instalasi hanya melayani satu desa.
+
+Satu source code dapat digunakan kembali untuk banyak desa melalui instalasi terpisah.
+
+---
+
+# 5. Teknologi Utama
+
+Backend:
+Laravel
+
+Admin Panel:
+Filament
+
+Frontend:
+Blade + Tailwind CSS
+
+Database:
+PostgreSQL
+
+Map:
+Leaflet + OpenStreetMap (dengan opsi integrasi Google Maps untuk embed atau navigasi)
+
+Version Control:
+Git + GitHub
+
+Deployment Awal:
+Hosting ekonomis berbasis shared hosting atau VPS ringan (misalnya Dewabiz, Niagahoster, atau layanan sejenis yang mendukung Laravel)
+
+Reverse Proxy / Security:
+Cloudflare (digunakan untuk SSL, proteksi DDoS, caching, dan optimasi performa)
+
+---
+
+# 6. Modul Sistem
+
+## Modul Dashboard
+
+Menampilkan:
+
+* Ringkasan statistik.
+* Aktivitas terbaru.
+* Pesan masuk terbaru.
+* Informasi sistem.
+
+---
+
+## Modul Website Settings
+
+Mengelola:
+
+* Nama website.
+* Nama desa.
+* Logo.
+* Favicon.
+* Banner.
+* Alamat.
+* Kontak.
+* Email.
+* Media sosial.
+* Warna utama website.
+
+---
+
+## Modul Menu Builder
+
+Mengelola:
+
+* Menu utama.
+* Submenu.
+* Urutan menu.
+* Link internal.
+* Link eksternal.
+
+---
+
+## Modul Page Builder
+
+Admin dapat membuat halaman tanpa coding.
+
+Blok yang tersedia:
+
+* Hero Banner
+* Heading
+* Rich Text
+* Image
+* Gallery
+* Table
+* Statistics
+* Video Embed
+* Document Download
+* Map
+* CTA Button
+* Contact Block
+
+Fitur:
+
+* Drag and Drop
+* Preview
+* Publish
+* Archive
+
+---
+
+## Modul News
+
+Mengelola:
+
+* Berita
+* Kategori
+* Thumbnail
+* Isi berita
+* Tanggal publikasi
+
+---
+
+## Modul Gallery
+
+Mengelola:
+
+* Album
+* Foto
+* Deskripsi
+* Thumbnail
+
+---
+
+## Modul Documents
+
+Mengelola:
+
+* Dokumen publik
+* Kategori dokumen
+* File PDF
+* Deskripsi
+* Tanggal publikasi
+
+---
+
+## Modul Media Library
+
+Menyimpan:
+
+* Gambar
+* Dokumen
+* Thumbnail
+
+Fitur:
+
+* Reusable assets
+* Upload
+* Search
+* Preview
+
+---
+
+## Modul Maps
+
+Mengelola:
+
+* Lokasi kantor desa
+* Lokasi penting
+* Titik evakuasi
+* Fasilitas umum
+* Lokasi wisata
+* Titik lain yang diperlukan
+
+---
+
+## Modul Contact Messages
+
+Guest dapat:
+
+* Mengirim pesan
+
+Admin dapat:
+
+* Melihat pesan
+* Mengubah status
+* Mengarsipkan pesan
+
+Status:
+
+* Baru
+* Dibaca
+* Diproses
+* Selesai
+* Arsip
+
+Setiap pesan juga mengirim notifikasi email kepada admin.
+
+---
+
+## Modul Search
+
+Mencari:
+
+* Halaman
+* Berita
+* Dokumen
+* Konten publik lainnya
+
+---
+
+## Modul Audit Log
+
+Mencatat:
+
+* Login
+* Logout
+* Gagal login
+* Ubah password
+* Tambah konten
+* Edit konten
+* Hapus konten
+* Upload file
+* Ubah pengaturan
+
+Log tidak dapat dihapus secara manual.
+
+---
+
+# 7. Kebutuhan Fungsional
+
+FR-001 Guest dapat mengakses website tanpa login.
+
+FR-002 Guest dapat melihat halaman publik.
+
+FR-003 Guest dapat mencari informasi.
+
+FR-004 Guest dapat mengirim pesan narahubung.
+
+FR-005 Guest dapat mengunduh dokumen publik.
+
+FR-006 Admin dapat login.
+
+FR-007 Admin dapat logout.
+
+FR-008 Admin dapat mengubah password.
+
+FR-009 Admin dapat mengelola halaman.
+
+FR-010 Admin dapat menggunakan page builder.
+
+FR-011 Admin dapat mengelola berita.
+
+FR-012 Admin dapat mengelola galeri.
+
+FR-013 Admin dapat mengelola dokumen.
+
+FR-014 Admin dapat mengelola media library.
+
+FR-015 Admin dapat mengelola menu.
+
+FR-016 Admin dapat mengelola pengaturan website.
+
+FR-017 Admin dapat mengelola lokasi peta.
+
+FR-018 Admin dapat mengelola pesan narahubung.
+
+FR-019 Admin dapat melihat audit log.
+
+FR-020 Admin dapat mengarsipkan konten.
+
+FR-021 Admin dapat menandai konten unggulan.
+
+FR-022 Admin dapat melakukan preview sebelum publikasi.
+
+---
+
+# 8. Kebutuhan Non Fungsional
+
+NFR-001 Website harus responsif.
+
+NFR-002 Website harus mobile-first.
+
+NFR-003 Website harus menggunakan HTTPS.
+
+NFR-004 Password harus disimpan menggunakan hashing.
+
+NFR-005 Login menggunakan password dan TOTP.
+
+NFR-006 Sistem harus memiliki rate limiting login.
+
+NFR-007 Sistem harus memiliki proteksi CSRF.
+
+NFR-008 Sistem harus memiliki validasi input.
+
+NFR-009 Sistem harus memiliki audit log.
+
+NFR-010 Sistem harus mendukung backup database.
+
+NFR-011 Website harus dapat berjalan pada hosting shared.
+
+NFR-012 Website harus kompatibel dengan browser modern.
+
+NFR-013 Website harus mendukung SEO dasar.
+
+NFR-014 Website harus memiliki performa yang baik pada jaringan seluler.
+
+NFR-015 Website harus menggunakan media optimization.
+
+---
+
+# 9. Aturan Bisnis
+
+BR-001 Hanya terdapat satu akun admin.
+
+BR-002 Admin tidak dapat membuat admin baru.
+
+BR-003 Admin tidak dapat menghapus akun admin utama.
+
+BR-004 Guest tidak memerlukan akun.
+
+BR-005 Konten dapat dipublikasikan atau diarsipkan.
+
+BR-006 Audit log wajib disimpan.
+
+BR-007 Audit log tidak dapat dihapus manual.
+
+BR-008 Seluruh konten dikelola melalui dashboard.
+
+BR-009 Website harus tetap dapat berjalan meskipun belum memiliki konten.
+
+BR-010 Sistem harus dapat digunakan ulang untuk desa lain tanpa perubahan source code utama.
+
+---
+
+# 10. Strategi Deployment
+
+Tahap awal:
+
+* Cloudflare
+* Hosting ekonomis
+* Domain sementara atau pribadi
+
+Tahap adopsi desa:
+
+* Domain resmi desa
+* Hosting yang lebih besar
+* Migrasi data
+* Pelatihan admin
+* Serah terima dokumentasi
+* Serah terima source code
+
+---
+
+# 11. Status Kepemilikan
+
+Pada tahap pengembangan dan KKN:
+
+Pemilik sistem adalah pengembang.
+
+Apabila desa memutuskan mengadopsi sistem:
+
+* Dilakukan serah terima resmi.
+* Dilakukan migrasi domain dan hosting.
+* Dilakukan pelatihan admin.
+* Dilakukan penyerahan dokumentasi.
+
+# 12. Tambahan
+
+Menambahkan kebutuhan watermark terlihat dan tak terlihat.
+Menambahkan pipeline pemrosesan media.
+Menambahkan larangan publikasi media yang gagal diproses.
+Menambahkan kebutuhan verifikasi watermark.
