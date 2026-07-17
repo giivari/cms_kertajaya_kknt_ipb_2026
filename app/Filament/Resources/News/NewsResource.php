@@ -18,6 +18,26 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class NewsResource extends Resource
 {
+    public static function getNavigationGroup(): ?string
+    {
+        return 'KONTEN';
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return 'Berita';
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return 'Berita';
+    }
+
+    public static function getModelLabel(): string
+    {
+        return 'Berita';
+    }
+
     protected static ?string $model = News::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;

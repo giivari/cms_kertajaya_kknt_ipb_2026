@@ -16,6 +16,26 @@ use Filament\Tables\Table;
 
 class DocumentCategoryResource extends Resource
 {
+    public static function getNavigationGroup(): ?string
+    {
+        return 'PENGATURAN';
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return 'Kategori Dokumen';
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return 'Kategori Dokumen';
+    }
+
+    public static function getModelLabel(): string
+    {
+        return 'Kategori Dokumen';
+    }
+
     protected static ?string $model = DocumentCategory::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;

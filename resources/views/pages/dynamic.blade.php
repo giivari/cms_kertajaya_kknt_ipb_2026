@@ -7,9 +7,22 @@
 <div class="bg-white">
     <!-- Page Header -->
     <div class="relative bg-emerald-700 pb-16 pt-12 text-white">
-        @if($page->featured_media_id)
+        @php
+            $bgUrl = null;
+            if ($page->featured_media_id) {
+                try {
+                    $media = \App\Models\Media::find($page->featured_media_id);
+                    if ($media && $media->invisible_watermark_status === 'verified') {
+                        $deriv = $media->getPublicDerivative('large');
+                        if ($deriv) $bgUrl = Storage::disk('public')->url($deriv->file_path);
+                    }
+                } catch (\Exception $e) {}
+            }
+        @endphp
+        
+        @if($bgUrl)
             <div class="absolute inset-0">
-                <img src="{{ Storage::url($page->featuredMedia->file_path) }}" alt="{{ $page->title }}" class="w-full h-full object-cover mix-blend-multiply filter brightness-50">
+                <img src="{{ $bgUrl }}" alt="{{ $page->title }}" class="w-full h-full object-cover mix-blend-multiply filter brightness-50">
             </div>
         @else
             <div class="absolute inset-0">
@@ -18,7 +31,7 @@
             </div>
         @endif
         <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center mt-8 mb-8">
-            <h1 class="text-3xl font-extrabold tracking-tight sm:text-4xl lg:text-5xl drop-shadow-md">
+            <h1 class="text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl drop-shadow-md font-display">
                 {{ $page->title }}
             </h1>
             @if($page->excerpt)
@@ -35,7 +48,7 @@
             @if($section->is_visible)
                 <div class="mb-12 {{ $section->layout_type === 'full_width' ? 'w-full max-w-none px-0' : '' }}">
                     @if($section->name && $section->layout_type !== 'hero' && $section->layout_type !== 'full_width')
-                        <h2 class="text-2xl font-bold text-gray-900 mb-6 border-b pb-2">{{ $section->name }}</h2>
+                        <h2 class="text-2xl font-bold text-navy-900 mb-6 border-b pb-2 font-display">{{ $section->name }}</h2>
                     @endif
 
                     <div class="

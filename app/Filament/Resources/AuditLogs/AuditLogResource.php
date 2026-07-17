@@ -17,6 +17,26 @@ use Illuminate\Database\Eloquent\Model;
 
 class AuditLogResource extends Resource
 {
+    public static function getNavigationGroup(): ?string
+    {
+        return 'PENGATURAN';
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return 'Log Aktivitas';
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return 'Log Aktivitas';
+    }
+
+    public static function getModelLabel(): string
+    {
+        return 'Log Aktivitas';
+    }
+
     protected static ?string $model = AuditLog::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;

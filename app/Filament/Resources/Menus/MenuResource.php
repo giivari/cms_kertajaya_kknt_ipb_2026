@@ -25,16 +25,31 @@ use Illuminate\Database\Eloquent\Builder;
 
 class MenuResource extends Resource
 {
+    public static function getNavigationGroup(): ?string
+    {
+        return 'STRUKTUR WEBSITE';
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return 'Menu';
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return 'Menu';
+    }
+
+    public static function getModelLabel(): string
+    {
+        return 'Menu';
+    }
+
     protected static ?string $model = Menu::class;
 
     public static function getNavigationIcon(): string|\BackedEnum|null
     {
         return 'heroicon-o-bars-3';
-    }
-
-    public static function getNavigationGroup(): ?string
-    {
-        return 'Site Structure';
     }
 
     public static function form(Schema $schema): Schema

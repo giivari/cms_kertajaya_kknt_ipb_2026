@@ -38,16 +38,31 @@ use Illuminate\Support\Str;
 
 class PageResource extends Resource
 {
+    public static function getNavigationGroup(): ?string
+    {
+        return 'KONTEN';
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return 'Halaman';
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return 'Halaman';
+    }
+
+    public static function getModelLabel(): string
+    {
+        return 'Halaman';
+    }
+
     protected static ?string $model = Page::class;
 
     public static function getNavigationIcon(): string|\BackedEnum|null
     {
         return 'heroicon-o-document-text';
-    }
-
-    public static function getNavigationGroup(): ?string
-    {
-        return 'Pages';
     }
 
     public static function validMediaQuery(EloquentBuilder $query, ?string $mimeTypePrefix = null): EloquentBuilder

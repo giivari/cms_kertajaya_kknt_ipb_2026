@@ -4,6 +4,13 @@
 @source '../../storage/framework/views/*.php';
 
 @theme {
-    --font-sans: 'Poppins', 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+    --color-navy: #073157;
+    --color-teal: #075F55;
+    --color-emerald: #098C4C;
+    --color-lime: #BDEB38;
+    --color-warm-yellow: #F6C431;
+    --color-cream: #F6F0DB;
+    
+    --font-sans: 'Poppins', ui-sans-serif, system-ui, sans-serif;
+    --font-display: 'Bricolage Grotesque', 'Poppins', ui-sans-serif, system-ui, sans-serif;
 }

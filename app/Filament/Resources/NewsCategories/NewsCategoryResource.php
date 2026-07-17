@@ -16,6 +16,26 @@ use Filament\Tables\Table;
 
 class NewsCategoryResource extends Resource
 {
+    public static function getNavigationGroup(): ?string
+    {
+        return 'PENGATURAN';
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return 'Kategori Berita';
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return 'Kategori Berita';
+    }
+
+    public static function getModelLabel(): string
+    {
+        return 'Kategori Berita';
+    }
+
     protected static ?string $model = NewsCategory::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;

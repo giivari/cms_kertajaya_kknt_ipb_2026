@@ -18,6 +18,26 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class GalleryAlbumResource extends Resource
 {
+    public static function getNavigationGroup(): ?string
+    {
+        return 'KONTEN';
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return 'Galeri';
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return 'Galeri';
+    }
+
+    public static function getModelLabel(): string
+    {
+        return 'Galeri';
+    }
+
     protected static ?string $model = GalleryAlbum::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;

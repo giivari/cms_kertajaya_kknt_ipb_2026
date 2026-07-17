@@ -156,10 +156,10 @@ class ForcePasswordChangeExtendedTest extends TestCase
         $this->actingAs($admin)->withSession(['session_created_at' => time()]);
 
         $livewire = Livewire::test(EditProfile::class);
-        
+
         $livewire->assertDontSee('Username')
-                 ->assertDontSee('Email')
-                 ->assertSuccessful();
+            ->assertDontSee('Email')
+            ->assertSuccessful();
     }
 
     public function test_edit_profile_exposes_all_fields_during_normal_use()
@@ -170,10 +170,10 @@ class ForcePasswordChangeExtendedTest extends TestCase
         $this->actingAs($admin)->withSession(['session_created_at' => time()]);
 
         $livewire = Livewire::test(EditProfile::class);
-        
+
         $livewire->assertFormFieldExists('name')
-                 ->assertFormFieldExists('username')
-                 ->assertFormFieldExists('email')
-                 ->assertSuccessful();
+            ->assertFormFieldExists('username')
+            ->assertFormFieldExists('email')
+            ->assertSuccessful();
     }
 }

@@ -18,6 +18,26 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class MediaResource extends Resource
 {
+    public static function getNavigationGroup(): ?string
+    {
+        return 'KONTEN';
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return 'Media';
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return 'Media';
+    }
+
+    public static function getModelLabel(): string
+    {
+        return 'Media';
+    }
+
     protected static ?string $model = Media::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;

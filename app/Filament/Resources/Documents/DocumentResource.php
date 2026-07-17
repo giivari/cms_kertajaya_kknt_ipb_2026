@@ -18,6 +18,26 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class DocumentResource extends Resource
 {
+    public static function getNavigationGroup(): ?string
+    {
+        return 'KONTEN';
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return 'Dokumen';
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return 'Dokumen';
+    }
+
+    public static function getModelLabel(): string
+    {
+        return 'Dokumen';
+    }
+
     protected static ?string $model = Document::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
