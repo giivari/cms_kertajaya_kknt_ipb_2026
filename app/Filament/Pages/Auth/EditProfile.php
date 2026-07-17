@@ -17,16 +17,22 @@ class EditProfile extends BaseEditProfile
 {
     public function form(Schema $schema): Schema
     {
-        return $schema
-            ->components([
-                $this->getNameFormComponent(),
-                $this->getUsernameFormComponent(),
-                $this->getEmailFormComponent(),
-                $this->getPasswordFormComponent(),
-                $this->getPasswordConfirmationFormComponent(),
-                $this->getTotpConfirmationFormComponent(),
-                $this->getCurrentPasswordFormComponent(),
-            ]);
+        $isForced = Filament::auth()->check() ? Filament::auth()->user()->force_password_change : false;
+
+        $components = [];
+
+        if (! $isForced) {
+            $components[] = $this->getNameFormComponent();
+            $components[] = $this->getUsernameFormComponent();
+            $components[] = $this->getEmailFormComponent();
+        }
+
+        $components[] = $this->getPasswordFormComponent();
+        $components[] = $this->getPasswordConfirmationFormComponent();
+        $components[] = $this->getTotpConfirmationFormComponent();
+        $components[] = $this->getCurrentPasswordFormComponent();
+
+        return $schema->components($components);
     }
 
     protected function getUsernameFormComponent(): Component

@@ -147,4 +147,33 @@ class ForcePasswordChangeExtendedTest extends TestCase
         $response = $this->get(route('filament.admin.resources.media.index'));
         $response->assertRedirect(filament()->getProfileUrl());
     }
+
+    public function test_edit_profile_does_not_expose_unrelated_fields_during_forced_reset()
+    {
+        $admin = Admin::factory()->create([
+            'force_password_change' => true,
+        ]);
+        $this->actingAs($admin)->withSession(['session_created_at' => time()]);
+
+        $livewire = Livewire::test(EditProfile::class);
+        
+        $livewire->assertDontSee('Username')
+                 ->assertDontSee('Email')
+                 ->assertSuccessful();
+    }
+
+    public function test_edit_profile_exposes_all_fields_during_normal_use()
+    {
+        $admin = Admin::factory()->create([
+            'force_password_change' => false,
+        ]);
+        $this->actingAs($admin)->withSession(['session_created_at' => time()]);
+
+        $livewire = Livewire::test(EditProfile::class);
+        
+        $livewire->assertFormFieldExists('name')
+                 ->assertFormFieldExists('username')
+                 ->assertFormFieldExists('email')
+                 ->assertSuccessful();
+    }
 }
