@@ -50,9 +50,12 @@ class PhaseTwoVisualTest extends TestCase
         ]);
         $this->actingAs($admin)->withSession(['session_created_at' => time()]);
 
-        Livewire::test(VillageStatsWidget::class)
-            ->assertSee('Total Berita')
-            ->assertSee('Total Halaman')
-            ->assertSee('Dokumen Publik');
+        \Livewire\Livewire::test(\App\Filament\Widgets\VillageStatsWidget::class)
+            ->assertSee('Halaman Diterbitkan')
+            ->assertSee('Halaman Draf')
+            ->assertSee('Berita Diterbitkan')
+            ->assertSee('Album Galeri')
+            ->assertSee('Dokumen Publik')
+            ->assertSee('Media Gagal Diproses');
     }
 }
