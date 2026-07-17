@@ -44,6 +44,13 @@ class AdminPanelProvider extends PanelProvider
             ->colors([
                 'primary' => Color::Teal,
             ])
+            ->darkMode(false)
+            ->navigationGroups([
+                'DASBOR',
+                'KONTEN',
+                'STRUKTUR WEBSITE',
+                'PENGATURAN',
+            ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([

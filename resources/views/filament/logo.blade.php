@@ -15,16 +15,11 @@
     
     $villageName = \App\Services\SettingsService::get('village_name', 'Desa Kertajaya');
 @endphp
-<div class="flex items-center gap-3 py-2">
+<div class="flex items-center gap-2 max-w-full overflow-hidden">
     @if($logoUrl)
-        <img src="{{ $logoUrl }}" alt="{{ $villageName }} Logo" class="h-10 w-auto object-contain rounded-md" />
-    @else
-        <div class="h-10 w-10 bg-primary-600 text-white rounded-md flex items-center justify-center font-bold text-xl uppercase shadow-sm">
-            {{ Str::substr($villageName, 0, 1) }}
-        </div>
+        <img src="{{ $logoUrl }}" alt="{{ $villageName }}" class="h-8 w-8 object-contain rounded shrink-0" />
     @endif
-    <div class="flex flex-col">
-        <span class="font-bold text-lg leading-tight tracking-tight text-gray-900 dark:text-white">CMS {{ $villageName }}</span>
-        <span class="text-xs font-medium text-gray-500 dark:text-gray-400">Sistem Pengelolaan Website Desa</span>
-    </div>
+    <span class="font-bold text-lg leading-none truncate text-gray-900 tracking-tight">
+        CMS {{ $villageName }}
+    </span>
 </div>

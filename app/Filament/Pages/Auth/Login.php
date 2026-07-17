@@ -53,17 +53,26 @@ class Login extends BaseLogin
                 $this->getEmailFormComponent(),
                 $this->getPasswordFormComponent(),
                 Turnstile::make('captcha'),
-                $this->getRememberFormComponent(),
             ]);
     }
 
     protected function getEmailFormComponent(): Component
     {
         return TextInput::make('username')
-            ->label('Username')
+            ->label('Nama pengguna')
             ->required()
             ->autocomplete('username')
             ->autofocus();
+    }
+
+    protected function getPasswordFormComponent(): Component
+    {
+        return TextInput::make('password')
+            ->label('Kata sandi')
+            ->password()
+            ->revealable(filament()->arePasswordsRevealable())
+            ->required()
+            ->autocomplete('current-password');
     }
 
     protected function getCredentialsFromFormData(#[SensitiveParameter] array $data): array
