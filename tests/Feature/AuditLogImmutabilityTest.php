@@ -32,7 +32,7 @@ class AuditLogImmutabilityTest extends TestCase
         $this->assertFalse($admin->can('create', AuditLog::class));
         $this->assertFalse($admin->can('update', $auditLog));
         $this->assertFalse($admin->can('delete', $auditLog));
-        
+
         // Also verify the Filament resource blocks deletion
         $response = $this->delete(route('filament.admin.resources.audit-logs.index'));
         $response->assertStatus(405); // Method not allowed (no bulk delete route exists)

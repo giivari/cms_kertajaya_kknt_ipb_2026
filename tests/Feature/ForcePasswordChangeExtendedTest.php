@@ -2,14 +2,15 @@
 
 namespace Tests\Feature;
 
-use App\Models\Admin;
 use App\Filament\Pages\Auth\EditProfile;
+use App\Models\Admin;
+use Filament\Auth\MultiFactor\App\AppAuthentication;
 use Filament\Facades\Filament;
+use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Livewire\Livewire;
 use Tests\TestCase;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 
 class ForcePasswordChangeExtendedTest extends TestCase
 {
@@ -20,7 +21,7 @@ class ForcePasswordChangeExtendedTest extends TestCase
         parent::setUp();
         Filament::setCurrentPanel(Filament::getPanel('admin'));
         Filament::getCurrentPanel()->multiFactorAuthentication(
-            providers: [\Filament\Auth\MultiFactor\App\AppAuthentication::make()],
+            providers: [AppAuthentication::make()],
             isRequired: false
         );
         // Disable CSRF to test Livewire update endpoint
@@ -31,7 +32,7 @@ class ForcePasswordChangeExtendedTest extends TestCase
     {
         $admin = Admin::factory()->create([
             'force_password_change' => false,
-            'app_authentication_secret' => 'JBSWY3DPEHPK3PXP'
+            'app_authentication_secret' => 'JBSWY3DPEHPK3PXP',
         ]);
         $this->actingAs($admin)->withSession(['session_created_at' => time()]);
 
@@ -43,7 +44,7 @@ class ForcePasswordChangeExtendedTest extends TestCase
     {
         $admin = Admin::factory()->create([
             'force_password_change' => true,
-            'app_authentication_secret' => 'JBSWY3DPEHPK3PXP'
+            'app_authentication_secret' => 'JBSWY3DPEHPK3PXP',
         ]);
         $this->actingAs($admin)->withSession(['session_created_at' => time()]);
 
@@ -55,7 +56,7 @@ class ForcePasswordChangeExtendedTest extends TestCase
     {
         $admin = Admin::factory()->create([
             'force_password_change' => true,
-            'app_authentication_secret' => 'JBSWY3DPEHPK3PXP'
+            'app_authentication_secret' => 'JBSWY3DPEHPK3PXP',
         ]);
         $this->actingAs($admin)->withSession(['session_created_at' => time()]);
 
@@ -67,7 +68,7 @@ class ForcePasswordChangeExtendedTest extends TestCase
     {
         $admin = Admin::factory()->create([
             'force_password_change' => true,
-            'password' => Hash::make('old-password')
+            'password' => Hash::make('old-password'),
         ]);
         $this->actingAs($admin)->withSession(['session_created_at' => time()]);
 
@@ -88,7 +89,7 @@ class ForcePasswordChangeExtendedTest extends TestCase
     {
         $admin = Admin::factory()->create([
             'force_password_change' => true,
-            'password' => Hash::make('old-password')
+            'password' => Hash::make('old-password'),
         ]);
         $this->actingAs($admin)->withSession(['session_created_at' => time()]);
 
@@ -115,7 +116,7 @@ class ForcePasswordChangeExtendedTest extends TestCase
     {
         $admin = Admin::factory()->create([
             'force_password_change' => true,
-            'app_authentication_secret' => 'JBSWY3DPEHPK3PXP'
+            'app_authentication_secret' => 'JBSWY3DPEHPK3PXP',
         ]);
         $this->actingAs($admin)->withSession(['session_created_at' => time()]);
 
@@ -127,7 +128,7 @@ class ForcePasswordChangeExtendedTest extends TestCase
     {
         $admin = Admin::factory()->create([
             'force_password_change' => true,
-            'app_authentication_secret' => 'JBSWY3DPEHPK3PXP'
+            'app_authentication_secret' => 'JBSWY3DPEHPK3PXP',
         ]);
         $this->actingAs($admin)->withSession(['session_created_at' => time()]);
 
@@ -139,7 +140,7 @@ class ForcePasswordChangeExtendedTest extends TestCase
     {
         $admin = Admin::factory()->create([
             'force_password_change' => true,
-            'app_authentication_secret' => 'JBSWY3DPEHPK3PXP'
+            'app_authentication_secret' => 'JBSWY3DPEHPK3PXP',
         ]);
         $this->actingAs($admin)->withSession(['session_created_at' => time()]);
 

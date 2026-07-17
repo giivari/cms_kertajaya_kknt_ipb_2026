@@ -2,8 +2,8 @@
 
 namespace App\Policies;
 
-use App\Models\AuditLog;
 use App\Models\Admin;
+use App\Models\AuditLog;
 
 class AuditLogPolicy
 {
