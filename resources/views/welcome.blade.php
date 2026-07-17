@@ -5,9 +5,30 @@
 @section('content')
 <!-- HERO SECTION -->
 <div class="relative bg-navy-900 overflow-hidden">
+    @php
+        $heroImage = null;
+        try {
+            // Find the most recently uploaded verified image to use as hero, ideally landscape if we could tell
+            $media = \App\Models\Media::where('invisible_watermark_status', 'verified')
+                ->where('mime_type', 'like', 'image/%')
+                ->latest()
+                ->first();
+            if ($media) {
+                $deriv = $media->getPublicDerivative('large');
+                if ($deriv) {
+                    $heroImage = Storage::disk('public')->url($deriv->file_path);
+                }
+            }
+        } catch (\Exception $e) {}
+    @endphp
+    
     <div class="absolute inset-0">
-        <!-- Replace with dynamic hero image from settings if available, or keep abstract -->
-        <div class="absolute inset-0 bg-gradient-to-r from-teal-900 to-navy-900 opacity-90 mix-blend-multiply"></div>
+        @if($heroImage)
+            <img src="{{ $heroImage }}" alt="Hero" class="w-full h-full object-cover">
+            <div class="absolute inset-0 bg-gradient-to-r from-teal-900/90 to-navy-900/80 mix-blend-multiply"></div>
+        @else
+            <div class="absolute inset-0 bg-gradient-to-r from-teal-900 to-navy-900 mix-blend-multiply"></div>
+        @endif
     </div>
     
     <div class="relative max-w-7xl mx-auto py-24 px-4 sm:py-32 sm:px-6 lg:px-8 flex flex-col items-center text-center">
@@ -21,8 +42,8 @@
             <a href="/news" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-navy-900 bg-lime-400 hover:bg-lime-300 transition-colors duration-200">
                 Kabar Desa
             </a>
-            <a href="/documents" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-teal-600 hover:bg-teal-500 transition-colors duration-200 shadow-sm">
-                Layanan Publik
+            <a href="/halaman/profil-desa" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-teal-600 hover:bg-teal-500 transition-colors duration-200 shadow-sm">
+                Profil Desa
             </a>
         </div>
     </div>
@@ -35,48 +56,8 @@
     </div>
 </div>
 
-<!-- QUICK ACCESS PANEL -->
-<div class="bg-cream-50 py-12">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <!-- Stat 1 -->
-            <div class="bg-white rounded-2xl p-8 shadow-sm border border-cream-200 text-center hover:shadow-md transition-shadow">
-                <div class="inline-flex items-center justify-center h-16 w-16 rounded-full bg-emerald-100 text-emerald-600 mb-6">
-                    <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                    </svg>
-                </div>
-                <h3 class="text-xl font-display font-semibold text-navy-900">Penduduk</h3>
-                <p class="mt-2 text-3xl font-bold text-teal-600">3,450</p>
-                <p class="text-sm text-gray-500 mt-1">Jiwa</p>
-            </div>
-            
-            <!-- Stat 2 -->
-            <div class="bg-white rounded-2xl p-8 shadow-sm border border-cream-200 text-center hover:shadow-md transition-shadow">
-                <div class="inline-flex items-center justify-center h-16 w-16 rounded-full bg-warm-yellow-100 text-warm-yellow-600 mb-6">
-                    <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                    </svg>
-                </div>
-                <h3 class="text-xl font-display font-semibold text-navy-900">Keluarga</h3>
-                <p class="mt-2 text-3xl font-bold text-teal-600">1,200</p>
-                <p class="text-sm text-gray-500 mt-1">Kepala Keluarga</p>
-            </div>
-
-            <!-- Stat 3 -->
-            <div class="bg-white rounded-2xl p-8 shadow-sm border border-cream-200 text-center hover:shadow-md transition-shadow">
-                <div class="inline-flex items-center justify-center h-16 w-16 rounded-full bg-navy-100 text-navy-600 mb-6">
-                    <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
-                    </svg>
-                </div>
-                <h3 class="text-xl font-display font-semibold text-navy-900">Luas Wilayah</h3>
-                <p class="mt-2 text-3xl font-bold text-teal-600">450</p>
-                <p class="text-sm text-gray-500 mt-1">Hektar</p>
-            </div>
-        </div>
-    </div>
-</div>
+<!-- QUICK ACCESS PANEL / STATISTICS -->
+<!-- Hidden until verified village dataset is implemented -->
 
 <!-- LATEST NEWS -->
 <div class="py-16 bg-white">
@@ -154,6 +135,121 @@
             <a href="/news" class="inline-flex items-center px-4 py-2 border border-teal-600 text-base font-medium rounded-md text-teal-600 bg-transparent hover:bg-teal-50 transition-colors">
                 Lihat Semua Berita
             </a>
+        </div>
+    </div>
+</div>
+
+<!-- GALLERY MOSAIC -->
+<div class="py-16 bg-cream-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-end mb-10">
+            <div>
+                <h2 class="text-base text-emerald-600 font-semibold tracking-wide uppercase">Dokumentasi</h2>
+                <p class="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-navy-900 sm:text-4xl font-display">Galeri Desa</p>
+            </div>
+            <a href="/galeri" class="hidden sm:inline-flex items-center text-teal-600 hover:text-teal-700 font-medium">
+                Lihat Semua Galeri <span aria-hidden="true" class="ml-1">&rarr;</span>
+            </a>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            @forelse($latestAlbums as $index => $album)
+                <a href="/galeri/{{ $album->slug }}" class="{{ $index === 0 ? 'md:col-span-2 md:row-span-2' : 'md:col-span-2' }} rounded-xl overflow-hidden relative group h-64 {{ $index === 0 ? 'md:h-full' : '' }}">
+                    @php
+                        $coverUrl = null;
+                        if ($album->cover_image_id) {
+                            try {
+                                $media = \App\Models\Media::find($album->cover_image_id);
+                                if ($media && $media->invisible_watermark_status === 'verified') {
+                                    $deriv = $media->getPublicDerivative($index === 0 ? 'large' : 'medium');
+                                    if ($deriv) $coverUrl = Storage::disk('public')->url($deriv->file_path);
+                                }
+                            } catch(\Exception $e){}
+                        }
+                    @endphp
+                    @if($coverUrl)
+                        <img src="{{ $coverUrl }}" alt="{{ $album->title }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                    @else
+                        <div class="w-full h-full bg-teal-100 flex items-center justify-center text-teal-300">
+                            <svg class="h-12 w-12" fill="currentColor" viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+                        </div>
+                    @endif
+                    <div class="absolute inset-0 bg-gradient-to-t from-navy-900/80 via-navy-900/20 to-transparent opacity-80 group-hover:opacity-100 transition-opacity"></div>
+                    <div class="absolute bottom-0 left-0 right-0 p-6">
+                        <h3 class="text-white text-xl font-bold font-display truncate">{{ $album->title }}</h3>
+                        <p class="text-cream-100 mt-1">{{ $album->published_at->format('d M Y') }}</p>
+                    </div>
+                </a>
+            @empty
+                <div class="col-span-4 text-center py-12 bg-white rounded-2xl border border-cream-200">
+                    <p class="text-gray-500 text-lg">Belum ada album galeri.</p>
+                </div>
+            @endforelse
+        </div>
+    </div>
+</div>
+
+<!-- LATEST DOCUMENTS -->
+<div class="py-16 bg-white border-t border-cream-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-end mb-10">
+            <div>
+                <h2 class="text-base text-emerald-600 font-semibold tracking-wide uppercase">Informasi Publik</h2>
+                <p class="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-navy-900 sm:text-4xl font-display">Dokumen Terbaru</p>
+            </div>
+            <a href="/dokumen" class="hidden sm:inline-flex items-center text-teal-600 hover:text-teal-700 font-medium">
+                Lihat Semua Dokumen <span aria-hidden="true" class="ml-1">&rarr;</span>
+            </a>
+        </div>
+        
+        <div class="bg-white shadow overflow-hidden sm:rounded-md border border-cream-200">
+            <ul role="list" class="divide-y divide-gray-200">
+                @forelse($latestDocuments as $doc)
+                    <li>
+                        <a href="/dokumen/{{ $doc->slug }}/download" class="block hover:bg-cream-50 transition-colors">
+                            <div class="px-4 py-4 sm:px-6 flex items-center justify-between">
+                                <div class="flex items-center gap-4">
+                                    <div class="p-2 bg-emerald-50 text-emerald-600 rounded-lg">
+                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                                    </div>
+                                    <div>
+                                        <p class="text-lg font-semibold text-navy-900 truncate">{{ $doc->title }}</p>
+                                        <p class="mt-1 flex items-center text-sm text-gray-500">
+                                            <span>{{ $doc->category ? $doc->category->name : 'Umum' }}</span>
+                                            <span class="mx-2">&bull;</span>
+                                            <span>{{ $doc->published_at->format('d M Y') }}</span>
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center text-teal-600 font-medium">
+                                    Unduh
+                                    <svg class="ml-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                                </div>
+                            </div>
+                        </a>
+                    </li>
+                @empty
+                    <li class="px-4 py-8 text-center text-gray-500">Belum ada dokumen publik yang tersedia.</li>
+                @endforelse
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- FINAL CTA -->
+<div class="bg-navy-900 relative overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-r from-teal-900 to-navy-900 mix-blend-multiply opacity-50"></div>
+    <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:py-16 lg:px-8 lg:flex lg:items-center lg:justify-between relative z-10">
+        <h2 class="text-3xl font-extrabold tracking-tight text-white sm:text-4xl font-display">
+            <span class="block text-lime-400">Punya pertanyaan atau masukan?</span>
+            <span class="block">Hubungi pemerintah desa sekarang.</span>
+        </h2>
+        <div class="mt-8 flex lg:mt-0 lg:flex-shrink-0">
+            <div class="inline-flex rounded-md shadow">
+                <a href="/halaman/profil-desa" class="inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-navy-900 bg-lime-400 hover:bg-lime-300 transition-colors">
+                    Pelajari Lebih Lanjut
+                </a>
+            </div>
         </div>
     </div>
 </div>

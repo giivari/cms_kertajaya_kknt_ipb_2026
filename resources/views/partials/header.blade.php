@@ -2,9 +2,27 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center h-16">
             <div class="flex-shrink-0 flex items-center">
-                <a href="{{ route('home') }}" class="text-xl font-bold text-emerald-600 flex items-center gap-2">
-                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
-                    <span>{{ config('app.name', 'Desa') }}</span>
+                <a href="{{ route('home') }}" class="text-xl font-bold text-teal-600 flex items-center gap-2 font-display tracking-tight">
+                    @php
+                        $villageName = \App\Services\SettingsService::get('village_name', 'Desa Kertajaya');
+                        $logoId = \App\Services\SettingsService::get('village_logo');
+                        $logoUrl = null;
+                        if ($logoId) {
+                            try {
+                                $media = \App\Models\Media::find($logoId);
+                                if ($media && $media->invisible_watermark_status === 'verified') {
+                                    $deriv = $media->getPublicDerivative('thumbnail');
+                                    if ($deriv) $logoUrl = Storage::disk('public')->url($deriv->file_path);
+                                }
+                            } catch (\Exception $e) {}
+                        }
+                    @endphp
+                    @if($logoUrl)
+                        <img src="{{ $logoUrl }}" alt="{{ $villageName }}" class="h-8 w-auto">
+                    @else
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+                    @endif
+                    <span>{{ $villageName }}</span>
                 </a>
             </div>
 
