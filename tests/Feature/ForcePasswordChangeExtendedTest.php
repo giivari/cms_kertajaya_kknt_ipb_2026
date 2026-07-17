@@ -112,7 +112,7 @@ class ForcePasswordChangeExtendedTest extends TestCase
         // $this->assertNotEquals($sessionId, session()->getId());
     }
 
-    public function test_crafted_page_creation_is_blocked()
+    public function test_crafted_page_creation_http_is_blocked()
     {
         $admin = Admin::factory()->create([
             'force_password_change' => true,
@@ -124,7 +124,7 @@ class ForcePasswordChangeExtendedTest extends TestCase
         $response->assertRedirect(filament()->getProfileUrl());
     }
 
-    public function test_crafted_website_settings_update_is_blocked()
+    public function test_crafted_website_settings_update_http_is_blocked()
     {
         $admin = Admin::factory()->create([
             'force_password_change' => true,
@@ -136,7 +136,7 @@ class ForcePasswordChangeExtendedTest extends TestCase
         $response->assertRedirect(filament()->getProfileUrl());
     }
 
-    public function test_crafted_media_action_is_blocked()
+    public function test_crafted_media_action_http_is_blocked()
     {
         $admin = Admin::factory()->create([
             'force_password_change' => true,

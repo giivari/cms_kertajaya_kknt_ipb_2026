@@ -26,7 +26,7 @@ class ForcePasswordChange
                         $snapshot = json_decode($component['snapshot'] ?? '{}', true);
                         $name = $snapshot['memo']['name'] ?? '';
 
-                        if (str_starts_with($name, 'app.filament.pages.auth.') || str_starts_with($name, 'filament.core.')) {
+                        if ($name === 'app.filament.pages.auth.edit-profile') {
                             continue;
                         }
 
