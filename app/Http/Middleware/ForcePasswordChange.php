@@ -17,12 +17,23 @@ class ForcePasswordChange
             $user = Filament::auth()->user();
 
             if ($user->force_password_change) {
-                // Ensure we are not already on the profile page or logout to avoid redirect loop
-                $profileRoute = Filament::getCurrentPanel()->getRouteName('auth.profile');
-                $logoutRoute = Filament::getCurrentPanel()->getRouteName('auth.logout');
+                $profileUrl = filament()->getProfileUrl();
+                $logoutUrl = filament()->getLogoutUrl();
 
-                if (! $request->routeIs($profileRoute) && ! $request->routeIs($logoutRoute)) {
-                    return redirect()->route($profileRoute);
+                if (app('livewire')->isLivewireRequest()) {
+                    $components = $request->input('components', []);
+                    foreach ($components as $component) {
+                        $snapshot = json_decode($component['snapshot'] ?? '{}', true);
+                        $name = $snapshot['memo']['name'] ?? '';
+
+                        if (str_starts_with($name, 'app.filament.pages.auth.') || str_starts_with($name, 'filament.core.')) {
+                            continue;
+                        }
+
+                        return redirect($profileUrl);
+                    }
+                } elseif (! $request->routeIs('filament.admin.auth.profile') && ! $request->routeIs('filament.admin.auth.logout')) {
+                    return redirect($profileUrl);
                 }
             }
         }
