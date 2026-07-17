@@ -8,10 +8,8 @@ use App\Filament\Resources\AuditLogs\Schemas\AuditLogForm;
 use App\Filament\Resources\AuditLogs\Schemas\AuditLogInfolist;
 use App\Filament\Resources\AuditLogs\Tables\AuditLogsTable;
 use App\Models\AuditLog;
-use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
 
@@ -39,7 +37,7 @@ class AuditLogResource extends Resource
 
     protected static ?string $model = AuditLog::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-clipboard-document-list';
 
     public static function canCreate(): bool
     {

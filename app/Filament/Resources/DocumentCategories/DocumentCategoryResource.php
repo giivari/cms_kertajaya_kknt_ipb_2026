@@ -8,10 +8,8 @@ use App\Filament\Resources\DocumentCategories\Pages\ListDocumentCategories;
 use App\Filament\Resources\DocumentCategories\Schemas\DocumentCategoryForm;
 use App\Filament\Resources\DocumentCategories\Tables\DocumentCategoriesTable;
 use App\Models\DocumentCategory;
-use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 
 class DocumentCategoryResource extends Resource
@@ -38,7 +36,7 @@ class DocumentCategoryResource extends Resource
 
     protected static ?string $model = DocumentCategory::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-folder';
 
     protected static ?string $recordTitleAttribute = 'name';
 

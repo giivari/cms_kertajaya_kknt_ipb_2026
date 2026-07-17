@@ -58,6 +58,8 @@ class PageResource extends Resource
         return 'Halaman';
     }
 
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-document-text';
+
     protected static ?string $model = Page::class;
 
     public static function getNavigationIcon(): string|\BackedEnum|null

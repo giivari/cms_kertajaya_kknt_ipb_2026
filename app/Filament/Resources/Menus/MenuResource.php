@@ -25,6 +25,8 @@ use Illuminate\Database\Eloquent\Builder;
 
 class MenuResource extends Resource
 {
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-bars-3';
+
     public static function getNavigationGroup(): ?string
     {
         return 'STRUKTUR WEBSITE';

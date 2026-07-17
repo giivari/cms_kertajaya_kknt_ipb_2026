@@ -8,10 +8,8 @@ use App\Filament\Resources\NewsCategories\Pages\ListNewsCategories;
 use App\Filament\Resources\NewsCategories\Schemas\NewsCategoryForm;
 use App\Filament\Resources\NewsCategories\Tables\NewsCategoriesTable;
 use App\Models\NewsCategory;
-use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 
 class NewsCategoryResource extends Resource
@@ -38,7 +36,7 @@ class NewsCategoryResource extends Resource
 
     protected static ?string $model = NewsCategory::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-tag';
 
     protected static ?string $recordTitleAttribute = 'name';
 
