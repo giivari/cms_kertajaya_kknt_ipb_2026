@@ -1,0 +1,30 @@
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&display=swap');
+@import '../../../../vendor/filament/filament/resources/css/theme.css';
+
+@source '../../../../app/Filament/**/*';
+@source '../../../../resources/views/filament/**/*';
+
+:root {
+    --font-family-sans: 'Poppins', sans-serif;
+}
+
+.fi-brand-text {
+    font-family: 'Bricolage Grotesque', sans-serif;
+}
+
+.admin-sidebar-brand-icon,
+.admin-website-link-icon {
+    width: 1rem;
+    height: 1rem;
+    min-width: 1rem;
+    min-height: 1rem;
+    flex: none;
+}
+
+.admin-auth-brand-icon {
+    width: 1.75rem;
+    height: 1.75rem;
+    min-width: 1.75rem;
+    min-height: 1.75rem;
+    flex: none;
+}

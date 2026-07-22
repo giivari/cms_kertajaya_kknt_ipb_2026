@@ -44,6 +44,7 @@ class AdminPanelProvider extends PanelProvider
             ->colors([
                 'primary' => Color::Teal,
             ])
+            ->viteTheme('resources/css/filament/admin/theme.css')
             ->darkMode(false)
             ->navigationGroups([
                 'DASBOR',
