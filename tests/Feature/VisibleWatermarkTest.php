@@ -68,13 +68,11 @@ it('does not change pixels when visible watermark is disabled', function () {
 
     $service = new MediaProcessingService;
     $media = $service->handleUpload($file, ['original_filename' => 'Test Image']);
-
-    // Mock invisible watermark injection so it doesn't fail, but let visible watermark do its thing (or not)
-    $mockWatermarkService = Mockery::mock(WatermarkService::class)->makePartial();
-    $mockWatermarkService->shouldReceive('injectInvisibleIdentifier')->andReturn(true);
-
     $job = new ProcessMediaJob($media);
-    $job->handle($mockWatermarkService, app(WatermarkVerificationService::class));
+    $job->handle(
+        app(WatermarkService::class),
+        app(WatermarkVerificationService::class)
+    );
 
     $media->refresh();
     $publicPath = Storage::disk('public')->path('media/'.$media->filename);

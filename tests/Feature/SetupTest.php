@@ -8,24 +8,45 @@ test('admin path configuration is loaded', function () {
 
 test('generate installation id command works', function () {
     $envPath = base_path('.env');
-    $backupPath = base_path('.env.testing_backup');
-    if (file_exists($envPath)) {
-        copy($envPath, $backupPath);
+    $envOriginallyExisted = file_exists($envPath);
+
+    $originalEnv = $envOriginallyExisted
+        ? file_get_contents($envPath)
+        : null;
+
+    if ($envOriginallyExisted && $originalEnv === false) {
+        throw new RuntimeException('Unable to read the original .env file.');
     }
 
-    $this->artisan('village:install-id')->assertExitCode(0);
+    try {
+        $this->artisan('village:install-id')
+            ->assertExitCode(0);
 
-    $env = file_get_contents($envPath);
-    expect($env)->toContain('INSTALLATION_ID=VWCM-');
+        $generatedEnv = file_get_contents($envPath);
 
-    if (file_exists($backupPath)) {
-        rename($backupPath, $envPath);
-    } else {
-        @unlink($envPath);
+        expect($generatedEnv)
+            ->not->toBeFalse()
+            ->toContain('INSTALLATION_ID=VWCM-');
+    } finally {
+        if ($envOriginallyExisted) {
+            $restored = file_put_contents(
+                $envPath,
+                (string) $originalEnv
+            );
+
+            if ($restored === false) {
+                throw new RuntimeException(
+                    'Unable to restore the original .env file.'
+                );
+            }
+        } elseif (file_exists($envPath)) {
+            @unlink($envPath);
+        }
     }
 });
 
 test('postgresql connection works', function () {
     $pdo = DB::connection()->getPdo();
+
     expect($pdo)->toBeInstanceOf(PDO::class);
 });
