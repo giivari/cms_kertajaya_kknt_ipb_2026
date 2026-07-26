@@ -1,0 +1,21 @@
+#!/bin/sh
+if ! command -v git >/dev/null 2>&1; then exit 10; fi
+if ! command -v mktemp >/dev/null 2>&1; then exit 10; fi
+if [ ! -f "scripts/guardrails/validate-staged-files.ps1" ]; then exit 10; fi
+
+tmp_list=$(mktemp)
+trap 'rm -f "$tmp_list"' EXIT
+
+if ! git diff --cached --name-only -z > "$tmp_list"; then
+    exit 10
+fi
+
+if [ ! -s "$tmp_list" ]; then exit 0; fi
+
+if command -v pwsh >/dev/null 2>&1; then
+    pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/guardrails/validate-staged-files.ps1 -PathListFile "$tmp_list"
+elif command -v powershell.exe >/dev/null 2>&1; then
+    powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/guardrails/validate-staged-files.ps1 -PathListFile "$tmp_list"
+else
+    exit 10
+fi

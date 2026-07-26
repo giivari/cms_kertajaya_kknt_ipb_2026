@@ -1,0 +1,9 @@
+{
+  "protectedBranches": ["main", "master", "production"],
+  "allowedBranchPatterns": ["^feature/", "^bugfix/", "^repair/"],
+  "protectedPathPatterns": ["^\\.env(?!\\.example$).*", "^vendor/", "^node_modules/", "^village-cms-backups/"],
+  "testDatabasePatterns": ["^example_test_"],
+  "protectedDatabaseNames": ["example_production_db", "example_development_db", "example_recovery_db"],
+  "pgHbaPath": "",
+  "pgHbaSha256": ""
+}

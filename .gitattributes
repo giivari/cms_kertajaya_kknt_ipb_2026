@@ -9,3 +9,7 @@
 /.github export-ignore
 CHANGELOG.md export-ignore
 .styleci.yml export-ignore
+
+.githooks/* text eol=lf
+
+.githooks/* text eol=lf
