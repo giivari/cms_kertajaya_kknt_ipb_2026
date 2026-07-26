@@ -52,6 +52,11 @@ class AdminPanelProvider extends PanelProvider
                 PanelsRenderHook::GLOBAL_SEARCH_BEFORE,
                 fn () => view('filament.topbar-website-link')
             )
+            ->renderHook(
+                PanelsRenderHook::SIMPLE_LAYOUT_START,
+                fn () => view('filament.brand.auth-brand'),
+                scopes: [\App\Filament\Pages\Auth\Login::class]
+            )
             ->navigationGroups([
                 'DASBOR',
                 'KONTEN',

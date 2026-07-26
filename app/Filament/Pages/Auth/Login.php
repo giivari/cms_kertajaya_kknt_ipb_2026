@@ -3,11 +3,13 @@
 namespace App\Filament\Pages\Auth;
 
 use App\Filament\Forms\Components\Turnstile;
+use Filament\Actions\Action;
 use Filament\Auth\Http\Responses\Contracts\LoginResponse;
 use Filament\Auth\Pages\Login as BaseLogin;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Component;
 use Filament\Schemas\Schema;
+use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Validation\ValidationException;
 use SensitiveParameter;
@@ -44,6 +46,30 @@ class Login extends BaseLogin
                 'data.username' => __('filament-panels::pages/auth/login.messages.failed'),
             ]);
         }
+    }
+
+    public function hasLogo(): bool
+    {
+        return false;
+    }
+
+    public function getHeading(): string|Htmlable
+    {
+        return filled($this->userUndertakingMultiFactorAuthentication)
+            ? 'Verifikasi Dua Faktor'
+            : 'Masuk ke Panel Admin';
+    }
+
+    public function getSubheading(): string|Htmlable|null
+    {
+        return filled($this->userUndertakingMultiFactorAuthentication)
+            ? 'Konfirmasi identitas Anda untuk melanjutkan.'
+            : '';
+    }
+
+    protected function getAuthenticateFormAction(): Action
+    {
+        return parent::getAuthenticateFormAction()->label('Masuk');
     }
 
     public function form(Schema $schema): Schema
