@@ -41,7 +41,12 @@ class Login extends BaseLogin
 
             return $response;
         } catch (ValidationException $e) {
+            if (filled($this->userUndertakingMultiFactorAuthentication)) {
+                throw $e;
+            }
+
             RateLimiter::hit($key, 900);
+
             throw ValidationException::withMessages([
                 'data.username' => __('filament-panels::pages/auth/login.messages.failed'),
             ]);

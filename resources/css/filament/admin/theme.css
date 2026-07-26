@@ -28,3 +28,62 @@
     min-height: 1.75rem;
     flex: none;
 }
+
+/* B1.4 mobile auth card inset */
+@media (max-width: 639px) {
+    .fi-simple-layout .fi-simple-main {
+        width: calc(100% - 2rem);
+        max-width: calc(100% - 2rem);
+        margin-inline: 1rem;
+        padding-inline: 0.75rem;
+        border-radius: 0.75rem;
+        box-sizing: border-box;
+    }
+}
+
+/* B1.4 full-width auth / MFA content */
+.fi-simple-main .fi-simple-header,
+.fi-simple-main .fi-fo-field-wrp,
+.fi-simple-main .fi-form-actions {
+    width: 100%;
+}
+
+.fi-simple-main .fi-simple-header .fi-simple-header-heading,
+.fi-simple-main .fi-simple-header .fi-simple-header-subheading,
+.fi-simple-main .fi-fo-field-wrp-label {
+    width: 100%;
+    text-align: left !important;
+}
+
+.fi-simple-main .fi-one-time-code-input-ctn {
+    width: 100%;
+    margin-inline: 0;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+.fi-simple-main .fi-one-time-code-input-ctn > * {
+    flex: 1 1 0;
+    min-width: 0;
+}
+
+.fi-simple-main .fi-form-actions .fi-btn {
+    width: 100%;
+}
+
+/* B1.4 responsive auth vertical rhythm */
+.admin-auth-brand {
+    transform: translateY(2rem);
+}
+
+@media (min-width: 640px) {
+    .admin-auth-brand {
+        transform: translateY(2.5rem);
+    }
+}
+
+@media (max-width: 639px) {
+    .fi-simple-layout .fi-simple-main {
+        margin-top: -4rem;
+    }
+}
