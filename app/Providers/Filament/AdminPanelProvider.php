@@ -7,6 +7,7 @@ use App\Filament\Pages\Auth\Login;
 use App\Http\Middleware\AbsoluteSessionTimeout;
 use App\Http\Middleware\ForcePasswordChange;
 use Filament\Auth\MultiFactor\App\AppAuthentication;
+use Filament\Enums\ThemeMode;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -46,7 +47,7 @@ class AdminPanelProvider extends PanelProvider
                 'primary' => Color::Teal,
             ])
             ->viteTheme('resources/css/filament/admin/theme.css')
-            ->darkMode(false)
+            ->defaultThemeMode(ThemeMode::Dark)
             ->renderHook(
                 PanelsRenderHook::GLOBAL_SEARCH_BEFORE,
                 fn () => view('filament.topbar-website-link')
