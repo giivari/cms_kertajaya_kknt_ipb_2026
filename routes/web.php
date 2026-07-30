@@ -31,6 +31,9 @@ Route::prefix('dokumen')->name('documents.')->group(function () {
 });
 
 use App\Http\Controllers\Public\ContactController;
+use App\Http\Controllers\Public\SearchController;
+
+Route::get('/pencarian', [SearchController::class, 'index'])->name('public.search');
 
 Route::prefix('kontak')->name('public.contact.')->group(function () {
     Route::get('/', [ContactController::class, 'show'])->name('show');

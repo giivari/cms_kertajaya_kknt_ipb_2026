@@ -62,6 +62,15 @@
                 @endif
             </nav>
 
+            <!-- Desktop Search -->
+            <div class="hidden md:flex items-center">
+                <a href="{{ route('public.search') }}" class="p-2 text-navy hover:text-teal transition-colors duration-200" title="Cari" id="desktop-search-link">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                </a>
+            </div>
+
             <!-- Mobile menu button -->
             <div class="flex items-center md:hidden">
                 <button type="button" class="inline-flex items-center justify-center p-2 rounded-md text-navy hover:bg-cream focus:outline-none focus:ring-2 focus:ring-inset focus:ring-teal" aria-expanded="false" onclick="document.getElementById('mobile-menu').classList.toggle('hidden')">
@@ -75,6 +84,15 @@
     <!-- Mobile Menu -->
     <div class="hidden md:hidden shadow-md absolute w-full" id="mobile-menu">
         <div class="pt-2 pb-3 space-y-1 bg-white border-t border-border">
+            <!-- Mobile Search -->
+            <div class="px-4 py-2">
+                <form action="{{ route('public.search') }}" method="GET" class="flex gap-2">
+                    <input type="text" name="q" placeholder="Cari…" minlength="2" maxlength="100" class="flex-1 rounded-xl border border-border px-3 py-2 text-sm text-navy placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal/40 focus:border-teal" id="mobile-search-input">
+                    <button type="submit" class="rounded-xl bg-teal text-white px-3 py-2" id="mobile-search-submit">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                    </button>
+                </form>
+            </div>
             @if(isset($headerMenu) && $headerMenu->items)
                 @foreach($headerMenu->items as $item)
                     @if($item->children->isNotEmpty())

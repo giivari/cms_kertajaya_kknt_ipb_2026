@@ -3,7 +3,7 @@
 ## Workspace Aktif
 - Path: `C:\Users\givar\KULIAH\WEB_KKN\village-cms-next`
 - Branch: `development/next-sprint`
-- HEAD: `eed048661d00b2232a698472da9ddaf48ff2735c`
+- HEAD: `a718cac`
 
 ## Roadmap Produk
 - Sprint 0 Setup: selesai
@@ -12,7 +12,7 @@
 - Sprint 3 Page Builder/Menu: selesai secara fungsi
 - Sprint 4 News/Gallery/Documents: selesai secara fungsi
 - Sprint 5A Contact Messages: selesai
-- Sprint 5B Search: belum
+- Sprint 5B Search: selesai
 - Sprint 5C Maps: belum
 - Sprint 6 Stabilization/SEO/Deployment: belum
 
@@ -41,9 +41,18 @@ Fitur Pesan Kontak telah diimplementasikan dalam bentuk *Filament Resource*. Pen
 - Jangan stage atau commit tanpa persetujuan pengguna.
 
 ## Current Scope
-Menutup Contact Messages dan menyelaraskan visual inti dengan Figma Make.
+Sprint 5C Maps MVP
+
+## Visual/Content Debt (Sprint 6)
+- Data kontak publik masih menggunakan nilai dummy (alamat, email, telepon).
+- Konsistensi footer belum diselaraskan dengan Figma Make.
+- Brand icon publik (header) masih menggunakan placeholder SVG, belum final.
 
 ## Next Actions
-1. Commit Contact.
-2. Search.
-3. Maps.
+1. Maps.
+2. Sprint 6 stabilization.
+
+## Last Completed
+Public Search MVP dengan pencarian Page, News, dan Document.
+Full suite: 219 passed (797 assertions).
+Build: PASS.
