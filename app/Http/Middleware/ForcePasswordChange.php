@@ -32,7 +32,9 @@ class ForcePasswordChange
 
                         return redirect($profileUrl);
                     }
-                } elseif (! $request->routeIs('filament.admin.auth.profile') && ! $request->routeIs('filament.admin.auth.logout')) {
+                } elseif (! $request->routeIs('filament.admin.auth.profile')
+                    && ! $request->routeIs('filament.admin.auth.logout')
+                    && ! $request->routeIs('filament.admin.auth.multi-factor-authentication.*')) {
                     return redirect($profileUrl);
                 }
             }

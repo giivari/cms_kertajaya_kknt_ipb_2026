@@ -8,8 +8,10 @@ use App\Services\GalleryMediaUsageResolver;
 use App\Services\MediaUsageService;
 use App\Services\NewsMediaUsageResolver;
 use App\Services\PageMediaUsageResolver;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Http\Request;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -28,6 +30,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        RateLimiter::for('contact-submissions', function (Request $request) {
+            return \Illuminate\Cache\RateLimiting\Limit::perMinutes(15, 5)->by($request->ip());
+        });
         $this->app->booted(function () {
             $mediaUsageService = $this->app->make(MediaUsageService::class);
             $mediaUsageService->registerResolver(new PageMediaUsageResolver);

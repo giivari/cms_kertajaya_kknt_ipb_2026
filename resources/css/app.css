@@ -8,8 +8,10 @@
     --color-teal: #075F55;
     --color-emerald: #098C4C;
     --color-lime: #BDEB38;
-    --color-warm-yellow: #F6C431;
+    --color-yellow: #F6C431;
     --color-cream: #F6F0DB;
+    --color-warm-white: #FAF9F6;
+    --color-border: #E0E5EA;
     
     --font-sans: 'Poppins', ui-sans-serif, system-ui, sans-serif;
     --font-display: 'Bricolage Grotesque', 'Poppins', ui-sans-serif, system-ui, sans-serif;

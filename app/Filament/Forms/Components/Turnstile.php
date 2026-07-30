@@ -27,24 +27,13 @@ class Turnstile extends Field
                     return;
                 }
 
-                $secret = env('TURNSTILE_SECRET_KEY');
-
-                // For testing with official test keys or if not set, we can allow or use real verification
-                if (empty($secret)) {
-                    return;
-                }
+                $verifier = app(\App\Services\TurnstileVerifier::class);
 
                 try {
-                    $response = Http::timeout(3)->asForm()->post('https://challenges.cloudflare.com/turnstile/v0/siteverify', [
-                        'secret' => $secret,
-                        'response' => $value,
-                        'remoteip' => request()->ip(),
-                    ]);
-
-                    if (! $response->json('success')) {
+                    if (! $verifier->verify($value, request()->ip())) {
                         $fail('The CAPTCHA verification failed.');
                     }
-                } catch (ConnectionException $e) {
+                } catch (\Illuminate\Http\Client\ConnectionException $e) {
                     $fail('The CAPTCHA verification failed due to a timeout.');
                 }
             };

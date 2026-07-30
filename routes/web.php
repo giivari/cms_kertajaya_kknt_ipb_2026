@@ -29,3 +29,10 @@ Route::prefix('dokumen')->name('documents.')->group(function () {
     Route::get('/preview/{slug}/download', [DocumentController::class, 'preview'])->name('preview')->middleware('auth');
     Route::get('/{slug}/download', [DocumentController::class, 'download'])->name('download');
 });
+
+use App\Http\Controllers\Public\ContactController;
+
+Route::prefix('kontak')->name('public.contact.')->group(function () {
+    Route::get('/', [ContactController::class, 'show'])->name('show');
+    Route::post('/', [ContactController::class, 'store'])->name('store')->middleware('throttle:contact-submissions');
+});

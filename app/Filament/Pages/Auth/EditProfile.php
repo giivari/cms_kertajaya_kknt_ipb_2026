@@ -47,8 +47,11 @@ class EditProfile extends BaseEditProfile
     protected function getTotpConfirmationFormComponent(): Component
     {
         return TextInput::make('totp')
-            ->label('TOTP Confirmation')
+            ->label('Kode TOTP')
             ->requiredWith('password')
+            ->validationMessages([
+                'required_with' => 'Kode TOTP wajib diisi.',
+            ])
             ->dehydrated(false)
             ->rule(function () {
                 return function (string $attribute, #[SensitiveParameter] $value, Closure $fail) {
@@ -58,11 +61,42 @@ class EditProfile extends BaseEditProfile
                     $user = Filament::auth()->user();
                     $appAuth = AppAuthentication::make();
                     if (! $appAuth->verifyCode($value, $appAuth->getSecret($user), true)) {
-                        $fail('The provided TOTP code is invalid.');
+                        $fail('Kode TOTP tidak valid.');
                     }
                 };
             })
             ->visible(fn (Get $get): bool => (filled($get('password')) || ($get('email') !== $this->getUser()->getAttributeValue('email'))) && filled($this->getUser()->getAttributeValue('app_authentication_secret')));
+    }
+
+    protected function getPasswordConfirmationFormComponent(): Component
+    {
+        return TextInput::make('passwordConfirmation')
+            ->label(__('filament-panels::pages/auth/edit-profile.form.password_confirmation.label'))
+            ->password()
+            ->revealable(filament()->arePasswordsRevealable())
+            ->requiredWith('password')
+            ->same('password')
+            ->validationMessages([
+                'required_with' => 'Konfirmasi kata sandi baru wajib diisi.',
+                'same' => 'Konfirmasi kata sandi baru tidak cocok.',
+            ])
+            ->visible(fn (Get $get): bool => filled($get('password')))
+            ->dehydrated(false);
+    }
+
+    protected function getCurrentPasswordFormComponent(): Component
+    {
+        return TextInput::make('currentPassword')
+            ->label(__('filament-panels::pages/auth/edit-profile.form.current_password.label'))
+            ->password()
+            ->revealable(filament()->arePasswordsRevealable())
+            ->currentPassword(guard: Filament::getAuthGuard())
+            ->requiredWith('password')
+            ->validationMessages([
+                'required_with' => 'Kata sandi saat ini wajib diisi.',
+                'current_password' => 'Kata sandi saat ini tidak sesuai.',
+            ])
+            ->dehydrated(false);
     }
 
     protected function mutateFormDataBeforeSave(array $data): array
@@ -78,8 +112,16 @@ class EditProfile extends BaseEditProfile
 
     protected function afterSave(): void
     {
-        if (isset($this->data['password']) && request()->hasSession()) {
-            request()->session()->regenerate();
+        if (isset($this->data['password']) && app()->has('session.store')) {
+            session()->regenerate();
+
+            // Full redirect to refresh CSRF token in the DOM and prevent 419 on logout
+            $this->redirect(filament()->getUrl());
         }
+    }
+
+    protected function getSaveFormAction(): \Filament\Actions\Action
+    {
+        return parent::getSaveFormAction()->extraAttributes(['formnovalidate' => 'formnovalidate']);
     }
 }

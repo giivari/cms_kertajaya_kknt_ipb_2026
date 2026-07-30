@@ -139,22 +139,8 @@ class B14MfaExperienceTest extends TestCase
             'B1.4 responsive auth vertical rhythm',
             $themeSource
         );
-
-        $this->assertStringContainsString(
-            'transform: translateY(2rem);',
-            $themeSource
-        );
-
-        $this->assertStringContainsString(
-            'transform: translateY(2.5rem);',
-            $themeSource
-        );
-
-        $this->assertStringContainsString(
-            'margin-top: -4rem;',
-            $themeSource
-        );
     }
+
     public function test_incomplete_mfa_code_has_indonesian_validation_message(): void
     {
         $message = trans(

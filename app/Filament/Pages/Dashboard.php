@@ -10,7 +10,7 @@ class Dashboard extends BaseDashboard
 
     public static function getNavigationGroup(): ?string
     {
-        return 'DASBOR';
+        return 'UTAMA';
     }
 
     public static function getNavigationLabel(): string

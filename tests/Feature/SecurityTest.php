@@ -18,6 +18,12 @@ class SecurityTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        config(['services.turnstile.secret' => 'secret']);
+    }
+
     public function test_second_admin_cannot_be_provisioned_or_created()
     {
         Admin::factory()->create();
@@ -85,6 +91,27 @@ class SecurityTest extends TestCase
             ])
             ->call('authenticate')
             ->assertHasFormErrors(['captcha' => 'required']);
+    }
+
+    public function test_invalid_credential_shows_generic_translation_message_without_raw_key()
+    {
+        $admin = Admin::factory()->create([
+            'password' => Hash::make('password'),
+        ]);
+
+        Http::fake([
+            'https://challenges.cloudflare.com/turnstile/v0/siteverify' => Http::response(['success' => true], 200),
+        ]);
+
+        Livewire::test(Login::class)
+            ->fillForm([
+                'username' => $admin->username,
+                'password' => 'wrongpassword',
+                'captcha' => 'valid-token',
+            ])
+            ->call('authenticate')
+            ->assertSee('Nama pengguna atau kata sandi tidak sesuai.')
+            ->assertDontSee('filament-panels::pages/auth/login.messages.failed');
     }
 
     public function test_turnstile_validation_fails_on_invalid_token()
@@ -167,6 +194,41 @@ class SecurityTest extends TestCase
             ->assertHasNoFormErrors();
 
         $this->assertAuthenticatedAs($admin, 'web');
+
+        $response = $this->get(config('village.admin_path', 'desa-dashboard'));
+        $response->assertRedirect('/' . config('village.admin_path', 'desa-dashboard') . '/multi-factor-authentication/set-up');
+
+        $response = $this->get('/' . config('village.admin_path', 'desa-dashboard') . '/multi-factor-authentication/set-up');
+        $response->assertOk();
+    }
+
+    public function test_mfa_and_password_change_redirect_priority_avoids_loop()
+    {
+        $admin = Admin::factory()->create([
+            'password' => Hash::make('password'),
+            'app_authentication_secret' => null,
+            'force_password_change' => true,
+        ]);
+
+        $this->actingAs($admin, 'web');
+
+        $response = $this->get(config('village.admin_path', 'desa-dashboard'));
+        $response->assertRedirect(route('filament.admin.auth.profile'));
+
+        $response = $this->get(route('filament.admin.auth.profile'));
+        $response->assertRedirect('/' . config('village.admin_path', 'desa-dashboard') . '/multi-factor-authentication/set-up');
+
+        $response = $this->get('/' . config('village.admin_path', 'desa-dashboard') . '/multi-factor-authentication/set-up');
+        $response->assertOk();
+    }
+
+    public function test_unauthenticated_admin_redirects_to_login()
+    {
+        $response = $this->get(config('village.admin_path', 'desa-dashboard'));
+        $response->assertRedirect(route('filament.admin.auth.login'));
+
+        $response = $this->get('/' . config('village.admin_path', 'desa-dashboard') . '/multi-factor-authentication/set-up');
+        $response->assertRedirect(route('filament.admin.auth.login'));
     }
 
     public function test_mfa_redirects_to_challenge_when_configured()
@@ -201,6 +263,9 @@ class SecurityTest extends TestCase
 
         $this->actingAs($admin, 'web');
 
+        request()->setLaravelSession(app('session')->driver('array'));
+        request()->session()->start();
+
         Livewire::test(EditProfile::class)
             ->fillForm([
                 'currentPassword' => 'oldpassword',
@@ -208,7 +273,8 @@ class SecurityTest extends TestCase
                 'passwordConfirmation' => 'newpassword123',
             ])
             ->call('save')
-            ->assertHasNoFormErrors();
+            ->assertHasNoFormErrors()
+            ->assertRedirect(filament()->getUrl());
 
         $admin->refresh();
         $this->assertFalse((bool) $admin->force_password_change);

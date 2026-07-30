@@ -58,10 +58,10 @@ class AdminPanelProvider extends PanelProvider
                 scopes: [\App\Filament\Pages\Auth\Login::class]
             )
             ->navigationGroups([
-                'DASBOR',
-                'KONTEN',
-                'STRUKTUR WEBSITE',
-                'PENGATURAN',
+                \Filament\Navigation\NavigationGroup::make('UTAMA')->collapsible(false),
+                \Filament\Navigation\NavigationGroup::make('KONTEN'),
+                \Filament\Navigation\NavigationGroup::make('STRUKTUR WEBSITE'),
+                \Filament\Navigation\NavigationGroup::make('PENGATURAN'),
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')

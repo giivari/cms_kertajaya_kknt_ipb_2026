@@ -46,6 +46,17 @@ trait Auditable
             return $filtered;
         }
 
+        if (method_exists($modelClass, 'getAuditAllowlist')) {
+            $allowlist = app($modelClass)->getAuditAllowlist();
+            $filtered = [];
+            foreach ($allowlist as $key) {
+                if (array_key_exists($key, $data)) {
+                    $filtered[$key] = $data[$key];
+                }
+            }
+            return $filtered;
+        }
+
         foreach (self::$redactedKeys as $key) {
             if (array_key_exists($key, $data)) {
                 $data[$key] = '[REDACTED]';
