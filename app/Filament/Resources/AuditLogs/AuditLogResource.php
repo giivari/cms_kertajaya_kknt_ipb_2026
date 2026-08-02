@@ -17,7 +17,7 @@ class AuditLogResource extends Resource
 {
     public static function getNavigationGroup(): ?string
     {
-        return 'PENGATURAN';
+        return 'Lainnya';
     }
 
     public static function getNavigationLabel(): string
@@ -38,6 +38,8 @@ class AuditLogResource extends Resource
     protected static ?string $model = AuditLog::class;
 
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-clipboard-document-list';
+
+    protected static ?int $navigationSort = 2;
 
     public static function canCreate(): bool
     {

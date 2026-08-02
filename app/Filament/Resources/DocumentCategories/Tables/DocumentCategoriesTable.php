@@ -2,6 +2,9 @@
 
 namespace App\Filament\Resources\DocumentCategories\Tables;
 
+use App\Filament\Exports\DocumentCategoryExporter;
+use App\Filament\Resources\DocumentCategories\DocumentCategoryResource;
+use App\Filament\Support\AdminTable;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -12,31 +15,33 @@ class DocumentCategoriesTable
 {
     public static function configure(Table $table): Table
     {
-        return $table
+        return AdminTable::configure($table, 'admin-content-table admin-document-category-table')
             ->columns([
                 TextColumn::make('name')
-                    ->searchable(),
-                TextColumn::make('slug')
+                    ->label('Nama')
                     ->searchable(),
                 TextColumn::make('created_at')
-                    ->dateTime()
+                    ->label('Dibuat pada')
+                    ->dateTime('d/m/Y H.i', timezone: 'Asia/Jakarta')
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->visibleFrom('md'),
                 TextColumn::make('updated_at')
-                    ->dateTime()
+                    ->label('Terakhir Diperbarui')
+                    ->dateTime('d/m/Y H.i', timezone: 'Asia/Jakarta')
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->visibleFrom('md'),
             ])
             ->filters([
                 //
             ])
             ->recordActions([
-                EditAction::make(),
+                EditAction::make()->label('Ubah'),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
                 ]),
+                AdminTable::exportAction(DocumentCategoryExporter::class, DocumentCategoryResource::class),
             ]);
     }
 }

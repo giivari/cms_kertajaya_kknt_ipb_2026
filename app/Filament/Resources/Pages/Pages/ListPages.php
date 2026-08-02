@@ -10,10 +10,22 @@ class ListPages extends ListRecords
 {
     protected static string $resource = PageResource::class;
 
+    public function getTitle(): string
+    {
+        return 'Daftar Halaman';
+    }
+
+    public function getSubheading(): ?string
+    {
+        return 'Kelola halaman informasi tetap yang ditampilkan pada website desa.';
+    }
+
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make(),
+            CreateAction::make()
+                ->label('Buat Halaman')
+                ->icon('heroicon-o-plus'),
         ];
     }
 }

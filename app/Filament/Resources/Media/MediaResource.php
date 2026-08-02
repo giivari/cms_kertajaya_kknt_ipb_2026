@@ -18,12 +18,12 @@ class MediaResource extends Resource
 {
     public static function getNavigationGroup(): ?string
     {
-        return 'KONTEN';
+        return 'Lainnya';
     }
 
     public static function getNavigationLabel(): string
     {
-        return 'Media';
+        return 'Perpustakaan Media';
     }
 
     public static function getPluralModelLabel(): string
@@ -40,7 +40,7 @@ class MediaResource extends Resource
 
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-photo';
 
-    
+    protected static ?int $navigationSort = 1;
 
     protected static ?string $recordTitleAttribute = 'original_filename';
 

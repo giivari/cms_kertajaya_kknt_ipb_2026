@@ -7,7 +7,7 @@
         $defaultTitle = \App\Services\SettingsService::get('meta_title', 'Desa Kertajaya');
         $defaultDesc = \App\Services\SettingsService::get('meta_description', 'Website Resmi Pemerintahan Desa');
         $villageName = \App\Services\SettingsService::get('village_name', 'Desa Kertajaya');
-        
+
         $faviconId = \App\Services\SettingsService::get('favicon');
         $faviconUrl = null;
         if ($faviconId) {
@@ -25,7 +25,7 @@
 
     <title>@hasSection('title') @yield('title') | {{ $villageName }} @else {{ $defaultTitle }} @endif</title>
     <meta name="description" content="@yield('seo_description', $defaultDesc)">
-    
+
     @if($faviconUrl)
         <link rel="icon" type="image/png" href="{{ $faviconUrl }}">
     @endif
@@ -44,5 +44,9 @@
     </main>
 
     @include('partials.footer')
+
+    @if(isset($isPreview) && $isPreview)
+        @include('public.preview.guard')
+    @endif
 </body>
 </html>

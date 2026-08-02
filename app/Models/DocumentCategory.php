@@ -3,27 +3,21 @@
 namespace App\Models;
 
 use App\Models\Concerns\Auditable;
+use App\Traits\GeneratesUniqueSlug;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Str;
 
 class DocumentCategory extends Model
 {
-    use Auditable, HasFactory, SoftDeletes;
+    use Auditable, GeneratesUniqueSlug, HasFactory, SoftDeletes;
 
     protected static function boot()
     {
         parent::boot();
-        static::creating(function ($model) {
+        static::saving(function ($model) {
             if (empty($model->slug)) {
-                $slug = Str::slug($model->name);
-                $originalSlug = $slug;
-                $count = 1;
-                while (static::where('slug', $slug)->exists()) {
-                    $slug = $originalSlug.'-'.$count++;
-                }
-                $model->slug = $slug;
+                $model->slug = static::generateUniqueSlug($model->name, $model->getKey());
             }
         });
 

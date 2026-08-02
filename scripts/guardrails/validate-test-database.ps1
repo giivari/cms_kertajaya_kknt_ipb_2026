@@ -57,12 +57,15 @@ if (!$values['DB_CONNECTION'] -or !$values['DB_HOST'] -or !$values['DB_PORT'] -o
 if (!(Test-Path $resolvedConfig)) { exit 40 }
 try {
     $config = Get-Content $resolvedConfig -Raw | ConvertFrom-Json
-    if (!$config.testDatabasePatterns -or !$config.protectedDatabaseNames) { exit 40 }
-    
+    if (!$config.testDatabasePatterns -or !$config.protectedDatabaseNames -or !$config.testDatabaseHost -or !$config.testDatabasePort) { exit 40 }
+
+    if ($values['DB_HOST'] -ne $config.testDatabaseHost) { exit 40 }
+    if ([string]$values['DB_PORT'] -ne [string]$config.testDatabasePort) { exit 40 }
+
     $testMatched = $false
     foreach ($pat in $config.testDatabasePatterns) { if ($values['DB_DATABASE'] -match $pat) { $testMatched = $true; break } }
     if (!$testMatched) { exit 40 }
-    
+
     if ($config.protectedDatabaseNames -contains $values['DB_DATABASE']) { exit 40 }
 } catch { exit 40 }
 

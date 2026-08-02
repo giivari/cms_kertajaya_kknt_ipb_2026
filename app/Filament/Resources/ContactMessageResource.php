@@ -3,7 +3,9 @@
 namespace App\Filament\Resources;
 
 use App\Enums\ContactStatus;
+use App\Filament\Exports\ContactMessageExporter;
 use App\Filament\Resources\ContactMessageResource\Pages;
+use App\Filament\Support\AdminTable;
 use App\Models\ContactMessage;
 use Filament\Infolists\Infolist;
 use Filament\Infolists\Components\TextEntry;
@@ -27,7 +29,7 @@ class ContactMessageResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return 'UTAMA';
+        return 'Komunikasi';
     }
 
     public static function infolist(Schema $schema): Schema
@@ -69,7 +71,7 @@ class ContactMessageResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return $table
+        return AdminTable::configure($table, 'admin-content-table admin-contact-table')
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->label('Nama')
@@ -152,6 +154,9 @@ class ContactMessageResource extends Resource
                     ->color('gray')
                     ->visible(fn ($record) => !is_null($record->archived_at))
                     ->action(fn ($record) => $record->restoreFromArchive()),
+            ])
+            ->toolbarActions([
+                AdminTable::exportAction(ContactMessageExporter::class, self::class),
             ]);
     }
 

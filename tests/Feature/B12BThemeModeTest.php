@@ -28,15 +28,21 @@ class B12BThemeModeTest extends TestCase
         $providerContent = file_get_contents(app_path('Providers/Filament/AdminPanelProvider.php'));
 
         $this->assertStringContainsString(
-            'PanelsRenderHook::GLOBAL_SEARCH_BEFORE',
+            'PanelsRenderHook::GLOBAL_SEARCH_AFTER',
             $providerContent,
-            'Lihat Website topbar hook must be preserved.'
+            'Lihat Website must remain between global search and the user menu.'
         );
 
         $this->assertStringContainsString(
             "view('filament.topbar-website-link')",
             $providerContent,
             'Lihat Website topbar hook must be preserved.'
+        );
+
+        $this->assertStringNotContainsString(
+            'PanelsRenderHook::GLOBAL_SEARCH_BEFORE',
+            $providerContent,
+            'Lihat Website must not move before the global search field.'
         );
     }
 }

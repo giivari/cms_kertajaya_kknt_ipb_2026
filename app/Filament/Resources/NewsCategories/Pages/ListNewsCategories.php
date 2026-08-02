@@ -10,10 +10,22 @@ class ListNewsCategories extends ListRecords
 {
     protected static string $resource = NewsCategoryResource::class;
 
+    public function getTitle(): string
+    {
+        return 'Kategori Berita';
+    }
+
+    public function getSubheading(): ?string
+    {
+        return 'Kelola pengelompokan berita. Halaman ini tidak ditampilkan pada menu utama admin.';
+    }
+
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make(),
+            CreateAction::make()
+                ->label('Buat Kategori')
+                ->icon('heroicon-o-plus'),
         ];
     }
 }

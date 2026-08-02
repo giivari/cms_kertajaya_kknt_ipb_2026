@@ -4,10 +4,12 @@ namespace App\Filament\Resources\Menus;
 
 use App\Enums\LinkType;
 use App\Enums\PageStatus;
+use App\Filament\Exports\MenuExporter;
 use App\Filament\Resources\Menus\Pages\CreateMenu;
 use App\Filament\Resources\Menus\Pages\EditMenu;
 use App\Filament\Resources\Menus\Pages\ListMenus;
 use App\Models\Menu;
+use App\Filament\Support\AdminTable;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
@@ -18,6 +20,9 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Text;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -29,12 +34,12 @@ class MenuResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return 'STRUKTUR WEBSITE';
+        return 'Kelola Website';
     }
 
     public static function getNavigationLabel(): string
     {
-        return 'Menu';
+        return 'Navigasi';
     }
 
     public static function getPluralModelLabel(): string
@@ -49,6 +54,8 @@ class MenuResource extends Resource
 
     protected static ?string $model = Menu::class;
 
+    protected static ?int $navigationSort = 1;
+
     public static function getNavigationIcon(): string|\BackedEnum|null
     {
         return 'heroicon-o-bars-3';
@@ -58,61 +65,108 @@ class MenuResource extends Resource
     {
         return $schema
             ->schema([
-                Forms\Components\Section::make('Menu Settings')
+                Section::make('Tentang Menu')
                     ->schema([
-                        TextInput::make('name')->required(),
-                        TextInput::make('location')->required()->unique(ignoreRecord: true),
-                        Forms\Components\Textarea::make('description'),
-                    ]),
-                Forms\Components\Section::make('Menu Items')
+                        Text::make('Menu mengatur tombol navigasi yang tampil di website. Menu tidak membuat isi baru; buat isi melalui Halaman, lalu tambahkan halaman tersebut sebagai tautan di sini.')
+                            ->columnSpanFull(),
+                    ])
+                    ->columnSpanFull(),
+                Section::make('Lokasi Tampilan')
+                    ->description('Menu adalah daftar tautan navigasi. Untuk membuat isi baru, gunakan fitur Halaman.')
+                    ->schema([
+                        Select::make('location')
+                            ->label('Posisi Menu')
+                            ->options(Menu::supportedLocations())
+                            ->required()
+                            ->unique(ignoreRecord: true),
+                        Forms\Components\Textarea::make('description')
+                            ->label('Keterangan')
+                            ->helperText('Catatan internal dan tidak ditampilkan kepada pengunjung.'),
+                    ])
+                    ->columns(['default' => 1, 'md' => 2])
+                    ->columnSpanFull(),
+                Section::make('Tautan yang Ditampilkan')
                     ->schema([
                         Repeater::make('items')
+                            ->hiddenLabel()
+                            ->helperText('Belum ada tautan. Tambahkan tautan agar menu tampil di website.')
+                            ->addActionLabel('Tambah Tautan')
                             ->relationship('items')
                             ->schema([
-                                TextInput::make('label')->required(),
+                                TextInput::make('label')->label('Nama yang Tampil')->required(),
                                 Select::make('link_type')
-                                    ->options(LinkType::class)
+                                    ->label('Tujuan Tautan')
+                                    ->options([
+                                        LinkType::PAGE->value => 'Halaman Website',
+                                        LinkType::HOME->value => 'Beranda',
+                                        LinkType::NEWS_INDEX->value => 'Daftar Berita',
+                                        LinkType::GALLERY_INDEX->value => 'Daftar Galeri',
+                                        LinkType::DOCUMENT_INDEX->value => 'Daftar Dokumen',
+                                        LinkType::MAP->value => 'Peta',
+                                        LinkType::CONTACT->value => 'Kontak',
+                                        LinkType::CUSTOM->value => 'Tautan Luar',
+                                    ])
                                     ->default(LinkType::CUSTOM->value)
                                     ->live()
                                     ->required(),
                                 Select::make('page_id')
+                                    ->label('Halaman yang Dituju')
                                     ->relationship('page', 'title', fn (Builder $query) => $query->where('status', PageStatus::PUBLISHED->value))
                                     ->searchable()
-                                    ->visible(fn (Forms\Get $get) => $get('link_type') === LinkType::PAGE->value)
-                                    ->required(fn (Forms\Get $get) => $get('link_type') === LinkType::PAGE->value),
+                                    ->visible(fn (Get $get) => $get('link_type') === LinkType::PAGE->value)
+                                    ->required(fn (Get $get) => $get('link_type') === LinkType::PAGE->value),
                                 TextInput::make('custom_url')
+                                    ->label('Alamat Tautan')
                                     ->url()
                                     ->regex('/^https?:\/\//i')
-                                    ->visible(fn (Forms\Get $get) => $get('link_type') === LinkType::CUSTOM->value)
-                                    ->required(fn (Forms\Get $get) => $get('link_type') === LinkType::CUSTOM->value),
-                                Select::make('target')
-                                    ->options(['_self' => 'Same Window', '_blank' => 'New Window'])
-                                    ->default('_self'),
-                                Toggle::make('is_visible')->default(true),
+                                    ->visible(fn (Get $get) => $get('link_type') === LinkType::CUSTOM->value)
+                                    ->required(fn (Get $get) => $get('link_type') === LinkType::CUSTOM->value),
+                                Toggle::make('target')
+                                    ->label('Buka di Tab Baru')
+                                    ->formatStateUsing(fn ($state): bool => $state === '_blank' || $state === true)
+                                    ->dehydrateStateUsing(fn (bool $state): string => $state ? '_blank' : '_self')
+                                    ->default(false),
+                                Toggle::make('is_visible')->label('Tampilkan')->default(true),
 
                                 Repeater::make('children')
+                                    ->label('Tautan Turunan (Opsional)')
+                                    ->addActionLabel('Tambah Tautan Turunan')
                                     ->relationship('children')
                                     ->schema([
-                                        TextInput::make('label')->required(),
+                                        TextInput::make('label')->label('Nama yang Tampil')->required(),
                                         Select::make('link_type')
-                                            ->options(LinkType::class)
+                                            ->label('Tujuan Tautan')
+                                            ->options([
+                                                LinkType::PAGE->value => 'Halaman Website',
+                                                LinkType::HOME->value => 'Beranda',
+                                                LinkType::NEWS_INDEX->value => 'Daftar Berita',
+                                                LinkType::GALLERY_INDEX->value => 'Daftar Galeri',
+                                                LinkType::DOCUMENT_INDEX->value => 'Daftar Dokumen',
+                                                LinkType::MAP->value => 'Peta',
+                                                LinkType::CONTACT->value => 'Kontak',
+                                                LinkType::CUSTOM->value => 'Tautan Luar',
+                                            ])
                                             ->default(LinkType::CUSTOM->value)
                                             ->live()
                                             ->required(),
                                         Select::make('page_id')
+                                            ->label('Halaman yang Dituju')
                                             ->relationship('page', 'title', fn (Builder $query) => $query->where('status', PageStatus::PUBLISHED->value))
                                             ->searchable()
-                                            ->visible(fn (Forms\Get $get) => $get('link_type') === LinkType::PAGE->value)
-                                            ->required(fn (Forms\Get $get) => $get('link_type') === LinkType::PAGE->value),
+                                            ->visible(fn (Get $get) => $get('link_type') === LinkType::PAGE->value)
+                                            ->required(fn (Get $get) => $get('link_type') === LinkType::PAGE->value),
                                         TextInput::make('custom_url')
+                                            ->label('Alamat Tautan')
                                             ->url()
                                             ->regex('/^https?:\/\//i')
-                                            ->visible(fn (Forms\Get $get) => $get('link_type') === LinkType::CUSTOM->value)
-                                            ->required(fn (Forms\Get $get) => $get('link_type') === LinkType::CUSTOM->value),
-                                        Select::make('target')
-                                            ->options(['_self' => 'Same Window', '_blank' => 'New Window'])
-                                            ->default('_self'),
-                                        Toggle::make('is_visible')->default(true),
+                                            ->visible(fn (Get $get) => $get('link_type') === LinkType::CUSTOM->value)
+                                            ->required(fn (Get $get) => $get('link_type') === LinkType::CUSTOM->value),
+                                        Toggle::make('target')
+                                            ->label('Buka di Tab Baru')
+                                            ->formatStateUsing(fn ($state): bool => $state === '_blank' || $state === true)
+                                            ->dehydrateStateUsing(fn (bool $state): string => $state ? '_blank' : '_self')
+                                            ->default(false),
+                                        Toggle::make('is_visible')->label('Tampilkan')->default(true),
                                     ])
                                     ->orderColumn('position')
                                     ->collapsible()
@@ -120,29 +174,38 @@ class MenuResource extends Resource
                             ])
                             ->orderColumn('position')
                             ->collapsible()
-                            ->itemLabel(fn (array $state): ?string => $state['label'] ?? null),
-                    ]),
+                            ->itemLabel(fn (array $state): string => filled($state['label'] ?? null) ? $state['label'] : 'Nama yang Tampil')
+                            ->columnSpanFull(),
+                    ])
+                    ->columnSpanFull(),
+                Section::make('Pratinjau Navigasi')
+                    ->description('Gunakan tombol Pratinjau di bagian bawah form untuk melihat susunan navigasi desktop, mobile, atau kaki halaman sebelum disimpan.')
+                    ->visible(fn (): bool => config('preview.ui_enabled', false))
+                    ->columnSpanFull(),
             ]);
     }
 
     public static function table(Table $table): Table
     {
-        return $table
+        return AdminTable::configure($table, 'admin-content-table admin-menu-table')
             ->columns([
-                TextColumn::make('name')->searchable(),
-                TextColumn::make('location')->searchable(),
-                TextColumn::make('description'),
-                TextColumn::make('created_at')->dateTime()->sortable()->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('name')->label('Nama Menu')->searchable(),
+                TextColumn::make('location')
+                    ->label('Posisi Menu')
+                    ->formatStateUsing(fn (string $state): string => Menu::supportedLocations()[$state] ?? $state),
+                TextColumn::make('description')->label('Keterangan')->visibleFrom('md'),
+                TextColumn::make('created_at')->label('Dibuat pada')->dateTime('d/m/Y H.i', timezone: 'Asia/Jakarta')->sortable()->visibleFrom('md'),
             ])
             ->filters([])
             ->actions([
-                EditAction::make(),
-                DeleteAction::make(),
+                EditAction::make()->label('Ubah'),
+                DeleteAction::make()->label('Hapus'),
             ])
-            ->bulkActions([
+            ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
                 ]),
+                AdminTable::exportAction(MenuExporter::class, self::class),
             ]);
     }
 

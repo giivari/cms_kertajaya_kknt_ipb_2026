@@ -5,7 +5,9 @@ namespace App\Filament\Resources\News;
 use App\Filament\Resources\News\Pages\CreateNews;
 use App\Filament\Resources\News\Pages\EditNews;
 use App\Filament\Resources\News\Pages\ListNews;
+use App\Filament\Resources\News\Pages\ViewNews;
 use App\Filament\Resources\News\Schemas\NewsForm;
+use App\Filament\Resources\News\Schemas\NewsInfolist;
 use App\Filament\Resources\News\Tables\NewsTable;
 use App\Models\News;
 use Filament\Resources\Resource;
@@ -18,7 +20,7 @@ class NewsResource extends Resource
 {
     public static function getNavigationGroup(): ?string
     {
-        return 'KONTEN';
+        return 'Kelola Konten';
     }
 
     public static function getNavigationLabel(): string
@@ -40,11 +42,18 @@ class NewsResource extends Resource
 
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-newspaper';
 
+    protected static ?int $navigationSort = 1;
+
     protected static ?string $recordTitleAttribute = 'title';
 
     public static function form(Schema $schema): Schema
     {
         return NewsForm::configure($schema);
+    }
+
+    public static function infolist(Schema $schema): Schema
+    {
+        return NewsInfolist::configure($schema);
     }
 
     public static function table(Table $table): Table
@@ -64,6 +73,7 @@ class NewsResource extends Resource
         return [
             'index' => ListNews::route('/'),
             'create' => CreateNews::route('/create'),
+            'view' => ViewNews::route('/{record}'),
             'edit' => EditNews::route('/{record}/edit'),
         ];
     }

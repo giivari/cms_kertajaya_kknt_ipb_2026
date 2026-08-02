@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Pages\Pages;
 
 use App\Enums\PageStatus;
 use App\Filament\Resources\Pages\PageResource;
+use App\Filament\Support\Concerns\HasEditPreview;
 use App\Services\PageBuilderService;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
@@ -13,20 +14,43 @@ use Filament\Resources\Pages\EditRecord;
 
 class EditPage extends EditRecord
 {
+    use HasEditPreview;
+
     protected static string $resource = PageResource::class;
+
+    public function getTitle(): string
+    {
+        return 'Ubah Halaman';
+    }
+
+    public function getSubheading(): ?string
+    {
+        return 'Perbarui isi halaman tanpa mengubah alamat publik yang sudah digunakan.';
+    }
+
+    protected function previewType(): string
+    {
+        return 'page';
+    }
 
     protected function getHeaderActions(): array
     {
         return [
-            Action::make('preview')
-                ->label('Preview')
-                ->url(fn () => route('pages.preview', $this->record->slug))
+            Action::make('website')
+                ->label('Lihat di Website')
+                ->icon('heroicon-o-arrow-top-right-on-square')
+                ->url(fn (): string => route('pages.show', $this->record->slug))
                 ->openUrlInNewTab()
-                ->color('gray')
-                ->icon('heroicon-o-eye'),
-            DeleteAction::make(),
-            ForceDeleteAction::make(),
-            RestoreAction::make(),
+                ->visible(fn (): bool => $this->record->status === PageStatus::PUBLISHED
+                    && $this->record->published_at?->lte(now())
+                    && ! $this->record->trashed()),
+            DeleteAction::make()
+                ->label('Hapus')
+                ->modalHeading('Hapus Halaman')
+                ->modalDescription('Halaman akan dihapus dan tautan publiknya tidak lagi dapat dibuka.')
+                ->modalSubmitActionLabel('Hapus'),
+            ForceDeleteAction::make()->label('Hapus Permanen'),
+            RestoreAction::make()->label('Pulihkan'),
         ];
     }
 
@@ -43,10 +67,6 @@ class EditPage extends EditRecord
         $this->builderSections = $data['builder_sections'] ?? [];
         unset($data['builder_sections']);
 
-        if ($data['status'] === PageStatus::PUBLISHED->value && empty($data['published_at'])) {
-            $data['published_at'] = now();
-        }
-
         return $data;
     }
 
@@ -54,5 +74,10 @@ class EditPage extends EditRecord
     {
         $service = app(PageBuilderService::class);
         $service->saveSectionsAndComponents($this->record, $this->builderSections ?? []);
+    }
+
+    protected function getSavedNotificationTitle(): ?string
+    {
+        return 'Perubahan halaman berhasil disimpan';
     }
 }

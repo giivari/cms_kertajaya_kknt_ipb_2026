@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Media\Pages;
 use App\Enums\InvisibleWatermarkStatus;
 use App\Enums\MediaProcessingStatus;
 use App\Filament\Resources\Media\MediaResource;
+use App\Filament\Support\Concerns\HasCreatePreview;
 use App\Jobs\ProcessMediaJob;
 use Filament\Resources\Pages\CreateRecord;
 use Illuminate\Database\Eloquent\Model;
@@ -12,7 +13,24 @@ use Illuminate\Support\Facades\Storage;
 
 class CreateMedia extends CreateRecord
 {
+    use HasCreatePreview;
+
     protected static string $resource = MediaResource::class;
+
+    public function getTitle(): string
+    {
+        return 'Unggah Media';
+    }
+
+    public function getSubheading(): ?string
+    {
+        return 'Berkas disimpan secara privat, lalu diproses dan diverifikasi sebelum dapat digunakan.';
+    }
+
+    protected function previewType(): string
+    {
+        return 'media';
+    }
 
     protected function handleRecordCreation(array $data): Model
     {
@@ -41,5 +59,10 @@ class CreateMedia extends CreateRecord
         ProcessMediaJob::dispatch($record);
 
         return $record;
+    }
+
+    protected function getCreatedNotificationTitle(): ?string
+    {
+        return 'Media berhasil diunggah dan masuk antrean pemrosesan';
     }
 }

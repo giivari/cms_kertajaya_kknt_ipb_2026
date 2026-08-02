@@ -3,35 +3,27 @@
 namespace App\Filament\Widgets;
 
 use App\Models\AuditLog;
-use Filament\Tables;
-use Filament\Tables\Table;
-use Filament\Widgets\TableWidget as BaseWidget;
+use Filament\Widgets\Widget;
 
-class RecentActivityWidget extends BaseWidget
+class RecentActivityWidget extends Widget
 {
+    protected string $view = 'filament.widgets.recent-activity-widget';
+
     protected static ?int $sort = 3;
 
-    protected int|string|array $columnSpan = 'full';
+    protected int|string|array $columnSpan = [
+        'default' => 'full',
+        'lg' => 2,
+    ];
 
-    public function table(Table $table): Table
+    protected function getViewData(): array
     {
-        return $table
-            ->query(
-                AuditLog::query()->latest()->limit(5)
-            )
-            ->columns([
-                Tables\Columns\TextColumn::make('created_at')
-                    ->label('Waktu')
-                    ->dateTime('d M Y H:i'),
-                Tables\Columns\TextColumn::make('admin.username')
-                    ->label('Pengguna'),
-                Tables\Columns\TextColumn::make('action')
-                    ->label('Aksi')
-                    ->badge(),
-                Tables\Columns\TextColumn::make('entity_type')
-                    ->label('Tipe Entitas'),
-            ])
-            ->paginated(false)
-            ->heading('Aktivitas Terbaru');
+        return [
+            'activities' => AuditLog::query()
+                ->with('admin')
+                ->latest('created_at')
+                ->limit(5)
+                ->get(),
+        ];
     }
 }

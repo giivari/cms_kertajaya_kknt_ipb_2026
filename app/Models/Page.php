@@ -8,11 +8,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Str;
+use App\Traits\GeneratesUniqueSlug;
 
 class Page extends Model
 {
-    use HasFactory, SoftDeletes;
+    use GeneratesUniqueSlug, HasFactory, SoftDeletes;
 
     protected $fillable = [
         'title',
@@ -48,14 +48,13 @@ class Page extends Model
 
         static::saving(function ($page) {
             if (empty($page->slug)) {
-                $page->slug = Str::slug($page->title);
+                $page->slug = static::generateUniqueSlug($page->title, $page->getKey());
             }
 
-            $originalSlug = $page->slug;
-            $count = 1;
-            while (static::where('slug', $page->slug)->where('id', '!=', $page->id)->exists()) {
-                $page->slug = "{$originalSlug}-{$count}";
-                $count++;
+            if ($page->status === PageStatus::PUBLISHED && (
+                ! $page->exists || $page->isDirty('status')
+            )) {
+                $page->published_at = now();
             }
         });
     }

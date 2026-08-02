@@ -32,7 +32,7 @@
 
             <!-- Desktop Menu -->
             <nav class="hidden md:flex space-x-8">
-                @if(isset($headerMenu) && $headerMenu->items)
+                @if(isset($headerMenu) && $headerMenu->items->isNotEmpty())
                     @foreach($headerMenu->items as $item)
                         @if($item->children->isNotEmpty())
                             <div class="relative group">
@@ -58,6 +58,7 @@
                     @endforeach
                 @else
                     <a href="{{ route('home') }}" class="text-navy hover:text-teal font-medium text-sm transition-colors duration-200">Beranda</a>
+                    <a href="{{ route('public.map.index') }}" class="text-navy hover:text-teal font-medium text-sm transition-colors duration-200">Peta</a>
                     <a href="{{ route('public.contact.show') }}" class="text-navy hover:text-teal font-medium text-sm transition-colors duration-200">Kontak</a>
                 @endif
             </nav>
@@ -93,7 +94,7 @@
                     </button>
                 </form>
             </div>
-            @if(isset($headerMenu) && $headerMenu->items)
+            @if(isset($headerMenu) && $headerMenu->items->isNotEmpty())
                 @foreach($headerMenu->items as $item)
                     @if($item->children->isNotEmpty())
                         <div class="px-4 py-2">
@@ -114,6 +115,7 @@
                 @endforeach
             @else
                 <a href="{{ route('home') }}" class="block px-4 py-2 text-base font-medium text-navy hover:text-teal hover:bg-cream">Beranda</a>
+                <a href="{{ route('public.map.index') }}" class="block px-4 py-2 text-base font-medium text-navy hover:text-teal hover:bg-cream">Peta</a>
                 <a href="{{ route('public.contact.show') }}" class="block px-4 py-2 text-base font-medium text-navy hover:text-teal hover:bg-cream">Kontak</a>
             @endif
         </div>

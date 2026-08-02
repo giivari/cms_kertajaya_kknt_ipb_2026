@@ -1,24 +1,29 @@
 <x-filament-widgets::widget>
-    <x-filament::section>
-        <div class="flex items-center justify-between mb-4">
-            <h2 class="text-lg font-semibold tracking-tight text-gray-950 dark:text-white">Aksi Cepat</h2>
+    <section class="admin-dashboard-card admin-quick-actions-card" aria-labelledby="quick-actions-heading">
+        <header class="admin-dashboard-card-header">
+            <div>
+                <h2 id="quick-actions-heading" class="admin-dashboard-card-title">Aksi Cepat</h2>
+                <p class="admin-dashboard-card-description">Mulai pekerjaan utama tanpa mencari menu.</p>
+            </div>
+        </header>
+
+        <div class="admin-quick-actions-grid">
+            <a class="admin-quick-action" href="{{ \App\Filament\Resources\News\NewsResource::getUrl('create') }}">
+                <span class="admin-quick-action-icon"><x-filament::icon icon="heroicon-o-newspaper" class="size-5" /></span>
+                <span>Buat Berita</span>
+            </a>
+            <a class="admin-quick-action" href="{{ \App\Filament\Resources\Pages\PageResource::getUrl('create') }}">
+                <span class="admin-quick-action-icon"><x-filament::icon icon="heroicon-o-document-plus" class="size-5" /></span>
+                <span>Buat Halaman</span>
+            </a>
+            <a class="admin-quick-action" href="{{ \App\Filament\Resources\Media\MediaResource::getUrl('create') }}">
+                <span class="admin-quick-action-icon"><x-filament::icon icon="heroicon-o-arrow-up-tray" class="size-5" /></span>
+                <span>Unggah Media</span>
+            </a>
+            <a class="admin-quick-action" href="{{ \App\Filament\Resources\Documents\DocumentResource::getUrl('create') }}">
+                <span class="admin-quick-action-icon"><x-filament::icon icon="heroicon-o-folder-plus" class="size-5" /></span>
+                <span>Tambah Dokumen</span>
+            </a>
         </div>
-        <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
-            <x-filament::button tag="a" href="{{ \App\Filament\Resources\News\NewsResource::getUrl('create') }}" icon="heroicon-o-plus-circle" color="primary">
-                Buat Berita
-            </x-filament::button>
-            <x-filament::button tag="a" href="{{ \App\Filament\Resources\Pages\PageResource::getUrl('create') }}" icon="heroicon-o-document-plus" color="primary">
-                Buat Halaman
-            </x-filament::button>
-            <x-filament::button tag="a" href="{{ \App\Filament\Resources\Media\MediaResource::getUrl('create') }}" icon="heroicon-o-arrow-up-tray" color="primary">
-                Unggah Media
-            </x-filament::button>
-            <x-filament::button tag="a" href="{{ \App\Filament\Resources\GalleryAlbums\GalleryAlbumResource::getUrl('create') }}" icon="heroicon-o-photo" color="primary">
-                Buat Album
-            </x-filament::button>
-            <x-filament::button tag="a" href="{{ \App\Filament\Resources\Documents\DocumentResource::getUrl('create') }}" icon="heroicon-o-document-duplicate" color="primary">
-                Tambah Dokumen
-            </x-filament::button>
-        </div>
-    </x-filament::section>
+    </section>
 </x-filament-widgets::widget>

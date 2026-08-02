@@ -14,6 +14,11 @@ use Filament\Tables\Table;
 
 class DocumentCategoryResource extends Resource
 {
+    public static function shouldRegisterNavigation(): bool
+    {
+        return false;
+    }
+
     public static function getNavigationGroup(): ?string
     {
         return 'PENGATURAN';

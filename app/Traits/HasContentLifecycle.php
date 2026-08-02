@@ -2,10 +2,10 @@
 
 namespace App\Traits;
 
-use Illuminate\Support\Str;
-
 trait HasContentLifecycle
 {
+    use GeneratesUniqueSlug;
+
     public static function bootHasContentLifecycle()
     {
         static::creating(function ($model) {
@@ -21,26 +21,16 @@ trait HasContentLifecycle
         });
 
         static::updating(function ($model) {
+            if (empty($model->slug)) {
+                $model->slug = static::generateUniqueSlug($model->title ?? $model->name, $model->getKey());
+            }
+
             if ($model->isDirty('status')) {
-                if ($model->status === 'published' && empty($model->published_at)) {
+                if ($model->status === 'published') {
                     $model->published_at = now();
                 }
             }
         });
-    }
-
-    public static function generateUniqueSlug(string $title): string
-    {
-        $slug = Str::slug($title);
-        $originalSlug = $slug;
-        $count = 1;
-
-        while (static::where('slug', $slug)->exists()) {
-            $slug = "{$originalSlug}-{$count}";
-            $count++;
-        }
-
-        return $slug;
     }
 
     public function scopePublished($query)

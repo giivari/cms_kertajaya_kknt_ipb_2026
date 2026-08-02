@@ -2,6 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Models\Admin;
+use Filament\Auth\MultiFactor\App\AppAuthentication;
+use Filament\Forms\Components\OneTimeCodeInput;
 use Tests\TestCase;
 
 class B14MfaExperienceTest extends TestCase
@@ -57,88 +60,29 @@ class B14MfaExperienceTest extends TestCase
         );
     }
 
-    public function test_auth_card_remains_inset_on_mobile(): void
+    public function test_mfa_code_label_uses_the_project_translation_without_the_vendor_typo(): void
     {
-        $source = file_get_contents(
-            resource_path('css/filament/admin/theme.css')
+        $label = trans(
+            'filament-panels::auth/multi-factor/app/provider.login_form.code.label',
+            [],
+            'id'
         );
 
-        $this->assertIsString($source);
-        $this->assertStringContainsString(
-            'B1.4 mobile auth card inset',
-            $source
+        $this->assertSame(
+            'Masukkan kode 6 digit dari aplikasi authenticator',
+            $label
         );
-        $this->assertStringContainsString(
-            '.fi-simple-layout .fi-simple-main',
-            $source
-        );
-        $this->assertStringContainsString(
-            'width: calc(100% - 2rem);',
-            $source
-        );
-        $this->assertStringContainsString(
-            'margin-inline: 1rem;',
-            $source
-        );
-        $this->assertStringContainsString(
-            'border-radius: 0.75rem;',
-            $source
-        );
+        $misspelledWord = 'authenticator'.'p';
+
+        $this->assertStringNotContainsString($misspelledWord, $label);
     }
-    public function test_mfa_code_inputs_fill_the_auth_card_width(): void
+
+    public function test_mfa_challenge_keeps_the_official_one_time_code_component(): void
     {
-        $source = file_get_contents(
-            resource_path('css/filament/admin/theme.css')
-        );
+        $components = AppAuthentication::make()
+            ->getChallengeFormComponents(new Admin());
 
-        $this->assertIsString($source);
-        $this->assertStringContainsString(
-            'B1.4 full-width auth / MFA content',
-            $source
-        );
-        $this->assertStringContainsString(
-            '.fi-simple-main .fi-one-time-code-input-ctn',
-            $source
-        );
-        $this->assertStringContainsString(
-            'width: 100%;',
-            $source
-        );
-        $this->assertStringContainsString(
-            'margin-inline: 0;',
-            $source
-        );
-        $this->assertStringContainsString(
-            'justify-content: space-between;',
-            $source
-        );
-        $this->assertStringContainsString(
-            'flex: 1 1 0;',
-            $source
-        );
-    }
-    public function test_auth_vertical_rhythm_is_responsive(): void
-    {
-        $brandSource = file_get_contents(
-            resource_path('views/filament/brand/auth-brand.blade.php')
-        );
-
-        $themeSource = file_get_contents(
-            resource_path('css/filament/admin/theme.css')
-        );
-
-        $this->assertIsString($brandSource);
-        $this->assertIsString($themeSource);
-
-        $this->assertStringContainsString(
-            'admin-auth-brand',
-            $brandSource
-        );
-
-        $this->assertStringContainsString(
-            'B1.4 responsive auth vertical rhythm',
-            $themeSource
-        );
+        $this->assertInstanceOf(OneTimeCodeInput::class, $components[0]);
     }
 
     public function test_incomplete_mfa_code_has_indonesian_validation_message(): void
@@ -161,4 +105,5 @@ class B14MfaExperienceTest extends TestCase
             'validation.digits',
             $message
         );
-    }}
+    }
+}

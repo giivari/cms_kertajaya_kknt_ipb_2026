@@ -9,7 +9,7 @@ class PageTemplateService
     public function getAvailableTemplates(): array
     {
         return [
-            'blank' => 'Blank Page',
+            'blank' => 'Halaman Kosong',
             'profil_desa' => 'Profil Desa',
             'sejarah_desa' => 'Sejarah Desa',
             'visi_misi' => 'Visi dan Misi',
@@ -28,12 +28,12 @@ class PageTemplateService
         }
 
         $titleMap = $this->getAvailableTemplates();
-        $title = $titleMap[$templateKey] ?? 'New Page';
+        $title = $titleMap[$templateKey] ?? 'Halaman Baru';
 
         return [
             [
                 'id' => (string) Str::uuid(),
-                'name' => 'Header Section',
+                'name' => 'Bagian Judul',
                 'layout_type' => 'single_column',
                 'is_visible' => true,
                 'components' => [
@@ -50,7 +50,7 @@ class PageTemplateService
             ],
             [
                 'id' => (string) Str::uuid(),
-                'name' => 'Main Content',
+                'name' => 'Isi Utama',
                 'layout_type' => 'single_column',
                 'is_visible' => true,
                 'components' => [

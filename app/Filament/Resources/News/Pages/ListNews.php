@@ -10,10 +10,22 @@ class ListNews extends ListRecords
 {
     protected static string $resource = NewsResource::class;
 
+    public function getTitle(): string
+    {
+        return 'Daftar Berita';
+    }
+
+    public function getSubheading(): ?string
+    {
+        return 'Kelola publikasi berita, pengumuman, dan informasi terbaru desa.';
+    }
+
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make(),
+            CreateAction::make()
+                ->label('Buat Berita')
+                ->icon('heroicon-o-plus'),
         ];
     }
 }

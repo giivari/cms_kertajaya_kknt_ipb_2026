@@ -5,7 +5,9 @@ namespace App\Filament\Resources\GalleryAlbums;
 use App\Filament\Resources\GalleryAlbums\Pages\CreateGalleryAlbum;
 use App\Filament\Resources\GalleryAlbums\Pages\EditGalleryAlbum;
 use App\Filament\Resources\GalleryAlbums\Pages\ListGalleryAlbums;
+use App\Filament\Resources\GalleryAlbums\Pages\ViewGalleryAlbum;
 use App\Filament\Resources\GalleryAlbums\Schemas\GalleryAlbumForm;
+use App\Filament\Resources\GalleryAlbums\Schemas\GalleryAlbumInfolist;
 use App\Filament\Resources\GalleryAlbums\Tables\GalleryAlbumsTable;
 use App\Models\GalleryAlbum;
 use Filament\Resources\Resource;
@@ -18,7 +20,7 @@ class GalleryAlbumResource extends Resource
 {
     public static function getNavigationGroup(): ?string
     {
-        return 'KONTEN';
+        return 'Kelola Konten';
     }
 
     public static function getNavigationLabel(): string
@@ -40,11 +42,18 @@ class GalleryAlbumResource extends Resource
 
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-camera';
 
+    protected static ?int $navigationSort = 3;
+
     protected static ?string $recordTitleAttribute = 'title';
 
     public static function form(Schema $schema): Schema
     {
         return GalleryAlbumForm::configure($schema);
+    }
+
+    public static function infolist(Schema $schema): Schema
+    {
+        return GalleryAlbumInfolist::configure($schema);
     }
 
     public static function table(Table $table): Table
@@ -64,6 +73,7 @@ class GalleryAlbumResource extends Resource
         return [
             'index' => ListGalleryAlbums::route('/'),
             'create' => CreateGalleryAlbum::route('/create'),
+            'view' => ViewGalleryAlbum::route('/{record}'),
             'edit' => EditGalleryAlbum::route('/{record}/edit'),
         ];
     }

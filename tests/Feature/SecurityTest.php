@@ -250,7 +250,9 @@ class SecurityTest extends TestCase
                 'captcha' => 'valid-token',
             ])
             ->call('authenticate')
-            ->assertHasNoFormErrors();
+            ->assertHasNoFormErrors()
+            ->assertSee('Verifikasi Dua Faktor')
+            ->assertSee('Masukkan kode 6 digit dari aplikasi authenticator');
     }
 
     public function test_password_change_succeeds_and_regenerates_session_and_logs_event()

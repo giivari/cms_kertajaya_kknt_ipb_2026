@@ -5,6 +5,7 @@ namespace App\Enums;
 enum LinkType: string
 {
     case PAGE = 'page';
+    case HOME = 'home';
     case NEWS_INDEX = 'news_index';
     case GALLERY_INDEX = 'gallery_index';
     case DOCUMENT_INDEX = 'document_index';

@@ -3,6 +3,7 @@
 namespace App\Filament\Pages;
 
 use App\Models\Media;
+use App\Filament\Support\PreviewAction;
 use App\Services\SettingsService;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -23,7 +24,7 @@ class WebsiteSettings extends Page
 
     public static function getNavigationLabel(): string
     {
-        return 'Pengaturan Website';
+        return 'Tampilan & Identitas';
     }
 
     public static function getNavigationIcon(): string|\BackedEnum|null
@@ -33,8 +34,10 @@ class WebsiteSettings extends Page
 
     public static function getNavigationGroup(): ?string
     {
-        return 'PENGATURAN';
+        return 'Kelola Website';
     }
+
+    protected static ?int $navigationSort = 2;
 
     protected string $view = 'filament.pages.website-settings';
 
@@ -119,23 +122,23 @@ class WebsiteSettings extends Page
                     ])->columns(2),
                 Section::make('Tampilan')
                     ->schema([
-                        TextInput::make('footer_copyright_text')->label('Teks Hak Cipta Footer'),
+                        TextInput::make('footer_copyright_text')->label('Teks Hak Cipta Kaki Halaman'),
                     ])->columns(1),
-                Section::make('SEO')
+                Section::make('Mesin Pencari')
                     ->schema([
-                        TextInput::make('meta_title')->label('Meta Title Default'),
-                        Textarea::make('meta_description')->label('Meta Description Default'),
+                        TextInput::make('meta_title')->label('Judul Utama untuk Mesin Pencari'),
+                        Textarea::make('meta_description')->label('Deskripsi Utama untuk Mesin Pencari'),
                     ])->columns(1),
-                Section::make('Watermark')
+                Section::make('Tanda Air')
                     ->schema([
-                        Toggle::make('enable_visible_watermark')->label('Aktifkan Watermark Visual'),
-                        TextInput::make('watermark_text')->label('Teks Watermark'),
+                        Toggle::make('enable_visible_watermark')->label('Aktifkan Tanda Air Terlihat'),
+                        TextInput::make('watermark_text')->label('Teks Tanda Air'),
                         Select::make('watermark_image')
-                            ->label('Gambar Watermark (Opsional)')
+                            ->label('Gambar Tanda Air (Opsional)')
                             ->options($mediaOptions)
                             ->searchable(),
                         TextInput::make('watermark_opacity')->label('Opasitas (%)')->numeric()->minValue(0)->maxValue(100),
-                        Select::make('watermark_position')->label('Posisi Watermark')->options([
+                        Select::make('watermark_position')->label('Posisi Tanda Air')->options([
                             'top-left' => 'Kiri Atas',
                             'top-right' => 'Kanan Atas',
                             'bottom-left' => 'Kiri Bawah',
@@ -146,12 +149,12 @@ class WebsiteSettings extends Page
                     ])->columns(2),
                 Section::make('Batas Unggahan')
                     ->schema([
-                        TextInput::make('max_upload_size')->numeric()->minValue(1)->maxValue(50)->label('Maksimal Ukuran File (MB)'),
+                        TextInput::make('max_upload_size')->numeric()->minValue(1)->maxValue(50)->label('Ukuran Maksimal Berkas (MB)'),
                         TextInput::make('max_image_width')->numeric()->minValue(100)->maxValue(8000)->label('Maksimal Lebar Gambar (px)'),
                         TextInput::make('max_image_height')->numeric()->minValue(100)->maxValue(8000)->label('Maksimal Tinggi Gambar (px)'),
                         TextInput::make('processing_timeout')->numeric()->minValue(10)->maxValue(600)->label('Batas Waktu Pemrosesan (detik)'),
                     ])->columns(2),
-                Section::make('Email Notifikasi')
+                Section::make('Notifikasi Email')
                     ->schema([
                         TextInput::make('notification_email')->label('Email Penerima Notifikasi (Opsional)')->email(),
                     ])->columns(1),
@@ -175,5 +178,10 @@ class WebsiteSettings extends Page
         } catch (Halt $exception) {
             return;
         }
+    }
+
+    public function previewAction(): \Filament\Actions\Action
+    {
+        return PreviewAction::make('settings', editing: true);
     }
 }

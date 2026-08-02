@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Validation\ValidationException;
 
 class Menu extends Model
 {
@@ -15,6 +16,33 @@ class Menu extends Model
         'location',
         'description',
     ];
+
+    public const HEADER = 'header_menu';
+
+    public const FOOTER = 'footer_menu';
+
+    public static function supportedLocations(): array
+    {
+        return [
+            self::HEADER => 'Navigasi Utama',
+            self::FOOTER => 'Kaki Halaman',
+        ];
+    }
+
+    protected static function booted(): void
+    {
+        static::saving(function (Menu $menu) {
+            $locations = static::supportedLocations();
+
+            if (! array_key_exists($menu->location, $locations)) {
+                throw ValidationException::withMessages([
+                    'location' => 'Pilih lokasi tampilan yang tersedia.',
+                ]);
+            }
+
+            $menu->name = $locations[$menu->location];
+        });
+    }
 
     public function items(): HasMany
     {

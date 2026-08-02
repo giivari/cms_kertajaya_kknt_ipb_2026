@@ -28,10 +28,10 @@ foreach ($categories as $type => $config) {
         $cat2 = $config['class']::create(['name' => 'Same Name!']);
 
         expect($cat1->slug)->toBe('same-name');
-        expect($cat2->slug)->toBe('same-name-1');
+        expect($cat2->slug)->toBe('same-name-2');
 
         $cat3 = $config['class']::create(['name' => 'Same Name?']);
-        expect($cat3->slug)->toBe('same-name-2');
+        expect($cat3->slug)->toBe('same-name-3');
     });
 
     test("{$type} category rejection when referenced", function () use ($config) {
@@ -70,19 +70,56 @@ foreach ($categories as $type => $config) {
     test("{$type} category filtering, pagination, empty filter", function () use ($config, $type) {
         $cat1 = $config['class']::create(['name' => 'Cat One']);
         $cat2 = $config['class']::create(['name' => 'Cat Two']);
+        $baseTime = now()->subDays(2)->startOfMinute();
 
         for ($i = 0; $i < 15; $i++) {
+            $publishedAt = $baseTime->copy()->addMinutes($i);
+
             if ($config['itemClass'] === Document::class) {
                 $media = Media::factory()->create();
-                $config['itemClass']::create(['title' => "Item A {$i}", $config['foreignKey'] => $cat1->id, 'status' => 'published', 'published_at' => now(), 'file_media_id' => $media->id]);
+                $config['itemClass']::create([
+                    'title' => "Item A {$i}",
+                    $config['foreignKey'] => $cat1->id,
+                    'status' => 'published',
+                    'published_at' => $publishedAt,
+                    'created_at' => $publishedAt,
+                    'updated_at' => $publishedAt,
+                    'file_media_id' => $media->id,
+                ]);
+
                 if ($i < 5) {
                     $media2 = Media::factory()->create();
-                    $config['itemClass']::create(['title' => "Item B {$i}", $config['foreignKey'] => $cat2->id, 'status' => 'published', 'published_at' => now(), 'file_media_id' => $media2->id]);
+                    $config['itemClass']::create([
+                        'title' => "Item B {$i}",
+                        $config['foreignKey'] => $cat2->id,
+                        'status' => 'published',
+                        'published_at' => $publishedAt,
+                        'created_at' => $publishedAt,
+                        'updated_at' => $publishedAt,
+                        'file_media_id' => $media2->id,
+                    ]);
                 }
             } else {
-                $config['itemClass']::create(['title' => "Item A {$i}", 'content' => 'x', $config['foreignKey'] => $cat1->id, 'status' => 'published', 'published_at' => now()]);
+                $config['itemClass']::create([
+                    'title' => "Item A {$i}",
+                    'content' => 'x',
+                    $config['foreignKey'] => $cat1->id,
+                    'status' => 'published',
+                    'published_at' => $publishedAt,
+                    'created_at' => $publishedAt,
+                    'updated_at' => $publishedAt,
+                ]);
+
                 if ($i < 5) {
-                    $config['itemClass']::create(['title' => "Item B {$i}", 'content' => 'y', $config['foreignKey'] => $cat2->id, 'status' => 'published', 'published_at' => now()]);
+                    $config['itemClass']::create([
+                        'title' => "Item B {$i}",
+                        'content' => 'y',
+                        $config['foreignKey'] => $cat2->id,
+                        'status' => 'published',
+                        'published_at' => $publishedAt,
+                        'created_at' => $publishedAt,
+                        'updated_at' => $publishedAt,
+                    ]);
                 }
             }
         }
@@ -91,12 +128,26 @@ foreach ($categories as $type => $config) {
 
         // Filter Cat One
         $response = $this->get($route.'?category='.$cat1->slug);
-        $response->assertSee('Item A 0');
-        $response->assertDontSee('Item B 0');
+        $response->assertSee('Item A 14');
+        $response->assertSee('Item A 3');
+        $response->assertDontSee('Item A 2');
+        $response->assertDontSee('Item A 0');
+
+        for ($i = 0; $i < 5; $i++) {
+            $response->assertDontSee("Item B {$i}");
+        }
 
         // Pagination
         $response = $this->get($route.'?category='.$cat1->slug.'&page=2');
         $response->assertStatus(200);
+        $response->assertSee('Item A 2');
+        $response->assertSee('Item A 1');
+        $response->assertSee('Item A 0');
+        $response->assertDontSee('Item A 3');
+
+        for ($i = 0; $i < 5; $i++) {
+            $response->assertDontSee("Item B {$i}");
+        }
 
         // Empty filter
         $cat3 = $config['class']::create(['name' => 'Cat Three']);

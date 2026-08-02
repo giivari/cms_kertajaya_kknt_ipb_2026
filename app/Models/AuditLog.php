@@ -24,6 +24,7 @@ class AuditLog extends Model
     protected $casts = [
         'old_values' => 'array',
         'new_values' => 'array',
+        'created_at' => 'immutable_datetime',
     ];
 
     public $timestamps = false; // Only created_at is needed, handled below

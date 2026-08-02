@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Models\Admin;
 use App\Models\Menu;
 use App\Services\DocumentMediaUsageResolver;
 use App\Services\GalleryMediaUsageResolver;
@@ -12,6 +13,7 @@ use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Http\Request;
+use Illuminate\Contracts\Auth\Authenticatable;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -20,6 +22,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        $this->app->bind(Authenticatable::class, Admin::class);
+
         $this->app->singleton(MediaUsageService::class, function ($app) {
             return new MediaUsageService;
         });
@@ -42,7 +46,7 @@ class AppServiceProvider extends ServiceProvider
         });
 
         View::composer('partials.header', function ($view) {
-            $view->with('headerMenu', Menu::where('location', 'header_menu')->with(['items' => function ($query) {
+            $view->with('headerMenu', Menu::where('location', Menu::HEADER)->with(['items' => function ($query) {
                 $query->where('is_visible', true)->whereNull('parent_id')->orderBy('position');
             }, 'items.children' => function ($query) {
                 $query->where('is_visible', true)->orderBy('position');
@@ -50,7 +54,7 @@ class AppServiceProvider extends ServiceProvider
         });
 
         View::composer('partials.footer', function ($view) {
-            $view->with('footerMenu', Menu::where('location', 'footer_menu')->with(['items' => function ($query) {
+            $view->with('footerMenu', Menu::where('location', Menu::FOOTER)->with(['items' => function ($query) {
                 $query->where('is_visible', true)->whereNull('parent_id')->orderBy('position');
             }, 'items.page'])->first());
         });

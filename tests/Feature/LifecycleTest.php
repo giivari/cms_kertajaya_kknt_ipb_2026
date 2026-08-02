@@ -37,6 +37,18 @@ foreach ($models as $name => $factory) {
         expect($model->published_at)->not->toBeNull();
     });
 
+    test("{$name} keeps published_at when published content is edited", function () use ($factory) {
+        $model = $factory();
+        $model->update(['status' => 'published']);
+        $model->refresh();
+        $publishedAt = $model->published_at->copy();
+
+        $model->update(['title' => $model->title.' updated']);
+        $model->refresh();
+
+        expect($model->published_at->equalTo($publishedAt))->toBeTrue();
+    });
+
     test("{$name} soft deletes and restores", function () use ($factory) {
         $model = $factory();
         $model->delete();

@@ -16,3 +16,51 @@
     --font-sans: 'Poppins', ui-sans-serif, system-ui, sans-serif;
     --font-display: 'Bricolage Grotesque', 'Poppins', ui-sans-serif, system-ui, sans-serif;
 }
+
+.leaflet-container {
+    font-family: var(--font-sans);
+    z-index: 0;
+}
+
+.location-popup {
+    min-width: 210px;
+}
+
+.location-popup__image {
+    width: 100%;
+    height: 110px;
+    margin-bottom: 0.75rem;
+    border-radius: 0.75rem;
+    object-fit: cover;
+}
+
+.location-popup__category {
+    margin: 0;
+    color: #075f55;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.location-popup__name {
+    margin: 0.2rem 0 0;
+    color: #073157;
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.location-popup__summary {
+    margin: 0.45rem 0 0;
+    color: #6b7280;
+    font-size: 0.8rem;
+    line-height: 1.45;
+}
+
+.location-popup__link {
+    display: inline-block;
+    margin-top: 0.65rem;
+    color: #075f55;
+    font-size: 0.8rem;
+    font-weight: 600;
+}

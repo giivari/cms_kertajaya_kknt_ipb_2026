@@ -24,7 +24,7 @@
             <div>
                 <h3 class="text-sm font-semibold text-gray-200 tracking-wider uppercase mb-4">Tautan Cepat</h3>
                 <ul class="space-y-2">
-                    @if(isset($footerMenu) && $footerMenu->items)
+                    @if(isset($footerMenu) && $footerMenu->items->isNotEmpty())
                         @foreach($footerMenu->items as $item)
                             <li>
                                 <a href="{{ $item->url }}" target="{{ $item->target }}" class="text-gray-400 hover:text-white transition-colors">
@@ -33,9 +33,9 @@
                             </li>
                         @endforeach
                     @else
-                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Berita</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Galeri</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Kontak</a></li>
+                        <li><a href="{{ route('home') }}" class="text-gray-400 hover:text-white transition-colors">Beranda</a></li>
+                        <li><a href="{{ route('public.map.index') }}" class="text-gray-400 hover:text-white transition-colors">Peta</a></li>
+                        <li><a href="{{ route('public.contact.show') }}" class="text-gray-400 hover:text-white transition-colors">Kontak</a></li>
                     @endif
                 </ul>
             </div>
