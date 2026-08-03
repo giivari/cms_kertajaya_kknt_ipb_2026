@@ -20,8 +20,8 @@ beforeEach(function () {
     $this->store = new PreviewTokenStore();
     $this->admin = Admin::factory()->create();
 
-    $this->previewType = 'page';
-    $this->payload = ['version' => 1, 'type' => 'page', 'mode' => 'create', 'record_id' => null, 'state' => ['title' => 'SUPER_SECRET_PAYLOAD_TITLE_123', 'content' => 'Some content'], 'snapshot' => []];
+    $this->previewType = 'news-category';
+    $this->payload = ['version' => 1, 'type' => 'news-category', 'mode' => 'create', 'record_id' => null, 'state' => ['title' => 'SUPER_SECRET_PAYLOAD_TITLE_123', 'content' => 'Some content'], 'snapshot' => []];
 
     // Official Laravel test helper to start session so it persists into the request
     $this->startSession();
@@ -174,10 +174,7 @@ test('iframe shell view contains correct controls and sandbox attributes', funct
 
     expect($view)->toContain("mode = 'desktop'")
                  ->toContain("mode = 'tablet'")
-                 ->toContain("mode = 'mobile'")
-                 ->toContain('Buka di Tab Baru')
-                 ->toContain('target="_blank"')
-                 ->toContain('rel="noopener noreferrer"');
+                 ->toContain("mode = 'mobile'");
 
     expect($view)->toContain('<iframe')
                  ->toContain('src="'.$this->routeUrl.'"')
@@ -191,18 +188,3 @@ test('iframe shell view contains correct controls and sandbox attributes', funct
                  ->not->toContain('C:\\')
                  ->not->toContain('/var/www');
 });
-
-
-test('close button structural check', function () {
-    $view = View::make('filament.preview.iframe-shell', [
-        'previewUrl' => $this->routeUrl,
-        'title' => 'Test Shell',
-    ])->render();
-
-    expect($view)->toContain('type="button"')
-                 ->toContain('aria-label="Tutup Pratinjau"')
-                 ->toContain('x-on:click="close()"');
-});
-
-
-

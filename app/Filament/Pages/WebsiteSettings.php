@@ -5,6 +5,7 @@ namespace App\Filament\Pages;
 use App\Models\Media;
 use App\Filament\Support\PreviewAction;
 use App\Services\SettingsService;
+use Filament\Schemas\Components\Fieldset;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -76,6 +77,33 @@ class WebsiteSettings extends Page
             'max_image_height' => SettingsService::get('max_image_height', 2160),
             'processing_timeout' => SettingsService::get('processing_timeout', 120),
             'notification_email' => SettingsService::get('notification_email', ''),
+            // BERANDA SETTINGS
+            'hero_title' => SettingsService::get('hero_title', 'Desa yang Tumbuh Bersama Masyarakat'),
+            'hero_description' => SettingsService::get('hero_description', 'Portal informasi resmi Desa Kertajaya yang menghadirkan informasi, pelayanan, potensi, dan perkembangan desa secara terbuka untuk seluruh masyarakat.'),
+            'hero_image' => SettingsService::get('hero_image', null),
+            'profil_title' => SettingsService::get('profil_title', 'Keindahan Alam dan Harmoni Masyarakat'),
+            'profil_description' => SettingsService::get('profil_description', 'Desa Kertajaya terletak di dataran tinggi yang dikelilingi oleh perbukitan hijau dan hamparan sawah yang subur. Masyarakat kami hidup berdampingan dengan alam, memelihara tradisi luhur sambil terus bergerak maju mengikuti perkembangan zaman.'),
+            'profil_image_1' => SettingsService::get('profil_image_1', null),
+            'profil_image_2' => SettingsService::get('profil_image_2', null),
+            'potensi_title' => SettingsService::get('potensi_title', 'Kekayaan Alam dan Karya Masyarakat'),
+            'potensi_description' => SettingsService::get('potensi_description', 'Mengenali lebih dekat sumber daya alam dan kreativitas warga yang menjadi motor penggerak kesejahteraan desa.'),
+            'potensi_1_title' => SettingsService::get('potensi_1_title', 'Pertanian & Perkebunan'),
+            'potensi_1_desc' => SettingsService::get('potensi_1_desc', 'Hamparan sawah terasering dan perkebunan teh yang menjadi tulang punggung ekonomi warga.'),
+            'potensi_1_image' => SettingsService::get('potensi_1_image', null),
+            'potensi_1_link' => SettingsService::get('potensi_1_link', ''),
+            'potensi_2_title' => SettingsService::get('potensi_2_title', 'Pariwisata Alam'),
+            'potensi_2_desc' => SettingsService::get('potensi_2_desc', 'Destinasi wisata curug dan desa wisata yang asri.'),
+            'potensi_2_image' => SettingsService::get('potensi_2_image', null),
+            'potensi_2_link' => SettingsService::get('potensi_2_link', ''),
+            'potensi_3_title' => SettingsService::get('potensi_3_title', 'UMKM Lokal'),
+            'potensi_3_desc' => SettingsService::get('potensi_3_desc', 'Kerajinan bambu dan olahan makanan tradisional.'),
+            'potensi_3_image' => SettingsService::get('potensi_3_image', null),
+            'potensi_3_link' => SettingsService::get('potensi_3_link', ''),
+            'potensi_all_link' => SettingsService::get('potensi_all_link', ''),
+            'stat_population' => SettingsService::get('stat_population', '3.450'),
+            'stat_families' => SettingsService::get('stat_families', '850'),
+            'stat_area' => SettingsService::get('stat_area', '1.250'),
+            'stat_hamlets' => SettingsService::get('stat_hamlets', '4'),
         ]);
     }
 
@@ -86,78 +114,149 @@ class WebsiteSettings extends Page
 
         return $schema
             ->schema([
-                Section::make('Identitas Desa')
-                    ->schema([
-                        TextInput::make('village_name')->label('Nama Desa')->required(),
-                        Textarea::make('village_description')->label('Deskripsi Singkat'),
-                    ])->columns(2),
-                Section::make('Media dan Logo')
-                    ->schema([
-                        Select::make('village_logo')
-                            ->label('Logo Desa')
-                            ->options($mediaOptions)
-                            ->searchable(),
-                        Select::make('favicon')
-                            ->label('Favicon')
-                            ->options($mediaOptions)
-                            ->searchable(),
-                    ])->columns(2),
-                Section::make('Alamat dan Kontak')
-                    ->schema([
-                        TextInput::make('contact_email')->label('Email')->email(),
-                        TextInput::make('contact_phone')->label('Telepon'),
-                        Textarea::make('address_street')->label('Jalan'),
-                        TextInput::make('address_village')->label('Desa/Kelurahan'),
-                        TextInput::make('address_subdistrict')->label('Kecamatan'),
-                        TextInput::make('address_district')->label('Kabupaten/Kota'),
-                        TextInput::make('address_province')->label('Provinsi'),
-                        TextInput::make('address_postal_code')->label('Kode Pos'),
-                    ])->columns(2),
-                Section::make('Media Sosial')
-                    ->schema([
-                        TextInput::make('social_facebook')->label('Facebook')->url(),
-                        TextInput::make('social_instagram')->label('Instagram')->url(),
-                        TextInput::make('social_twitter')->label('Twitter/X')->url(),
-                        TextInput::make('social_youtube')->label('YouTube')->url(),
-                    ])->columns(2),
-                Section::make('Tampilan')
-                    ->schema([
-                        TextInput::make('footer_copyright_text')->label('Teks Hak Cipta Kaki Halaman'),
-                    ])->columns(1),
-                Section::make('Mesin Pencari')
-                    ->schema([
-                        TextInput::make('meta_title')->label('Judul Utama untuk Mesin Pencari'),
-                        Textarea::make('meta_description')->label('Deskripsi Utama untuk Mesin Pencari'),
-                    ])->columns(1),
-                Section::make('Tanda Air')
-                    ->schema([
-                        Toggle::make('enable_visible_watermark')->label('Aktifkan Tanda Air Terlihat'),
-                        TextInput::make('watermark_text')->label('Teks Tanda Air'),
-                        Select::make('watermark_image')
-                            ->label('Gambar Tanda Air (Opsional)')
-                            ->options($mediaOptions)
-                            ->searchable(),
-                        TextInput::make('watermark_opacity')->label('Opasitas (%)')->numeric()->minValue(0)->maxValue(100),
-                        Select::make('watermark_position')->label('Posisi Tanda Air')->options([
-                            'top-left' => 'Kiri Atas',
-                            'top-right' => 'Kanan Atas',
-                            'bottom-left' => 'Kiri Bawah',
-                            'bottom-right' => 'Kanan Bawah',
-                            'center' => 'Tengah',
-                        ]),
-                        TextInput::make('watermark_scale')->numeric()->minValue(1)->maxValue(100)->label('Skala (%)'),
-                    ])->columns(2),
-                Section::make('Batas Unggahan')
-                    ->schema([
-                        TextInput::make('max_upload_size')->numeric()->minValue(1)->maxValue(50)->label('Ukuran Maksimal Berkas (MB)'),
-                        TextInput::make('max_image_width')->numeric()->minValue(100)->maxValue(8000)->label('Maksimal Lebar Gambar (px)'),
-                        TextInput::make('max_image_height')->numeric()->minValue(100)->maxValue(8000)->label('Maksimal Tinggi Gambar (px)'),
-                        TextInput::make('processing_timeout')->numeric()->minValue(10)->maxValue(600)->label('Batas Waktu Pemrosesan (detik)'),
-                    ])->columns(2),
-                Section::make('Notifikasi Email')
-                    ->schema([
-                        TextInput::make('notification_email')->label('Email Penerima Notifikasi (Opsional)')->email(),
-                    ])->columns(1),
+                \Filament\Schemas\Components\Tabs::make('Pengaturan')
+                    ->tabs([
+                        \Filament\Schemas\Components\Tabs\Tab::make('Identitas')
+                            ->schema([
+                                Section::make('Identitas Desa')
+                                    ->schema([
+                                        TextInput::make('village_name')->label('Nama Desa')->required(),
+                                        Textarea::make('village_description')->label('Deskripsi Singkat'),
+                                    ])->columns(2),
+                                Section::make('Media dan Logo')
+                                    ->schema([
+                                        Select::make('village_logo')
+                                            ->label('Logo Desa')
+                                            ->options($mediaOptions)
+                                            ->searchable(),
+                                        Select::make('favicon')
+                                            ->label('Favicon')
+                                            ->options($mediaOptions)
+                                            ->searchable(),
+                                    ])->columns(2),
+                            ]),
+                        \Filament\Schemas\Components\Tabs\Tab::make('Beranda')
+                            ->schema([
+                                Section::make('Bagian Pahlawan (Hero)')
+                                    ->schema([
+                                        TextInput::make('hero_title')->label('Judul Hero')->required(),
+                                        Textarea::make('hero_description')->label('Deskripsi Hero')->required(),
+                                        Select::make('hero_image')->label('Gambar Latar Hero')->options($mediaOptions)->searchable(),
+                                    ])->columns(1),
+                                Section::make('Profil Singkat')
+                                    ->schema([
+                                        TextInput::make('profil_title')->label('Judul Profil'),
+                                        Textarea::make('profil_description')->label('Deskripsi Profil'),
+                                        Select::make('profil_image_1')->label('Gambar Profil 1')->options($mediaOptions)->searchable(),
+                                        Select::make('profil_image_2')->label('Gambar Profil 2')->options($mediaOptions)->searchable(),
+                                    ])->columns(2),
+                                Section::make('Potensi Desa')
+                                    ->schema([
+                                        TextInput::make('potensi_title')->label('Judul Utama Bagian Potensi')->columnSpanFull(),
+                                        Textarea::make('potensi_description')->label('Deskripsi Singkat Bagian Potensi')->columnSpanFull(),
+                                        TextInput::make('potensi_all_link')->label('Link Tombol "Lihat Semua Potensi" (Opsional)')->placeholder('Contoh: /halaman/potensi-desa')->columnSpanFull(),
+                                        
+                                        Fieldset::make('Kartu Potensi 1 (Besar)')
+                                            ->schema([
+                                                TextInput::make('potensi_1_title')->label('Judul')->required(),
+                                                TextInput::make('potensi_1_link')->label('Link / Tautan (Opsional)')->placeholder('Contoh: /halaman/pertanian'),
+                                                Textarea::make('potensi_1_desc')->label('Deskripsi Singkat')->required()->columnSpanFull(),
+                                                Select::make('potensi_1_image')->label('Gambar Utama')->options($mediaOptions)->searchable()->columnSpanFull(),
+                                            ])->columns(2),
+
+                                        Fieldset::make('Kartu Potensi 2 (Kecil Atas)')
+                                            ->schema([
+                                                TextInput::make('potensi_2_title')->label('Judul')->required(),
+                                                TextInput::make('potensi_2_link')->label('Link / Tautan (Opsional)'),
+                                                Textarea::make('potensi_2_desc')->label('Deskripsi Singkat')->required()->columnSpanFull(),
+                                                Select::make('potensi_2_image')->label('Gambar Utama')->options($mediaOptions)->searchable()->columnSpanFull(),
+                                            ])->columns(2),
+
+                                        Fieldset::make('Kartu Potensi 3 (Kecil Bawah)')
+                                            ->schema([
+                                                TextInput::make('potensi_3_title')->label('Judul')->required(),
+                                                TextInput::make('potensi_3_link')->label('Link / Tautan (Opsional)'),
+                                                Textarea::make('potensi_3_desc')->label('Deskripsi Singkat')->required()->columnSpanFull(),
+                                                Select::make('potensi_3_image')->label('Gambar Utama')->options($mediaOptions)->searchable()->columnSpanFull(),
+                                            ])->columns(2),
+                                    ])->columns(1),
+                                Section::make('Statistik Desa')
+                                    ->schema([
+                                        TextInput::make('stat_population')->label('Jumlah Penduduk'),
+                                        TextInput::make('stat_families')->label('Kepala Keluarga'),
+                                        TextInput::make('stat_area')->label('Luas Wilayah (Ha)'),
+                                        TextInput::make('stat_hamlets')->label('Jumlah Dusun'),
+                                    ])->columns(2),
+                            ]),
+                        \Filament\Schemas\Components\Tabs\Tab::make('Alamat & Kontak')
+                            ->schema([
+                                Section::make('Alamat dan Kontak')
+                                    ->schema([
+                                        TextInput::make('contact_email')->label('Email')->email(),
+                                        TextInput::make('contact_phone')->label('Telepon'),
+                                        Textarea::make('address_street')->label('Jalan'),
+                                        TextInput::make('address_village')->label('Desa/Kelurahan'),
+                                        TextInput::make('address_subdistrict')->label('Kecamatan'),
+                                        TextInput::make('address_district')->label('Kabupaten/Kota'),
+                                        TextInput::make('address_province')->label('Provinsi'),
+                                        TextInput::make('address_postal_code')->label('Kode Pos'),
+                                    ])->columns(2),
+                            ]),
+                        \Filament\Schemas\Components\Tabs\Tab::make('Media Sosial')
+                            ->schema([
+                                Section::make('Media Sosial')
+                                    ->schema([
+                                        TextInput::make('social_facebook')->label('Facebook')->url(),
+                                        TextInput::make('social_instagram')->label('Instagram')->url(),
+                                        TextInput::make('social_twitter')->label('Twitter/X')->url(),
+                                        TextInput::make('social_youtube')->label('YouTube')->url(),
+                                    ])->columns(2),
+                            ]),
+                        \Filament\Schemas\Components\Tabs\Tab::make('Tampilan')
+                            ->schema([
+                                Section::make('Tampilan Dasar')
+                                    ->schema([
+                                        TextInput::make('footer_copyright_text')->label('Teks Hak Cipta Kaki Halaman'),
+                                    ])->columns(1),
+                                Section::make('Tanda Air')
+                                    ->schema([
+                                        Toggle::make('enable_visible_watermark')->label('Aktifkan Tanda Air Terlihat'),
+                                        TextInput::make('watermark_text')->label('Teks Tanda Air'),
+                                        Select::make('watermark_image')
+                                            ->label('Gambar Tanda Air (Opsional)')
+                                            ->options($mediaOptions)
+                                            ->searchable(),
+                                        TextInput::make('watermark_opacity')->label('Opasitas (%)')->numeric()->minValue(0)->maxValue(100),
+                                        Select::make('watermark_position')->label('Posisi Tanda Air')->options([
+                                            'top-left' => 'Kiri Atas',
+                                            'top-right' => 'Kanan Atas',
+                                            'bottom-left' => 'Kiri Bawah',
+                                            'bottom-right' => 'Kanan Bawah',
+                                            'center' => 'Tengah',
+                                        ]),
+                                        TextInput::make('watermark_scale')->numeric()->minValue(1)->maxValue(100)->label('Skala (%)'),
+                                    ])->columns(2),
+                            ]),
+                        \Filament\Schemas\Components\Tabs\Tab::make('Pengaturan Lanjutan')
+                            ->schema([
+                                Section::make('Mesin Pencari')
+                                    ->schema([
+                                        TextInput::make('meta_title')->label('Judul Utama untuk Mesin Pencari'),
+                                        Textarea::make('meta_description')->label('Deskripsi Utama untuk Mesin Pencari'),
+                                    ])->columns(1),
+                                Section::make('Batas Unggahan')
+                                    ->schema([
+                                        TextInput::make('max_upload_size')->numeric()->minValue(1)->maxValue(50)->label('Ukuran Maksimal Berkas (MB)'),
+                                        TextInput::make('max_image_width')->numeric()->minValue(100)->maxValue(8000)->label('Maksimal Lebar Gambar (px)'),
+                                        TextInput::make('max_image_height')->numeric()->minValue(100)->maxValue(8000)->label('Maksimal Tinggi Gambar (px)'),
+                                        TextInput::make('processing_timeout')->numeric()->minValue(10)->maxValue(600)->label('Batas Waktu Pemrosesan (detik)'),
+                                    ])->columns(2),
+                                Section::make('Notifikasi Email')
+                                    ->schema([
+                                        TextInput::make('notification_email')->label('Email Penerima Notifikasi (Opsional)')->email(),
+                                    ])->columns(1),
+                            ]),
+                    ])->columnSpanFull(),
             ])
             ->statePath('data');
     }

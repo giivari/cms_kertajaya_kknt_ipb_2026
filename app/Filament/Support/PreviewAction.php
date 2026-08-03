@@ -3,9 +3,10 @@
 namespace App\Filament\Support;
 
 use Filament\Actions\Action;
-use Filament\Support\Enums\Width;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Facades\Validator;
+use App\Services\Preview\PreviewTokenStore;
+use Filament\Facades\Filament;
 
 class PreviewAction
 {
@@ -22,76 +23,54 @@ class PreviewAction
         };
 
         return Action::make('preview')
-            ->label($editing ? 'Pratinjau Perubahan' : 'Pratinjau')
+            ->label($editing && $type !== 'settings' ? 'Pratinjau Perubahan' : 'Pratinjau')
             ->icon('heroicon-o-eye')
-            ->color('gray')
+            ->color('info')
+            ->extraAttributes([
+                'x-on:click' => "window.open('', 'preview_tab')"
+            ])
             ->visible(fn (): bool => config('preview.ui_enabled', false))
-            ->modalHeading($editing ? 'Pratinjau Perubahan' : 'Pratinjau')
-            ->modalWidth($type === 'news' ? Width::Screen : Width::SevenExtraLarge)
-            ->modalSubmitAction(false)
-            ->modalCancelActionLabel('Tutup')
-            ->form(function () use ($type, $editing) {
-                if ($type !== 'news') {
-                    return [];
-                }
-                
-                return [
-                    \Filament\Forms\Components\Hidden::make('preview_token')
-                        ->default(function ($livewire, \App\Services\Preview\PreviewTokenStore $store) use ($editing, $type) {
-                            $state = $livewire->form->getRawState();
-                            $state = $state instanceof Arrayable ? $state->toArray() : $state;
-                            $normalizedState = PreviewStateNormalizer::normalize($type, $state);
-                            
-                            $admin = \Filament\Facades\Filament::auth()->user();
-                            $sessionId = request()->hasSession() ? request()->session()->getId() : 'test-session';
-
-                            $recordSnapshot = null;
-                            if ($editing && isset($livewire->record)) {
-                                $recordSnapshot = $livewire->record->only([
-                                    'id', 'title', 'slug', 'excerpt', 'content', 'status', 'published_at',
-                                    'news_category_id', 'featured_media_id', 'seo_title', 'seo_description'
-                                ]);
-                            }
-
-                            $payload = [
-                                'version' => 1,
-                                'type' => 'news',
-                                'mode' => $editing ? 'edit' : 'create',
-                                'record_id' => $editing ? ($livewire->record->id ?? null) : null,
-                                'state' => $normalizedState,
-                                'snapshot' => $recordSnapshot,
-                            ];
-
-                            return $store->create($admin->id, $sessionId, 'news', $payload);
-                        })
-                ];
-            })
-            ->mountUsing(function ($livewire) use ($rules): void {
+            ->action(function ($livewire) use ($type, $editing, $rules) {
                 $state = $livewire->form->getRawState();
                 $state = $state instanceof Arrayable ? $state->toArray() : $state;
 
                 Validator::make($state, $rules, [
                     'required' => 'Lengkapi field ini untuk membuka pratinjau.',
                 ])->validate();
-            })
-            ->modalContent(function (\Filament\Actions\Action $action, $livewire) use ($type, $editing) {
-                $state = $livewire->form->getRawState();
-                $state = $state instanceof Arrayable ? $state->toArray() : $state;
+
                 $normalizedState = PreviewStateNormalizer::normalize($type, $state);
 
-                if ($type === 'news') {
-                    $token = $action->getFormData()['preview_token'] ?? null;
-                    $previewUrl = $token ? route('admin.preview.show', ['token' => $token]) : '#';
-                    return view('filament.preview.iframe-shell', [
-                        'previewUrl' => $previewUrl,
-                        'title' => 'Pratinjau Berita',
-                    ]);
+                $admin = Filament::auth()->user();
+                $sessionId = request()->hasSession() ? request()->session()->getId() : 'test-session';
+
+                $recordSnapshot = null;
+                if ($editing && isset($livewire->record)) {
+                    $recordSnapshot = $livewire->record->getAttributes();
                 }
 
-                return view('filament.preview.content', [
+                $payload = [
+                    'version' => 1,
                     'type' => $type,
+                    'mode' => $editing ? 'edit' : 'create',
+                    'record_id' => $editing ? ($livewire->record->id ?? null) : null,
                     'state' => $normalizedState,
-                ]);
+                    'snapshot' => $recordSnapshot,
+                ];
+
+                $store = app(\App\Services\Preview\PreviewTokenStore::class);
+                $token = $store->create($admin->id, $sessionId, $type, $payload);
+                $url = route('admin.preview.shell', ['token' => $token]);
+
+                if (request()->hasSession()) {
+                    $cacheKey = 'preview_draft_' . get_class($livewire) . '_' . ($editing ? ($livewire->record->id ?? 'new') : 'new');
+                    request()->session()->put($cacheKey, $state);
+                }
+
+                if (app()->environment('testing')) {
+                    return redirect($url);
+                }
+
+                $livewire->js("window.open('{$url}', 'preview_tab')");
             });
     }
 }

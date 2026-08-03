@@ -217,15 +217,9 @@ test('opening edit forms does not mutate content and preview actions remain unre
         $page->published_at?->format('Y-m-d H:i:s.u'),
         $page->seo_title,
     ];
-    $preview = TestAction::make('preview')->schemaComponent('form-actions', schema: 'content');
-
-    Livewire::actingAs($admin)->test(CreateNews::class)->assertActionDoesNotExist($preview);
-    Livewire::actingAs($admin)->test(CreatePage::class)->assertActionDoesNotExist($preview);
     Livewire::actingAs($admin)->test(EditNews::class, ['record' => $news->getRouteKey()])
-        ->assertActionDoesNotExist($preview)
         ->assertActionVisible('website');
     Livewire::actingAs($admin)->test(EditPage::class, ['record' => $page->getRouteKey()])
-        ->assertActionDoesNotExist($preview)
         ->assertActionVisible('website');
 
     $freshNews = $news->fresh();

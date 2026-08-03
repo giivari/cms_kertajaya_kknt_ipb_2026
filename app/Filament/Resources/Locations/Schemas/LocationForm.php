@@ -14,42 +14,99 @@ class LocationForm
     public static function configure(Schema $schema): Schema
     {
         return $schema->components([
-            TextInput::make('name')
-                ->label('Nama')
-                ->required()
-                ->maxLength(255),
-            Select::make('location_category_id')
-                ->label('Kategori')
-                ->helperText('Buat Kategori Lokasi terlebih dahulu sebelum menambahkan lokasi.')
-                ->relationship('category', 'name')
-                ->required()
-                ->searchable()
-                ->preload(),
-            Textarea::make('address')->label('Alamat')->columnSpanFull(),
-            TextInput::make('latitude')
-                ->label('Garis Lintang')
-                ->helperText('Koordinat utara atau selatan lokasi. Contoh: -6.9876543')
-                ->required()->numeric()->minValue(-90)->maxValue(90),
-            TextInput::make('longitude')
-                ->label('Garis Bujur')
-                ->helperText('Koordinat timur atau barat lokasi. Contoh: 106.1234567')
-                ->required()->numeric()->minValue(-180)->maxValue(180),
-            Textarea::make('short_description')->label('Deskripsi Singkat')->maxLength(500)->columnSpanFull(),
-            RichEditor::make('description')->label('Deskripsi Lengkap')->columnSpanFull(),
-            Select::make('media_id')
-                ->label('Foto Utama')
-                ->relationship('media', 'original_filename', fn (Builder $query) => $query->approvedImages())
-                ->searchable()
-                ->preload(),
-            Select::make('status')
-                ->options([
-                    'draft' => 'Draf',
-                    'published' => 'Terbit',
-                    'archived' => 'Diarsipkan',
+            \Filament\Schemas\Components\Group::make()
+                ->schema([
+                    \Filament\Schemas\Components\Section::make('Informasi Utama')
+                        ->description('Tulis informasi dasar tentang lokasi.')
+                        ->schema([
+                            TextInput::make('name')
+                                ->label('Nama Lokasi')
+                                ->required()
+                                ->maxLength(255),
+                            Textarea::make('short_description')
+                                ->label('Deskripsi Singkat')
+                                ->helperText('Opsional, maksimal 500 karakter.')
+                                ->maxLength(500)
+                                ->rows(3),
+                            RichEditor::make('description')
+                                ->label('Deskripsi Lengkap')
+                                ->placeholder('Mulai menulis isi deskripsi...'),
+                        ]),
+                    \Filament\Schemas\Components\Section::make('Peta & Kordinat')
+                        ->description('Detail koordinat dan alamat lengkap dari lokasi ini.')
+                        ->schema([
+                            Textarea::make('address')
+                                ->label('Alamat Lengkap')
+                                ->rows(3)
+                                ->columnSpanFull(),
+                            TextInput::make('latitude')
+                                ->label('Garis Lintang (Latitude)')
+                                ->helperText('Contoh: -6.9876543')
+                                ->required()
+                                ->numeric()
+                                ->minValue(-90)
+                                ->maxValue(90),
+                            TextInput::make('longitude')
+                                ->label('Garis Bujur (Longitude)')
+                                ->helperText('Contoh: 106.1234567')
+                                ->required()
+                                ->numeric()
+                                ->minValue(-180)
+                                ->maxValue(180),
+                        ])
+                        ->columns(['md' => 2]),
                 ])
-                ->required()
-                ->default('draft'),
-            TextInput::make('sort_order')->label('Urutan')->numeric()->default(0)->required(),
-        ]);
+                ->extraAttributes(['class' => 'admin-form-main-column'])
+                ->columnSpan(['lg' => 2]),
+
+            \Filament\Schemas\Components\Group::make()
+                ->schema([
+                    \Filament\Schemas\Components\Section::make('Publikasi')
+                        ->description('Tentukan status publikasi lokasi.')
+                        ->schema([
+                            Select::make('status')
+                                ->label('Status')
+                                ->options([
+                                    'draft' => 'Draf',
+                                    'published' => 'Terbit',
+                                    'archived' => 'Diarsipkan',
+                                ])
+                                ->required()
+                                ->default('draft'),
+                        ]),
+                    \Filament\Schemas\Components\Section::make('Klasifikasi')
+                        ->description('Pengelompokan lokasi pada website.')
+                        ->schema([
+                            Select::make('location_category_id')
+                                ->label('Kategori')
+                                ->relationship('category', 'name')
+                                ->required()
+                                ->searchable()
+                                ->preload()
+                                ->placeholder('Pilih kategori lokasi')
+                                ->helperText('Buat Kategori Lokasi terlebih dahulu jika belum tersedia.'),
+                            TextInput::make('sort_order')
+                                ->label('Urutan Tampil')
+                                ->numeric()
+                                ->default(0)
+                                ->required()
+                                ->helperText('Semakin kecil angka, semakin awal ditampilkan.'),
+                        ]),
+                    \Filament\Schemas\Components\Section::make('Gambar Utama')
+                        ->description('Pilih gambar lokasi dari perpustakaan.')
+                        ->schema([
+                            Select::make('media_id')
+                                ->label('Pilih Gambar')
+                                ->relationship('media', 'original_filename', fn (Builder $query) => $query->approvedImages())
+                                ->searchable()
+                                ->preload()
+                                ->placeholder('Belum ada gambar dipilih'),
+                        ]),
+                ])
+                ->extraAttributes(['class' => 'admin-form-side-column'])
+                ->columnSpan(['lg' => 1]),
+        ])
+        ->columns(3)
+        ->extraAttributes(['class' => 'admin-content-form']);
     }
 }

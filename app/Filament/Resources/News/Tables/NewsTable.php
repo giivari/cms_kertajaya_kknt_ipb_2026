@@ -52,7 +52,7 @@ class NewsTable
                 TextColumn::make('title')
                     ->label('Judul Berita')
                     ->description(fn (News $record): ?string => filled($record->excerpt) ? Str::limit($record->excerpt, 72) : null)
-                    ->wrap()
+                    ->limit(40)
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('category.name')
@@ -87,16 +87,19 @@ class NewsTable
                     ->label('Dibuat pada')
                     ->dateTime('d/m/Y H.i', timezone: 'Asia/Jakarta')
                     ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->visibleFrom('md'),
                 TextColumn::make('updated_at')
                     ->label('Terakhir Diperbarui')
                     ->dateTime('d/m/Y H.i', timezone: 'Asia/Jakarta')
                     ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->visibleFrom('md'),
                 TextColumn::make('deleted_at')
                     ->label('Dihapus pada')
                     ->dateTime('d/m/Y H.i', timezone: 'Asia/Jakarta')
                     ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->visibleFrom('md'),
             ])
             ->filters([

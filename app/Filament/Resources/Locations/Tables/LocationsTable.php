@@ -23,7 +23,7 @@ class LocationsTable
             ->recordUrl(fn ($record): string => LocationResource::getUrl('view', ['record' => $record]))
             ->defaultSort('sort_order')
             ->columns([
-                TextColumn::make('name')->label('Nama')->searchable()->sortable(),
+                TextColumn::make('name')->label('Nama')->searchable()->sortable()->limit(40),
                 TextColumn::make('category.name')->label('Kategori')->searchable()->sortable()->visibleFrom('md'),
                 TextColumn::make('status')->label('Status')->badge()
                     ->formatStateUsing(fn (string $state): string => match ($state) {
@@ -36,12 +36,18 @@ class LocationsTable
                 }),
                 TextColumn::make('published_at')->label('Diterbitkan pada')->dateTime('d/m/Y H.i', timezone: 'Asia/Jakarta')->sortable()->visibleFrom('md'),
                 TextColumn::make('sort_order')->label('Urutan')->sortable()->visibleFrom('lg'),
-                TextColumn::make('updated_at')->label('Terakhir Diperbarui')->dateTime('d/m/Y H.i', timezone: 'Asia/Jakarta')->sortable()->visibleFrom('md'),
+                TextColumn::make('updated_at')->label('Terakhir Diperbarui')->dateTime('d/m/Y H.i', timezone: 'Asia/Jakarta')->sortable()->toggleable(isToggledHiddenByDefault: true)
+                    ->visibleFrom('md'),
             ])
             ->filters([TrashedFilter::make()])
             ->recordActions([
-                ViewAction::make()->label('Lihat'),
-                EditAction::make()->label('Ubah'),
+                \Filament\Actions\ActionGroup::make([
+                    ViewAction::make()->label('Lihat')->icon('heroicon-o-eye'),
+                    EditAction::make()->label('Ubah')->icon('heroicon-o-pencil-square'),
+                    \Filament\Actions\DeleteAction::make()->label('Hapus')->icon('heroicon-o-trash'),
+                    \Filament\Actions\ForceDeleteAction::make()->label('Hapus Permanen')->icon('heroicon-o-x-circle'),
+                    \Filament\Actions\RestoreAction::make()->label('Pulihkan')->icon('heroicon-o-arrow-uturn-left'),
+                ])
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

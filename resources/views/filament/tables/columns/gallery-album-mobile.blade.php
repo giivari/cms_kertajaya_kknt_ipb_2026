@@ -17,7 +17,7 @@
     />
 
     <div class="admin-gallery-mobile-album-copy">
-        <span class="admin-gallery-mobile-album-title">{{ $record->title }}</span>
+        <span class="admin-gallery-mobile-album-title">{{ \Illuminate\Support\Str::limit($record->title, 40) }}</span>
         <span class="admin-gallery-mobile-album-count">{{ $record->items_count }} foto</span>
     </div>
 </div>

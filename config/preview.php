@@ -2,7 +2,7 @@
 
 return [
     // Preview backend remains available, while its form actions stay hidden until manual acceptance succeeds.
-    'ui_enabled' => false,
+    'ui_enabled' => true,
     'ttl_minutes' => 30,
     'max_active' => 5,
     'max_payload_bytes' => 2 * 1024 * 1024,

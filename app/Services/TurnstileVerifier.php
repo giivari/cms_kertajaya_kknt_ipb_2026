@@ -7,22 +7,17 @@ use Illuminate\Support\Facades\Log;
 
 class TurnstileVerifier
 {
-    /**
-     * Verify the given Turnstile token.
-     * 
-     * @param string|null $token
-     * @param string|null $ip
-     * @return bool Returns true if valid, false if invalid or on failure (fail-closed).
-     */
     public function verify(?string $token, ?string $ip = null): bool
     {
         if (empty($token)) {
+            Log::warning('Turnstile token empty');
             return false;
         }
 
         $secret = config('services.turnstile.secret');
 
         if (empty($secret)) {
+            Log::warning('Turnstile secret empty', ['secret' => $secret]);
             return false;
         }
 
@@ -33,12 +28,15 @@ class TurnstileVerifier
                 'remoteip' => $ip,
             ]);
 
+            Log::info('Turnstile response', ['status' => $response->status(), 'body' => $response->json()]);
+
             if ($response->successful() && is_array($response->json()) && $response->json('success') === true) {
                 return true;
             }
 
             return false;
         } catch (\Throwable $e) {
+            Log::error('Turnstile exception', ['message' => $e->getMessage()]);
             return false;
         }
     }

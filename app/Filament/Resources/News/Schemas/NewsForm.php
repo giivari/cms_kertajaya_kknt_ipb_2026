@@ -6,6 +6,8 @@ use App\Filament\Resources\NewsCategories\NewsCategoryResource;
 use App\Filament\Resources\NewsCategories\Schemas\NewsCategoryForm;
 use App\Models\NewsCategory;
 use Filament\Actions\Action;
+use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -88,22 +90,54 @@ class NewsForm
                                     ->searchable()
                                     ->preload()
                                     ->placeholder('Pilih kategori berita')
-                                    ->helperText('Belum menemukan kategori? Buat kategori baru dari tombol pada field ini.')
-                                    ->createOptionForm(NewsCategoryForm::fields())
-                                    ->createOptionModalHeading('Buat Kategori Berita')
-                                    ->createOptionAction(fn (Action $action): Action => $action
-                                        ->label('Buat Kategori Baru')
-                                        ->modalSubmitAction(fn (Action $submitAction): Action => $submitAction
-                                            ->label('Simpan Kategori')
-                                            ->color('primary'))
-                                        ->modalCancelAction(fn (Action $cancelAction): Action => $cancelAction
-                                            ->label('Batal')
-                                            ->color('gray')
-                                            ->outlined())
-                                        ->modalWidth('lg')
-                                        ->extraModalWindowAttributes(['class' => 'admin-content-modal'])
-                                        ->authorize('create', NewsCategory::class)
-                                        ->visible(fn (): bool => NewsCategoryResource::canCreate())),
+                                    ->createOptionForm([
+                                        TextInput::make('name')
+                                            ->label('Nama Kategori Baru')
+                                            ->required()
+                                            ->maxLength(255),
+                                    ])
+                                    ->helperText('Anda dapat membuat kategori baru secara langsung, atau melalui tombol Kelola Kategori.')
+                                    ->suffixAction(
+                                        Action::make('manageCategories')
+                                            ->label('Kelola Kategori')
+                                            ->icon('heroicon-m-cog-8-tooth')
+                                            ->tooltip('Kelola Kategori')
+                                            ->modalHeading('Kelola Kategori Berita')
+                                            ->modalWidth('md')
+                                            ->fillForm(fn () => [
+                                                'categories' => NewsCategory::all()->map(fn ($cat) => [
+                                                    'id' => $cat->id,
+                                                    'name' => $cat->name,
+                                                ])->toArray(),
+                                            ])
+                                            ->form([
+                                                Repeater::make('categories')
+                                                    ->label('')
+                                                    ->schema([
+                                                        Hidden::make('id'),
+                                                        TextInput::make('name')
+                                                            ->required()
+                                                            ->hiddenLabel()
+                                                            ->placeholder('Nama Kategori Baru'),
+                                                    ])
+                                                    ->itemLabel(fn (array $state): ?string => $state['name'] ?? null)
+                                                    ->addActionLabel('Tambah Kategori')
+                                                    ->reorderable(false)
+                                            ])
+                                            ->action(function (array $data) {
+                                                $submittedIds = collect($data['categories'])->pluck('id')->filter()->toArray();
+                                                NewsCategory::whereNotIn('id', $submittedIds)->delete();
+                                                
+                                                foreach ($data['categories'] as $catData) {
+                                                    if (!empty($catData['name'])) {
+                                                        NewsCategory::updateOrCreate(
+                                                            ['id' => $catData['id'] ?? null],
+                                                            ['name' => $catData['name']]
+                                                        );
+                                                    }
+                                                }
+                                            })
+                                    ),
                                 Toggle::make('is_featured')
                                     ->label('Jadikan Berita Unggulan')
                                     ->helperText('Berita unggulan dapat ditampilkan lebih menonjol pada website.')

@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Models\Admin;
 use App\Models\Menu;
+use App\Models\MenuItem;
 use App\Services\DocumentMediaUsageResolver;
 use App\Services\GalleryMediaUsageResolver;
 use App\Services\MediaUsageService;
@@ -46,17 +47,97 @@ class AppServiceProvider extends ServiceProvider
         });
 
         View::composer('partials.header', function ($view) {
-            $view->with('headerMenu', Menu::where('location', Menu::HEADER)->with(['items' => function ($query) {
-                $query->where('is_visible', true)->whereNull('parent_id')->orderBy('position');
-            }, 'items.children' => function ($query) {
-                $query->where('is_visible', true)->orderBy('position');
-            }, 'items.page', 'items.children.page'])->first());
+            $menu = null;
+            if (app()->has(\App\Support\Preview\PreviewContext::class)) {
+                $context = app(\App\Support\Preview\PreviewContext::class);
+                if ($context->previewType === 'menu' && isset($context->normalizedState['location']) && $context->normalizedState['location'] === Menu::HEADER) {
+                    $attributes = array_merge($context->recordSnapshot ?? [], $context->normalizedState);
+                    $itemsArray = $attributes['items'] ?? [];
+                    unset($attributes['items']);
+
+                    $menu = new Menu();
+                    $menu->forceFill($attributes);
+                    
+                    $items = collect($itemsArray)->filter(function($item) {
+                        return $item['is_visible'] ?? false;
+                    })->map(function($item, $index) {
+                        $childrenArray = $item['children'] ?? [];
+                        unset($item['children']);
+                        
+                        $menuItem = new MenuItem();
+                        $menuItem->forceFill($item);
+                        $menuItem->position = $index;
+                        
+                        $children = collect($childrenArray)->filter(function($child) {
+                            return $child['is_visible'] ?? false;
+                        })->map(function($child, $childIndex) {
+                            $childItem = new MenuItem();
+                            $childItem->forceFill($child);
+                            $childItem->position = $childIndex;
+                            return $childItem;
+                        });
+                        $menuItem->setRelation('children', $children);
+                        return $menuItem;
+                    });
+
+                    $menu->setRelation('items', $items);
+                }
+            }
+
+            if (!$menu) {
+                $menu = Menu::where('location', Menu::HEADER)->with(['items' => function ($query) {
+                    $query->where('is_visible', true)->whereNull('parent_id')->orderBy('position');
+                }, 'items.children' => function ($query) {
+                    $query->where('is_visible', true)->orderBy('position');
+                }, 'items.page', 'items.children.page'])->first();
+            }
+            $view->with('headerMenu', $menu);
         });
 
         View::composer('partials.footer', function ($view) {
-            $view->with('footerMenu', Menu::where('location', Menu::FOOTER)->with(['items' => function ($query) {
-                $query->where('is_visible', true)->whereNull('parent_id')->orderBy('position');
-            }, 'items.page'])->first());
+            $menu = null;
+            if (app()->has(\App\Support\Preview\PreviewContext::class)) {
+                $context = app(\App\Support\Preview\PreviewContext::class);
+                if ($context->previewType === 'menu' && isset($context->normalizedState['location']) && $context->normalizedState['location'] === Menu::FOOTER) {
+                    $attributes = array_merge($context->recordSnapshot ?? [], $context->normalizedState);
+                    $itemsArray = $attributes['items'] ?? [];
+                    unset($attributes['items']);
+
+                    $menu = new Menu();
+                    $menu->forceFill($attributes);
+                    
+                    $items = collect($itemsArray)->filter(function($item) {
+                        return $item['is_visible'] ?? false;
+                    })->map(function($item, $index) {
+                        $childrenArray = $item['children'] ?? [];
+                        unset($item['children']);
+                        
+                        $menuItem = new MenuItem();
+                        $menuItem->forceFill($item);
+                        $menuItem->position = $index;
+                        
+                        $children = collect($childrenArray)->filter(function($child) {
+                            return $child['is_visible'] ?? false;
+                        })->map(function($child, $childIndex) {
+                            $childItem = new MenuItem();
+                            $childItem->forceFill($child);
+                            $childItem->position = $childIndex;
+                            return $childItem;
+                        });
+                        $menuItem->setRelation('children', $children);
+                        return $menuItem;
+                    });
+
+                    $menu->setRelation('items', $items);
+                }
+            }
+
+            if (!$menu) {
+                $menu = Menu::where('location', Menu::FOOTER)->with(['items' => function ($query) {
+                    $query->where('is_visible', true)->whereNull('parent_id')->orderBy('position');
+                }, 'items.page'])->first();
+            }
+            $view->with('footerMenu', $menu);
         });
     }
 }

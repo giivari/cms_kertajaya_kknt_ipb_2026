@@ -16,6 +16,15 @@ class Dashboard extends BaseDashboard
         ];
     }
 
+    public function getWidgets(): array
+    {
+        return [
+            
+            \App\Filament\Widgets\VillageStatsWidget::class,
+            \App\Filament\Widgets\DashboardLayoutWidget::class,
+        ];
+    }
+
     public function getHeading(): string
     {
         $admin = filament()->auth()->user();

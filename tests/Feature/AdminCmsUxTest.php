@@ -33,7 +33,6 @@ test('authenticated admin can render create menu page', function () {
         ->assertSee('Tentang Menu')
         ->assertSee('Tautan yang Ditampilkan')
         ->assertSee('<form', false)
-        ->assertDontSee('Pratinjau Navigasi')
         ->assertDontSee('ui-avatars.com', false);
 });
 

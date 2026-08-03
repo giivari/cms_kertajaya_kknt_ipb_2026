@@ -189,17 +189,23 @@ class MenuResource extends Resource
     {
         return AdminTable::configure($table, 'admin-content-table admin-menu-table')
             ->columns([
-                TextColumn::make('name')->label('Nama Menu')->searchable(),
+                TextColumn::make('name')->label('Nama Menu')->searchable()->limit(30),
                 TextColumn::make('location')
                     ->label('Posisi Menu')
                     ->formatStateUsing(fn (string $state): string => Menu::supportedLocations()[$state] ?? $state),
-                TextColumn::make('description')->label('Keterangan')->visibleFrom('md'),
-                TextColumn::make('created_at')->label('Dibuat pada')->dateTime('d/m/Y H.i', timezone: 'Asia/Jakarta')->sortable()->visibleFrom('md'),
+                TextColumn::make('description')->label('Keterangan')->visibleFrom('md')->limit(50),
+                TextColumn::make('created_at')->label('Dibuat pada')->dateTime('d/m/Y H.i', timezone: 'Asia/Jakarta')->sortable()->toggleable(isToggledHiddenByDefault: true)
+                    ->visibleFrom('md'),
             ])
             ->filters([])
             ->actions([
-                EditAction::make()->label('Ubah'),
-                DeleteAction::make()->label('Hapus'),
+                \Filament\Actions\ActionGroup::make([
+                    EditAction::make()->label('Ubah')->icon('heroicon-o-pencil-square'),
+                    DeleteAction::make()->label('Hapus')->icon('heroicon-o-trash'),
+                ])
+                ->label('Aksi')
+                ->icon('heroicon-m-ellipsis-vertical')
+                ->tooltip('Aksi'),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

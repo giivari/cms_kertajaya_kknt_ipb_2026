@@ -46,8 +46,26 @@ Route::prefix('kontak')->name('public.contact.')->group(function () {
     Route::post('/', [ContactController::class, 'store'])->name('store')->middleware('throttle:contact-submissions');
 });
 
+Route::get(config('village.admin_path', 'desa-dashboard') . '/preview-shell/{token}', [PreviewController::class, 'shell'])
+    ->name('admin.preview.shell')
+    ->middleware([
+        'panel:admin',
+        \Filament\Http\Middleware\Authenticate::class,
+        \App\Http\Middleware\ForcePasswordChange::class,
+        \App\Http\Middleware\AbsoluteSessionTimeout::class,
+    ]);
+
 Route::get(config('village.admin_path', 'desa-dashboard') . '/preview/{token}', [PreviewController::class, 'show'])
     ->name('admin.preview.show')
+    ->middleware([
+        'panel:admin',
+        \Filament\Http\Middleware\Authenticate::class,
+        \App\Http\Middleware\ForcePasswordChange::class,
+        \App\Http\Middleware\AbsoluteSessionTimeout::class,
+    ]);
+
+Route::get(config('village.admin_path', 'desa-dashboard') . '/preview/{token}/assets/{assetToken}', [\App\Http\Controllers\Admin\PreviewAssetController::class, 'show'])
+    ->name('admin.preview.asset')
     ->middleware([
         'panel:admin',
         \Filament\Http\Middleware\Authenticate::class,

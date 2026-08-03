@@ -246,13 +246,7 @@ test('constructing non-news preview action does not create token', function () {
         ->and(PreviewToken::count())->toBe($beforeTokenCount);
 });
 
-test('news action uses correct modal width', function () {
-    $action = \App\Filament\Support\PreviewAction::make('news');
-    expect($action->getModalWidth())->toBe(\Filament\Support\Enums\Width::Screen);
 
-    $nonNewsAction = \App\Filament\Support\PreviewAction::make('page');
-    expect($nonNewsAction->getModalWidth())->toBe(\Filament\Support\Enums\Width::SevenExtraLarge);
-});
 
 
 

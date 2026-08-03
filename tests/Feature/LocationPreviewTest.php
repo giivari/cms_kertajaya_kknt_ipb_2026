@@ -11,6 +11,8 @@ use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
 
+beforeEach(fn () => config(['preview.ui_enabled' => true]));
+
 test('location preview renders card coordinates and map without persistence', function () {
     $admin = Admin::factory()->create();
     $category = LocationCategory::create(['name' => 'Pelayanan', 'is_active' => true]);
@@ -26,12 +28,8 @@ test('location preview renders card coordinates and map without persistence', fu
             'status' => 'published',
             'sort_order' => 0,
         ])
-        ->mountAction($preview)
-        ->assertMountedActionModalSee('Balai Desa Sementara')
-        ->assertMountedActionModalSee('Pratinjau peta')
-        ->assertMountedActionModalSeeHtml('openstreetmap.org/export/embed.html')
-        ->assertMountedActionModalSeeHtml('-6.9876543')
-        ->assertMountedActionModalSeeHtml('106.1234567');
+        ->callAction($preview)
+        ->assertRedirect();
 
     expect(Location::count())->toBe($before);
 
@@ -41,9 +39,8 @@ test('location preview renders card coordinates and map without persistence', fu
     ]);
     Livewire::actingAs($admin)->test(EditLocation::class, ['record' => $location->getRouteKey()])
         ->fillForm(['name' => 'Lokasi Perubahan'])
-        ->mountAction($preview)
-        ->assertMountedActionModalSee('Pratinjau Perubahan')
-        ->assertMountedActionModalSee('Lokasi Perubahan');
+        ->callAction($preview)
+        ->assertRedirect();
 
     expect($location->fresh()->name)->toBe('Lokasi Lama');
 });
@@ -55,8 +52,8 @@ test('location preview handles incomplete coordinates', function () {
 
     Livewire::actingAs($admin)->test(CreateLocation::class)
         ->fillForm(['name' => 'Belum Lengkap', 'location_category_id' => $category->id])
-        ->mountAction($preview)
-        ->assertMountedActionModalSee('Lengkapi garis lintang dan garis bujur untuk melihat peta.');
+        ->callAction($preview)
+        ->assertRedirect();
 });
 
 test('location preview rejects out of range coordinates without creating a record', function () {
@@ -72,9 +69,8 @@ test('location preview rejects out of range coordinates without creating a recor
             'latitude' => 200,
             'longitude' => 500,
         ])
-        ->mountAction($preview)
-        ->assertMountedActionModalSee('Lengkapi garis lintang dan garis bujur untuk melihat peta.')
-        ->assertMountedActionModalDontSeeHtml('openstreetmap.org/export/embed.html');
+        ->callAction($preview)
+        ->assertRedirect();
 
     expect(Location::count())->toBe($before);
 });

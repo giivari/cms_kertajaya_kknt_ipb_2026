@@ -30,7 +30,13 @@
     @endif
 
     <div class="prose max-w-none">
-        {!! $newsItem->content !!}
+        @php
+            $htmlContent = $newsItem->content;
+            if (is_string($htmlContent) && (str_starts_with(trim($htmlContent), '{') || str_starts_with(trim($htmlContent), '['))) {
+                $htmlContent = \Filament\Forms\Components\RichEditor\RichContentRenderer::make($htmlContent)->toHtml();
+            }
+        @endphp
+        {!! $htmlContent !!}
     </div>
 </div>
 @endsection

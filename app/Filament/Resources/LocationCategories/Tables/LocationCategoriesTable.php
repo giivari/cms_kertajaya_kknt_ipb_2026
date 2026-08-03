@@ -26,7 +26,8 @@ class LocationCategoriesTable
                 TextColumn::make('locations_count')->label('Lokasi')->counts('locations')->visibleFrom('md'),
                 TextColumn::make('sort_order')->label('Urutan')->sortable()->visibleFrom('lg'),
                 IconColumn::make('is_active')->label('Aktif')->boolean(),
-                TextColumn::make('updated_at')->label('Terakhir Diperbarui')->dateTime('d/m/Y H.i', timezone: 'Asia/Jakarta')->sortable()->visibleFrom('md'),
+                TextColumn::make('updated_at')->label('Terakhir Diperbarui')->dateTime('d/m/Y H.i', timezone: 'Asia/Jakarta')->sortable()->toggleable(isToggledHiddenByDefault: true)
+                    ->visibleFrom('md'),
             ])
             ->filters([TrashedFilter::make()])
             ->recordActions([EditAction::make()->label('Ubah')])

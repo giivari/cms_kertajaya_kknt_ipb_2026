@@ -90,6 +90,7 @@ class MediaTable
                 TextColumn::make('created_at')
                     ->label('Diunggah pada')
                     ->dateTime('d/m/Y H.i', timezone: 'Asia/Jakarta')
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->visibleFrom('md')
                     ->sortable(),
             ])

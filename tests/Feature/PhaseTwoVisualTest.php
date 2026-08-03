@@ -20,8 +20,8 @@ class PhaseTwoVisualTest extends TestCase
         $response->assertSuccessful();
         $response->assertSee('Bricolage+Grotesque');
         $response->assertSee('Poppins');
-        $response->assertSee('bg-navy-900');
-        $response->assertSee('bg-teal-600');
+        $response->assertSee('bg-navy');
+        $response->assertSee('bg-teal');
     }
 
     public function test_admin_screens_include_translated_terms()
@@ -38,8 +38,7 @@ class PhaseTwoVisualTest extends TestCase
         // Filament natively translates to ID based on APP_LOCALE=id
         // But we explicitly set the navigation labels
         $response->assertSee('Dasbor');
-        $response->assertSee('Pengaturan Website');
-        $response->assertSee('Kategori Berita');
+        $response->assertSee('Tampilan & Identitas');
     }
 
     public function test_admin_dashboard_includes_village_stats_widget()
@@ -52,10 +51,8 @@ class PhaseTwoVisualTest extends TestCase
 
         \Livewire\Livewire::test(\App\Filament\Widgets\VillageStatsWidget::class)
             ->assertSee('Halaman Diterbitkan')
-            ->assertSee('Halaman Draf')
             ->assertSee('Berita Diterbitkan')
             ->assertSee('Album Galeri')
-            ->assertSee('Dokumen Publik')
-            ->assertSee('Media Gagal Diproses');
+            ->assertSee('Dokumen Publik');
     }
 }

@@ -16,17 +16,17 @@ class PreviewContext
     {
         if (
             !isset($payload['version']) || $payload['version'] !== 1 ||
-            !isset($payload['type']) || $payload['type'] !== 'news' ||
+            !isset($payload['type']) || !in_array($payload['type'], config('preview.supported_types'), true) ||
             !isset($payload['mode']) || !in_array($payload['mode'], ['create', 'edit'], true) ||
             !isset($payload['state']) || !is_array($payload['state']) ||
             (!array_key_exists('snapshot', $payload) || (!is_array($payload['snapshot']) && !is_null($payload['snapshot']))) ||
-            (!array_key_exists('record_id', $payload) || (!is_numeric($payload['record_id']) && !is_null($payload['record_id'])))
+            (!array_key_exists('record_id', $payload) || (!is_numeric($payload['record_id']) && !is_string($payload['record_id']) && !is_null($payload['record_id'])))
         ) {
             abort(404);
         }
 
         if ($payload['mode'] === 'edit') {
-            if ($payload['record_id'] === null) {
+            if ($payload['record_id'] === null && $payload['type'] !== 'settings') {
                 abort(404);
             }
             if (!empty($payload['snapshot']) && isset($payload['snapshot']['id']) && $payload['snapshot']['id'] != $payload['record_id']) {

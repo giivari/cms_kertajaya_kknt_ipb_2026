@@ -325,12 +325,15 @@ class PageResource extends Resource
                 TextColumn::make('updated_at')
                     ->label('Terakhir Diperbarui')
                     ->dateTime('d/m/Y H.i', timezone: 'Asia/Jakarta')
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->visibleFrom('md')
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->sortable(),
                 TextColumn::make('created_at')
                     ->label('Dibuat pada')
                     ->dateTime('d/m/Y H.i', timezone: 'Asia/Jakarta')
                     ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->visibleFrom('md'),
             ])
             ->filters([

@@ -24,7 +24,7 @@ class DocumentsTable
             ->columns([
                 TextColumn::make('title')
                     ->label('Judul Dokumen')
-                    ->wrap()
+                    ->limit(40)
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('category.name')
@@ -60,16 +60,19 @@ class DocumentsTable
                     ->label('Dibuat pada')
                     ->dateTime('d/m/Y H.i', timezone: 'Asia/Jakarta')
                     ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->visibleFrom('md'),
                 TextColumn::make('updated_at')
                     ->label('Terakhir Diperbarui')
                     ->dateTime('d/m/Y H.i', timezone: 'Asia/Jakarta')
                     ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->visibleFrom('md'),
                 TextColumn::make('deleted_at')
                     ->label('Dihapus pada')
                     ->dateTime('d/m/Y H.i', timezone: 'Asia/Jakarta')
                     ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->visibleFrom('md'),
             ])
             ->filters([

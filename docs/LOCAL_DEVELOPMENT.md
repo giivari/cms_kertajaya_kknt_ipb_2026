@@ -29,7 +29,7 @@ Skrip stop hanya menghentikan Laravel dan Vite yang direkam oleh skrip start, ke
 - Database test: `village_cms_test_local_20260802`
 - Laravel: `127.0.0.1:8015`
 - Vite: `127.0.0.1:5173`
-- Data cluster: `C:\Users\givar\KULIAH\WEB_KKN\village-cms-db-recovery-20260801\data`
+- Data cluster: `C:\Users\givar\KULIAH\WEB_KKN\_archive\database-recovery\db-recovery-20260801\data`
 
 Jangan menjalankan `initdb`, `migrate:fresh`, `migrate:refresh`, `migrate:reset`, `db:wipe`, atau seeder pada database kerja/recovery.
 
@@ -39,7 +39,7 @@ Seluruh test wajib dijalankan melalui `scripts/guardrails/safe-test.ps1`. Databa
 
 Migration Batch 3C untuk tabel `exports` dan `notifications` telah diterapkan ke database kerja pada 2026-08-02. Checkpoint pramigration tersedia di:
 
-`C:\Users\givar\KULIAH\WEB_KKN\village-cms-db-recovery-20260801\working-backup\batch-3c-pre-migration\village-cms-local-working-pre-batch3c-20260802-203426.dump`
+`C:\Users\givar\KULIAH\WEB_KKN\_archive\database-recovery\db-recovery-20260801\working-backup\batch-3c-pre-migration\village-cms-local-working-pre-batch3c-20260802-203426.dump`
 
 SHA-256: `15B54BD776116B82083CB8DA67C16E9221DB09D486AAF2A445F0A13028728600`
 

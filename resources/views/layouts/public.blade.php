@@ -34,12 +34,20 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
+    <!-- AlpineJS for interactivity (Header transparent & mobile menu) -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="font-sans antialiased text-gray-900 bg-gray-50 flex flex-col min-h-screen">
+@php
+    $isHome = $isHome ?? request()->routeIs('home');
+@endphp
+<body class="font-sans antialiased text-gray-900 bg-gray-50  flex flex-col min-h-screen">
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:z-[100] focus:p-4 focus:bg-white focus:text-navy">Skip to content</a>
+
     @include('partials.header')
 
-    <main class="flex-grow">
+    <main id="main-content" class="flex-grow {{ $isHome ? '' : 'pt-24' }}" tabindex="-1">
         @yield('content')
     </main>
 

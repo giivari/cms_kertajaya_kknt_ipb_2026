@@ -1,16 +1,42 @@
 @import 'tailwindcss';
+@plugin "@tailwindcss/typography";
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 
 @theme {
     --color-navy: #073157;
+    --color-navy-900: #073157;
+    
     --color-teal: #075F55;
+    --color-teal-50: #f0fdfa;
+    --color-teal-100: #ccfbf1;
+    --color-teal-300: #5eead4;
+    --color-teal-400: #2dd4bf;
+    --color-teal-500: #14b8a6;
+    --color-teal-600: #0d9488;
+    --color-teal-700: #0f766e;
+    --color-teal-900: #134e4a;
+    
     --color-emerald: #098C4C;
+    --color-emerald-50: #ecfdf5;
+    --color-emerald-100: #d1fae5;
+    --color-emerald-600: #059669;
+    --color-emerald-700: #047857;
+    --color-emerald-800: #065f46;
+    
     --color-lime: #BDEB38;
+    --color-lime-300: #bef264;
+    --color-lime-400: #a3e635;
+    
     --color-yellow: #F6C431;
+    --color-yellow-300: #fde047;
+    
     --color-cream: #F6F0DB;
-    --color-warm-white: #FAF9F6;
+    --color-cream-50: #fbf9f2;
+    --color-cream-100: #f6f0db;
+    --color-cream-200: #ece3c3;
+    
     --color-border: #E0E5EA;
     
     --font-sans: 'Poppins', ui-sans-serif, system-ui, sans-serif;

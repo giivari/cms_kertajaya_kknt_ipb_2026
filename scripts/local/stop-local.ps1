@@ -6,7 +6,7 @@ $ErrorActionPreference = 'Stop'
 
 $projectRoot = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..\..')).Path
 $pgCtl = 'C:\laragon\bin\postgresql\pgsql\bin\pg_ctl.exe'
-$postgresData = 'C:\Users\givar\KULIAH\WEB_KKN\village-cms-db-recovery-20260801\data'
+$postgresData = 'C:\Users\givar\KULIAH\WEB_KKN\_archive\database-recovery\db-recovery-20260801\data'
 $runtimeStatePath = Join-Path $projectRoot 'storage\logs\local-development-processes.json'
 
 function Get-RecordedProcess {
