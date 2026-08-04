@@ -132,7 +132,7 @@
 </section>
 
 <!-- PotensiDesa Section -->
-<section id="potensi-desa" class="pt-16 pb-24 md:pt-24 md:pb-32 bg-cream">
+<section id="potensi-desa" class="pt-16 pb-16 md:pt-24 md:pb-24 bg-cream">
     <div class="container mx-auto px-4 md:px-8 max-w-7xl">
         <div class="mb-12 flex flex-col md:flex-row md:items-end gap-6 text-left md:justify-between">
             <div class="max-w-2xl">
@@ -227,7 +227,7 @@
 </section>
 
 <!-- Statistik Section -->
-<section class="py-16 md:py-24 bg-navy text-white">
+<section class="pt-32 pb-16 md:pt-56 md:pb-24 bg-navy text-white">
     <div class="container mx-auto px-4 md:px-8 max-w-7xl">
         <div class="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
             <div class="flex flex-col items-center md:items-start border-l border-white/20 pl-6">
