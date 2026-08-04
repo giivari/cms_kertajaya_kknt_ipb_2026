@@ -132,7 +132,7 @@
 </section>
 
 <!-- PotensiDesa Section -->
-<section id="potensi-desa" class="py-16 md:py-24 bg-cream">
+<section id="potensi-desa" class="pt-16 pb-24 md:pt-24 md:pb-32 bg-cream">
     <div class="container mx-auto px-4 md:px-8 max-w-7xl">
         <div class="mb-12 flex flex-col md:flex-row md:items-end gap-6 text-left md:justify-between">
             <div class="max-w-2xl">
@@ -174,7 +174,7 @@
 
         <div class="grid lg:grid-cols-2 gap-6 md:gap-8 h-auto lg:h-[600px] xl:h-[700px]">
             <!-- Large Card -->
-            <a href="{{ $pot1['link'] ?: '#' }}" class="block relative rounded-[32px] overflow-hidden group h-[400px] md:h-[500px] lg:h-full">
+            <a href="{{ $pot1['link'] ?: '#' }}" class="block relative rounded-[32px] overflow-hidden group h-[400px] md:h-[500px] lg:h-full ring-4 ring-white shadow-lg">
                 <img src="{{ $getMediaUrl($pot1['image'], 'large', 'https://images.unsplash.com/photo-1559628233-100c798642d4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxpbmRvbmVzaWElMjBuYXR1cmUlMjBhZ3JpY3VsdHVyZXxlbnwxfHx8fDE3ODQyOTcyNTh8MA&ixlib=rb-4.1.0&q=80&w=1080') }}" alt="{{ $pot1['title'] }}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
                 <div class="absolute inset-0 bg-gradient-to-t from-navy/90 via-navy/20 to-transparent"></div>
                 <div class="absolute inset-0 p-8 flex flex-col justify-end">
@@ -193,7 +193,7 @@
             <!-- Small Cards -->
             <div class="grid grid-rows-2 gap-6 md:gap-8 h-[500px] md:h-[600px] lg:h-full">
                 <!-- Card 2 -->
-                <a href="{{ $pot2['link'] ?: '#' }}" class="block relative rounded-[32px] overflow-hidden group h-full">
+                <a href="{{ $pot2['link'] ?: '#' }}" class="block relative rounded-[32px] overflow-hidden group h-full ring-4 ring-white shadow-lg">
                     <img src="{{ $getMediaUrl($pot2['image'], 'medium', 'https://images.unsplash.com/photo-1513415756790-2ac1db1297d0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwzfHxpbmRvbmVzaWElMjBuYXR1cmUlMjBhZ3JpY3VsdHVyZXxlbnwxfHx8fDE3ODQyOTcyNTh8MA&ixlib=rb-4.1.0&q=80&w=1080') }}" alt="{{ $pot2['title'] }}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
                     <div class="absolute inset-0 bg-gradient-to-t from-navy/90 to-transparent"></div>
                     <div class="absolute inset-0 p-6 flex flex-col justify-end">
@@ -207,7 +207,7 @@
                 </a>
                 
                 <!-- Card 3 -->
-                <a href="{{ $pot3['link'] ?: '#' }}" class="block relative rounded-[32px] overflow-hidden group h-full">
+                <a href="{{ $pot3['link'] ?: '#' }}" class="block relative rounded-[32px] overflow-hidden group h-full ring-4 ring-white shadow-lg">
                     <img src="{{ $getMediaUrl($pot3['image'], 'medium', 'https://images.unsplash.com/photo-1569134471968-872d5cd1fca9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwzfHxpbmRvbmVzaWElMjB2aWxsYWdlJTIwbGFuZHNjYXBlfGVufDF8fHx8MTc4NDI5NzI1OHww&ixlib=rb-4.1.0&q=80&w=1080') }}" alt="{{ $pot3['title'] }}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
                     <div class="absolute inset-0 bg-gradient-to-t from-navy/90 to-transparent"></div>
                     <div class="absolute inset-0 p-6 flex flex-col justify-end">
@@ -222,7 +222,7 @@
             </div>
         </div>
 
-        <p class="text-center text-sm text-gray-400 mt-6 italic">Bagian Potensi Desa dapat disesuaikan lebih lanjut via modul khusus di masa depan.</p>
+
     </div>
 </section>
 

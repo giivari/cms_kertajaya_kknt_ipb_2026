@@ -114,7 +114,7 @@ function Assert-LocalEnvironment {
     $content = [System.IO.File]::ReadAllText($envPath)
 
     foreach ($item in $requiredValues.GetEnumerator()) {
-        $match = [regex]::Match($content, '(?m)^' + [regex]::Escape($item.Key) + '=(.*)$')
+        $match = [regex]::Match($content, '(?m)^' + [regex]::Escape($item.Key) + '=(.*?)\r?$')
 
         if ((-not $match.Success) -or ($match.Groups[1].Value.Trim('"', "'") -ne $item.Value)) {
             throw ".env belum diarahkan ke database lokal yang benar: $($item.Key)."
