@@ -28,7 +28,7 @@ php artisan optimize:clear
 1. Kompres seluruh isi folder `village-cms` menjadi `village-cms.zip` (Kecuali folder `.git`, `node_modules`, dan `tests`).
 2. Unggah `village-cms.zip` ke server Anda (misalnya diletakkan di luar `public_html` atau di `/var/www/village-cms`).
 3. Ekstrak file tersebut.
-4. (Khusus cPanel) Buat *symlink* atau arahkan *Document Root* domain `desakertajaya.my.id` ke folder `public` di dalam hasil ekstraksi `village-cms/public`.
+4. (Khusus cPanel) Buat *symlink* atau arahkan *Document Root* domain `desakertajaya.site` ke folder `public` di dalam hasil ekstraksi `village-cms/public`.
 
 ## 3. Konfigurasi Environment di Server (`.env`)
 
@@ -38,7 +38,7 @@ Ubah file `.env` di server Anda dengan pengaturan *Production*:
 APP_NAME="CMS Desa Kertajaya"
 APP_ENV=production
 APP_DEBUG=false
-APP_URL=https://desakertajaya.my.id
+APP_URL=https://desakertajaya.site
 
 # Sesuaikan dengan kredensial PostgreSQL di server
 DB_CONNECTION=pgsql
@@ -58,18 +58,21 @@ TURNSTILE_SECRET_KEY=1x0000000000000000000000000000000AA
 Masuk ke terminal server Anda, arahkan ke direktori project, lalu jalankan:
 
 ```bash
-# 1. Jalankan migrasi database
+# 1. Jalankan migrasi database (Tabel akan dibuat KOSONG BERSIH di server)
 php artisan migrate --force
 
-# 2. Buat symlink untuk storage media
+# 2. Buat akun Admin pertama Anda di server production
+php artisan make:filament-user
+
+# 3. Buat symlink untuk storage media
 php artisan storage:link
 
-# 3. Cache semua konfigurasi dan rute agar website super cepat
+# 4. Cache semua konfigurasi dan rute agar website super cepat
 php artisan optimize
 ```
 
 ## 5. Pengaturan Cloudflare (Keamanan)
 
-1. Tambahkan domain `desakertajaya.my.id` ke Cloudflare.
+1. Tambahkan domain `desakertajaya.site` ke Cloudflare.
 2. Di menu **SSL/TLS**, pilih mode **Full (Strict)**.
 3. Di menu **Turnstile**, buat *Site Key* dan *Secret Key* baru untuk domain tersebut, lalu masukkan ke `.env` server dan jalankan ulang `php artisan config:cache`.
