@@ -51,7 +51,7 @@ function Stop-RecordedProcessTree {
     }
 
     Write-Host "Menghentikan $Name (PID $($process.Id))..."
-    & taskkill.exe /PID $process.Id /T 2>$null | Out-Null
+    & taskkill.exe /PID $process.Id /T /F 2>$null | Out-Null
     Start-Sleep -Milliseconds 750
 
     $remaining = Get-RecordedProcess -Record $Record
