@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Pages\Pages;
 use App\Enums\PageStatus;
 use App\Filament\Resources\Pages\PageResource;
 use App\Filament\Support\Concerns\HasEditPreview;
+use App\Filament\Support\PreviewAction;
 use App\Services\PageBuilderService;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
@@ -14,6 +15,7 @@ use Filament\Resources\Pages\EditRecord;
 
 class EditPage extends EditRecord
 {
+    use \App\Filament\Support\Concerns\HasStatusActions;
     use HasEditPreview;
 
     protected static string $resource = PageResource::class;
@@ -36,14 +38,7 @@ class EditPage extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Action::make('website')
-                ->label('Lihat di Website')
-                ->icon('heroicon-o-arrow-top-right-on-square')
-                ->url(fn (): string => route('pages.show', $this->record->slug))
-                ->openUrlInNewTab()
-                ->visible(fn (): bool => $this->record->status === PageStatus::PUBLISHED
-                    && $this->record->published_at?->lte(now())
-                    && ! $this->record->trashed()),
+            PreviewAction::make($this->previewType(), editing: true),
             DeleteAction::make()
                 ->label('Hapus')
                 ->modalHeading('Hapus Halaman')

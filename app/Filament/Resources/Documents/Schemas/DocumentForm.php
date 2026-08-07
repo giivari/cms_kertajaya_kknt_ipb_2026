@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Documents\Schemas;
 
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -42,14 +43,7 @@ class DocumentForm
                                     ->relationship('category', 'name')
                                     ->searchable()
                                     ->preload(),
-                                Select::make('status')
-                                    ->label('Status')
-                                    ->options([
-                                        'draft' => 'Draf',
-                                        'published' => 'Terbit',
-                                        'archived' => 'Diarsipkan',
-                                    ])
-                                    ->required()
+                                Hidden::make('status')
                                     ->default('draft'),
                             ]),
                         Section::make('Media Dokumen')
@@ -57,13 +51,13 @@ class DocumentForm
                             ->schema([
                                 Select::make('file_media_id')
                                     ->label('Berkas Dokumen (PDF)')
-                                    ->relationship('fileMedia', 'filename', fn (Builder $query) => $query->approved())
+                                    ->relationship('fileMedia', 'original_filename', fn (Builder $query) => $query->approved())
                                     ->required()
                                     ->searchable()
                                     ->preload(),
                                 Select::make('thumbnail_media_id')
                                     ->label('Gambar Sampul')
-                                    ->relationship('thumbnailMedia', 'filename', fn (Builder $query) => $query->approved())
+                                    ->relationship('thumbnailMedia', 'original_filename', fn (Builder $query) => $query->approved())
                                     ->searchable()
                                     ->preload(),
                             ]),

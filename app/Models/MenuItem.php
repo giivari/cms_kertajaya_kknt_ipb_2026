@@ -46,6 +46,12 @@ class MenuItem extends Model
                 ]);
             }
         });
+
+        static::creating(function (MenuItem $item) {
+            if ($item->parent_id && empty($item->menu_id)) {
+                $item->menu_id = MenuItem::find($item->parent_id)?->menu_id;
+            }
+        });
     }
 
     public function menu(): BelongsTo

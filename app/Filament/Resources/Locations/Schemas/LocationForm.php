@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Locations\Schemas;
 
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -61,19 +62,8 @@ class LocationForm
 
             \Filament\Schemas\Components\Group::make()
                 ->schema([
-                    \Filament\Schemas\Components\Section::make('Publikasi')
-                        ->description('Tentukan status publikasi lokasi.')
-                        ->schema([
-                            Select::make('status')
-                                ->label('Status')
-                                ->options([
-                                    'draft' => 'Draf',
-                                    'published' => 'Terbit',
-                                    'archived' => 'Diarsipkan',
-                                ])
-                                ->required()
+                            Hidden::make('status')
                                 ->default('draft'),
-                        ]),
                     \Filament\Schemas\Components\Section::make('Klasifikasi')
                         ->description('Pengelompokan lokasi pada website.')
                         ->schema([

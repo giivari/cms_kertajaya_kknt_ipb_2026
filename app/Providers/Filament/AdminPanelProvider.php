@@ -4,6 +4,7 @@ namespace App\Providers\Filament;
 
 use App\Filament\AvatarProviders\LocalInitialsAvatarProvider;
 use App\Filament\Pages\Auth\EditProfile;
+use App\Filament\Pages\MyProfile;
 use App\Filament\Pages\Auth\Login;
 use App\Http\Middleware\AbsoluteSessionTimeout;
 use App\Http\Middleware\ForcePasswordChange;
@@ -17,6 +18,7 @@ use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use Filament\Support\Icons\Heroicon;
+use Filament\Navigation\MenuItem;
 use Filament\View\PanelsIconAlias;
 use Filament\View\PanelsRenderHook;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
@@ -36,6 +38,12 @@ class AdminPanelProvider extends PanelProvider
             ->path(config('village.admin_path', 'desa-dashboard'))
             ->login(Login::class)
             ->profile(EditProfile::class)
+            ->userMenuItems([
+                'profile' => MenuItem::make()
+                    ->label(fn() => 'Profil')
+                    ->url(fn (): string => MyProfile::getUrl())
+                    ->icon('heroicon-o-user'),
+            ])
             ->multiFactorAuthentication(
                 providers: [
                     AppAuthentication::make(),
@@ -46,6 +54,21 @@ class AdminPanelProvider extends PanelProvider
             ->brandLogoHeight('2.5rem')
             ->defaultAvatarProvider(LocalInitialsAvatarProvider::class)
             ->sidebarWidth('16rem')
+            ->favicon(fn () => (function() {
+                $faviconId = \App\Services\SettingsService::get('favicon');
+                if ($faviconId) {
+                    try {
+                        $faviconMedia = \App\Models\Media::find($faviconId);
+                        if ($faviconMedia && $faviconMedia->invisible_watermark_status?->value === 'verified') {
+                            $faviconDerivative = $faviconMedia->getPublicDerivative('thumbnail');
+                            if ($faviconDerivative) {
+                                return \Illuminate\Support\Facades\Storage::disk('public')->url($faviconDerivative->filename);
+                            }
+                        }
+                    } catch (\Exception $e) {}
+                }
+                return null;
+            })())
             ->icons([
                 PanelsIconAlias::SIDEBAR_COLLAPSE_BUTTON => Heroicon::OutlinedBars3,
                 PanelsIconAlias::SIDEBAR_COLLAPSE_BUTTON_RTL => Heroicon::OutlinedBars3,
@@ -59,6 +82,10 @@ class AdminPanelProvider extends PanelProvider
             ->defaultThemeMode(ThemeMode::Dark)
             ->databaseNotifications()
             ->renderHook(
+                PanelsRenderHook::STYLES_AFTER,
+                fn () => view('filament.styles')
+            )
+            ->renderHook(
                 PanelsRenderHook::GLOBAL_SEARCH_AFTER,
                 fn () => view('filament.topbar-website-link')
             )
@@ -68,12 +95,13 @@ class AdminPanelProvider extends PanelProvider
                 scopes: [\App\Filament\Pages\Auth\Login::class]
             )
             ->navigationGroups([
-                \Filament\Navigation\NavigationGroup::make('Kelola Konten'),
-                \Filament\Navigation\NavigationGroup::make('Kelola Website'),
-                \Filament\Navigation\NavigationGroup::make('Komunikasi'),
-                \Filament\Navigation\NavigationGroup::make('Lainnya'),
+                \Filament\Navigation\NavigationGroup::make('Kelola Konten')->collapsible(false),
+                \Filament\Navigation\NavigationGroup::make('Kelola Website')->collapsible(false),
+                \Filament\Navigation\NavigationGroup::make('Komunikasi')->collapsible(false),
+                \Filament\Navigation\NavigationGroup::make('Lainnya')->collapsible(false),
             ])
             ->sidebarCollapsibleOnDesktop()
+            ->spa()
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')

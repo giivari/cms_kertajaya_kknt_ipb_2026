@@ -82,7 +82,8 @@ class PreviewController extends Controller
                 'page' => \App\Support\Preview\Renderers\PagePreviewRenderer::class,
                 'location' => \App\Support\Preview\Renderers\LocationPreviewRenderer::class,
                 'document' => \App\Support\Preview\Renderers\DocumentPreviewRenderer::class,
-                'gallery_album' => \App\Support\Preview\Renderers\GalleryAlbumPreviewRenderer::class,
+                'gallery' => \App\Support\Preview\Renderers\GalleryAlbumPreviewRenderer::class,
+                'media' => \App\Support\Preview\Renderers\MediaPreviewRenderer::class,
                 default => null,
             };
 

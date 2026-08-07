@@ -3,7 +3,7 @@
 @section('title', 'Dokumen Publik')
 
 @section('content')
-<div class="container mx-auto px-4 py-8 max-w-5xl">
+<div class="container mx-auto px-4 py-4 max-w-5xl">
     <h1 class="text-3xl font-bold mb-6">Dokumen Publik</h1>
 
     @if($documents->isEmpty())

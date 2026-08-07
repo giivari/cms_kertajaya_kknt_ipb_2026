@@ -72,6 +72,15 @@ class Media extends Model
 
     public function getUrlAttribute(): string
     {
+        $path = \App\Filament\Support\MediaThumbnail::path($this);
+        if ($path) {
+            return Storage::disk(\App\Filament\Support\MediaThumbnail::disk($this))->url($path);
+        }
         return Storage::disk($this->disk)->url($this->directory.'/'.$this->filename);
+    }
+
+    public function getPublicDerivative(string $size = 'public')
+    {
+        return $this->derivatives()->where('derivative_type', \App\Enums\DerivativeType::PUBLIC)->first();
     }
 }

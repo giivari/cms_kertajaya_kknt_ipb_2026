@@ -6,7 +6,7 @@
 @endsection
 
 @section('content')
-<div class="container mx-auto px-4 py-8">
+<div class="container mx-auto px-4 py-4">
     <div class="mb-6">
         <a href="{{ route('gallery.index') }}" class="text-blue-600 hover:underline">&larr; Kembali ke Galeri</a>
     </div>

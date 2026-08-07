@@ -8,6 +8,9 @@ use Filament\Resources\Pages\CreateRecord;
 
 class CreateNews extends CreateRecord
 {
+    protected static bool $canCreateAnother = false;
+
+    use \App\Filament\Support\Concerns\HasStatusActions;
     use HasCreatePreview;
 
     protected static string $resource = NewsResource::class;

@@ -20,8 +20,15 @@ class EditMenu extends EditRecord
 
     protected function getHeaderActions(): array
     {
+        return [];
+    }
+
+    protected function getFormActions(): array
+    {
         return [
-            DeleteAction::make(),
+            $this->getSaveFormAction(),
+            \App\Filament\Support\PreviewAction::make($this->previewType(), true),
+            $this->getCancelFormAction(),
         ];
     }
 }

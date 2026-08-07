@@ -35,9 +35,15 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Memaksa sistem menggunakan HTTPS untuk Cloudflare saat production
+        if ($this->app->environment('production')) {
+            \Illuminate\Support\Facades\URL::forceScheme('https');
+        }
+
         RateLimiter::for('contact-submissions', function (Request $request) {
             return \Illuminate\Cache\RateLimiting\Limit::perMinutes(15, 5)->by($request->ip());
         });
+        
         $this->app->booted(function () {
             $mediaUsageService = $this->app->make(MediaUsageService::class);
             $mediaUsageService->registerResolver(new PageMediaUsageResolver);

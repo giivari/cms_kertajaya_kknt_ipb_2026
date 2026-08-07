@@ -11,7 +11,7 @@ class SettingsService
     {
         if (app()->has(\App\Support\Preview\PreviewContext::class)) {
             $context = app(\App\Support\Preview\PreviewContext::class);
-            if ($context->previewType === 'settings' && isset($context->normalizedState[$key])) {
+            if ($context->previewType === 'settings' && array_key_exists($key, $context->normalizedState)) {
                 return $context->normalizedState[$key];
             }
         }

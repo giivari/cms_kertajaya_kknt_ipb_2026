@@ -3,7 +3,7 @@
 @section('title', 'Berita Desa')
 
 @section('content')
-<div class="container mx-auto px-4 py-8">
+<div class="container mx-auto px-4 py-4">
     <h1 class="text-3xl font-bold mb-6">Berita Desa</h1>
 
     @if($news->isEmpty())

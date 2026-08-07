@@ -46,7 +46,7 @@
                     @endif
                     <span 
                         :class="isTransparent ? 'text-white drop-shadow-md' : 'text-navy'"
-                        class="font-display font-bold text-xl md:text-2xl transition-colors duration-300"
+                        class="font-display font-bold text-lg md:text-xl xl:text-2xl whitespace-nowrap transition-colors duration-300"
                     >
                         {{ $villageName }}
                     </span>
@@ -54,14 +54,14 @@
             </div>
 
             <!-- Desktop Menu -->
-            <nav aria-label="Navigasi Utama" class="hidden lg:flex items-center gap-8">
+            <nav aria-label="Navigasi Utama" class="hidden lg:flex items-center gap-4 xl:gap-8">
                 @if(isset($headerMenu) && $headerMenu->items->isNotEmpty())
                     @foreach($headerMenu->items as $item)
                         @if($item->children->isNotEmpty())
                             <div class="relative group" x-data="{ open: false }" @mouseenter="open = true" @mouseleave="open = false">
                                 <button 
                                     :class="isTransparent ? 'text-white drop-shadow-sm hover:opacity-80' : 'text-navy hover:text-teal'"
-                                    class="inline-flex items-center text-sm font-medium transition-colors duration-200"
+                                    class="inline-flex items-center text-sm font-medium whitespace-nowrap transition-colors duration-200"
                                 >
                                     {{ $item->label }}
                                     <svg class="ml-1 h-4 w-4 transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
@@ -89,7 +89,7 @@
                                 href="{{ $item->url }}" 
                                 target="{{ $item->target }}" 
                                 :class="isTransparent ? 'text-white drop-shadow-sm hover:opacity-80' : 'text-navy hover:text-teal'"
-                                class="text-sm font-medium transition-colors duration-200"
+                                class="text-sm font-medium whitespace-nowrap transition-colors duration-200"
                             >
                                 {{ $item->label }}
                             </a>
@@ -115,7 +115,7 @@
                 
                 <a href="{{ route('public.contact.show') }}" 
                     :class="isTransparent ? 'bg-white text-navy hover:bg-white/90' : 'bg-teal text-white hover:bg-teal/90'"
-                    class="hidden md:inline-flex items-center justify-center rounded-full font-medium transition-colors shadow-sm px-6 py-2.5 text-sm"
+                    class="hidden md:inline-flex items-center justify-center rounded-full font-medium whitespace-nowrap transition-colors shadow-sm px-4 xl:px-6 py-2 xl:py-2.5 text-sm"
                 >
                     Informasi Publik
                 </a>

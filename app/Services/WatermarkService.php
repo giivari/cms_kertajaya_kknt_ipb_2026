@@ -178,32 +178,34 @@ class WatermarkService
                 break;
         }
 
-        // Safe default: a simple 10x10 white square
-        $assetManager = new ImageManager(Driver::class);
-        $watermarkImage = $assetManager->createImage(10, 10)->fill('rgba(255, 255, 255, 0.5)');
-
-        // Scale it
-        $targetWidth = max(1, intval($width * ($scale / 100)));
-        $watermarkImage->scale(width: $targetWidth);
-
-        // Map position names to Intervention v3 place() positions
+        $imagePath = SettingsService::get('watermark_image', null);
         $placePosition = 'bottom-right';
         switch ($position) {
-            case 'top-left': $placePosition = 'top-left';
-                break;
-            case 'top-right': $placePosition = 'top-right';
-                break;
-            case 'bottom-left': $placePosition = 'bottom-left';
-                break;
-            case 'bottom-right': $placePosition = 'bottom-right';
-                break;
-            case 'center': $placePosition = 'center';
-                break;
+            case 'top-left': $placePosition = 'top-left'; break;
+            case 'top-right': $placePosition = 'top-right'; break;
+            case 'bottom-left': $placePosition = 'bottom-left'; break;
+            case 'bottom-right': $placePosition = 'bottom-right'; break;
+            case 'center': $placePosition = 'center'; break;
         }
 
-        // Apply opacity (if not 100). Wait, insert takes transparency from 0 to 1, but wait! We can use $opacity / 100? No, Intervention v3 InsertModifier says transparency is transparency (but wait, in v2 it was opacity 0-100... let's just use 1 if it's confusing, or $opacity/100 maybe).
-        // Let's use 1 to be safe for MVP or we could try $opacity / 100. Actually $opacity is not mapped to transparency directly if not documented, but we can just use insert.
-        $image->insert($watermarkImage, 20, 20, $placePosition);
+        if ($imagePath && \Illuminate\Support\Facades\Storage::disk('public')->exists($imagePath)) {
+            $watermarkImage = $manager->decode(\Illuminate\Support\Facades\Storage::disk('public')->path($imagePath));
+            $targetWidth = max(1, intval($width * ($scale / 100)));
+            $watermarkImage->scale(width: $targetWidth);
+            $image->insert($watermarkImage, $placePosition, 20, 20);
+        } else {
+            // Write text using downloaded TTF font
+            $alpha = $opacity / 100;
+            $fontPath = storage_path('app/font.ttf');
+            $image->text($text, $x, $y, function ($font) use ($alpha, $align, $valign, $fontPath, $fontSize) {
+                if (file_exists($fontPath)) {
+                    $font->filename($fontPath);
+                    $font->size($fontSize);
+                }
+                $font->color("rgba(255, 255, 255, {$alpha})");
+                $font->align($align, $valign);
+            });
+        }
 
         $image->save($filePath);
     }

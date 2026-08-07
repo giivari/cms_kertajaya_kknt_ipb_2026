@@ -67,12 +67,18 @@ class MenuResource extends Resource
             ->schema([
                 Section::make('Tentang Menu')
                     ->schema([
-                        Text::make('Menu mengatur tombol navigasi yang tampil di website. Menu tidak membuat isi baru; buat isi melalui Halaman, lalu tambahkan halaman tersebut sebagai tautan di sini.')
+                        Text::make(function (?Menu $record) {
+                            if (! $record) {
+                                return 'Menu mengatur tombol navigasi yang tampil di website. Menu tidak membuat isi baru; buat isi melalui Halaman, lalu tambahkan halaman tersebut sebagai tautan di sini.';
+                            }
+                            return "Anda sedang mengelola tautan navigasi untuk {$record->name}. Menu mengatur tombol navigasi yang tampil di website. Menu tidak membuat isi baru; buat isi melalui Halaman, lalu tambahkan halaman tersebut sebagai tautan di sini.";
+                        })
                             ->columnSpanFull(),
                     ])
                     ->columnSpanFull(),
                 Section::make('Lokasi Tampilan')
                     ->description('Menu adalah daftar tautan navigasi. Untuk membuat isi baru, gunakan fitur Halaman.')
+                    ->hidden()
                     ->schema([
                         Select::make('location')
                             ->label('Posisi Menu')
@@ -189,7 +195,7 @@ class MenuResource extends Resource
     {
         return AdminTable::configure($table, 'admin-content-table admin-menu-table')
             ->columns([
-                TextColumn::make('name')->label('Nama Menu')->searchable()->limit(30),
+                TextColumn::make('name')->label('Nama Menu')->limit(30),
                 TextColumn::make('location')
                     ->label('Posisi Menu')
                     ->formatStateUsing(fn (string $state): string => Menu::supportedLocations()[$state] ?? $state),
@@ -199,18 +205,9 @@ class MenuResource extends Resource
             ])
             ->filters([])
             ->actions([
-                \Filament\Actions\ActionGroup::make([
-                    EditAction::make()->label('Ubah')->icon('heroicon-o-pencil-square'),
-                    DeleteAction::make()->label('Hapus')->icon('heroicon-o-trash'),
-                ])
-                ->label('Aksi')
-                ->icon('heroicon-m-ellipsis-vertical')
-                ->tooltip('Aksi'),
+                EditAction::make()->label('Ubah')->icon('heroicon-o-pencil-square'),
             ])
             ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
                 AdminTable::exportAction(MenuExporter::class, self::class),
             ]);
     }
@@ -224,7 +221,6 @@ class MenuResource extends Resource
     {
         return [
             'index' => ListMenus::route('/'),
-            'create' => CreateMenu::route('/create'),
             'edit' => EditMenu::route('/{record}/edit'),
         ];
     }

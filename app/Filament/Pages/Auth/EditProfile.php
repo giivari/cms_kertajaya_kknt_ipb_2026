@@ -71,7 +71,7 @@ class EditProfile extends BaseEditProfile
     protected function getPasswordConfirmationFormComponent(): Component
     {
         return TextInput::make('passwordConfirmation')
-            ->label(__('filament-panels::pages/auth/edit-profile.form.password_confirmation.label'))
+            ->label('Konfirmasi kata sandi baru')
             ->password()
             ->revealable(filament()->arePasswordsRevealable())
             ->requiredWith('password')
@@ -87,7 +87,7 @@ class EditProfile extends BaseEditProfile
     protected function getCurrentPasswordFormComponent(): Component
     {
         return TextInput::make('currentPassword')
-            ->label(__('filament-panels::pages/auth/edit-profile.form.current_password.label'))
+            ->label('Kata sandi saat ini')
             ->password()
             ->revealable(filament()->arePasswordsRevealable())
             ->currentPassword(guard: Filament::getAuthGuard())

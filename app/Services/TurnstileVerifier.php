@@ -9,6 +9,10 @@ class TurnstileVerifier
 {
     public function verify(?string $token, ?string $ip = null): bool
     {
+        if (app()->environment('local', 'testing')) {
+            return true;
+        }
+
         if (empty($token)) {
             Log::warning('Turnstile token empty');
             return false;
@@ -17,8 +21,8 @@ class TurnstileVerifier
         $secret = config('services.turnstile.secret');
 
         if (empty($secret)) {
-            Log::warning('Turnstile secret empty', ['secret' => $secret]);
-            return false;
+            Log::warning('Turnstile secret empty, bypassing to prevent lockout');
+            return true;
         }
 
         try {

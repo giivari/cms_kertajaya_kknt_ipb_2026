@@ -7,5 +7,7 @@ use Filament\Resources\Pages\CreateRecord;
 
 class CreateAuditLog extends CreateRecord
 {
+    protected static bool $canCreateAnother = false;
+
     protected static string $resource = AuditLogResource::class;
 }

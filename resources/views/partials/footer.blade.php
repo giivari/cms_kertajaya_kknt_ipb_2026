@@ -1,10 +1,10 @@
-<footer role="contentinfo" class="bg-navy text-white pt-20 pb-8 border-t border-white/10 mt-auto">
+<footer role="contentinfo" class="bg-navy text-white pt-8 md:pt-12 pb-4 border-t border-white/10 mt-auto">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8 mb-6 md:mb-8">
             
             <!-- Col 1: Brand & Description -->
             <div class="lg:pr-8">
-                <a href="{{ route('home') }}" class="flex items-center gap-3 mb-6 group hover:opacity-90 transition-opacity">
+                <a href="{{ route('home') }}" class="flex items-center gap-3 mb-4 group hover:opacity-90 transition-opacity">
                     @php
                         $villageName = \App\Services\SettingsService::get('village_name', 'Desa Kertajaya');
                         $logoId = \App\Services\SettingsService::get('village_logo');
@@ -26,14 +26,14 @@
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21.71 20.29l-1.42-1.42a10.04 10.04 0 002.71-6.87c0-5.52-4.48-10-10-10S3 6.48 3 12a10.04 10.04 0 002.71 6.87l-1.42 1.42a1 1 0 001.42 1.42l1.42-1.42a9.96 9.96 0 009.74 0l1.42 1.42a1 1 0 001.42-1.42zM12 20a8 8 0 110-16 8 8 0 010 16z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6a1 1 0 00-1 1v6a1 1 0 001 1h4a1 1 0 000-2h-3V7a1 1 0 00-1-1z"/></svg>
                         </div>
                     @endif
-                    <span class="font-display font-bold text-2xl tracking-tight">
+                    <span class="font-display font-bold text-xl md:text-2xl tracking-tight">
                         {{ $villageName }}
                     </span>
                 </a>
-                <p class="text-white/70 leading-relaxed">
+                <p class="text-white/70 leading-relaxed text-sm md:text-base">
                     {{ \App\Services\SettingsService::get('village_description', 'Portal resmi Pemerintah Desa Kertajaya. Menghadirkan transparansi, informasi, dan pelayanan bagi seluruh lapisan masyarakat.') }}
                 </p>
-                <div class="flex space-x-4 mt-6">
+                <div class="flex space-x-4 mt-4">
                     @php
                         $fbUrl = \App\Services\SettingsService::get('social_facebook', '#');
                         if (str_starts_with(strtolower($fbUrl), 'javascript:')) { $fbUrl = '#'; }
@@ -53,8 +53,8 @@
 
             <!-- Col 2: Tautan Cepat -->
             <div>
-                <h4 class="font-bold text-lg mb-6 text-white font-display">Tautan Cepat</h4>
-                <ul class="space-y-4">
+                <h4 class="font-bold text-base md:text-lg mb-4 text-white font-display">Tautan Cepat</h4>
+                <ul class="space-y-2 md:space-y-3 text-sm md:text-base">
                     @if(isset($footerMenu) && $footerMenu->items->isNotEmpty())
                         @foreach($footerMenu->items as $item)
                             <li>
@@ -73,8 +73,8 @@
 
             <!-- Col 3: Kontak -->
             <div>
-                <h4 class="font-bold text-lg mb-6 text-white font-display">Kontak</h4>
-                <ul class="space-y-4 text-white/70">
+                <h4 class="font-bold text-base md:text-lg mb-4 text-white font-display">Kontak</h4>
+                <ul class="space-y-3 text-sm md:text-base text-white/70">
                     <li class="flex items-start gap-3">
                         <svg class="w-5 h-5 shrink-0 mt-1 text-lime" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
                         <span>{{ \App\Services\SettingsService::get('address_street', 'Kantor Kepala Desa Kertajaya') }}<br>{{ \App\Services\SettingsService::get('address_subdistrict', 'Kab. Sukabumi, Jawa Barat') }}</span>
@@ -92,8 +92,8 @@
 
             <!-- Col 4: Jam Pelayanan -->
             <div>
-                <h4 class="font-bold text-lg mb-6 text-white font-display">Jam Pelayanan</h4>
-                <ul class="space-y-3 text-white/70">
+                <h4 class="font-bold text-base md:text-lg mb-4 text-white font-display">Jam Pelayanan</h4>
+                <ul class="space-y-2 md:space-y-3 text-sm md:text-base text-white/70">
                     <li class="flex justify-between">
                         <span>Senin - Kamis:</span>
                         <span class="text-white font-medium">08.00 - 15.00</span>
@@ -111,12 +111,24 @@
 
         </div>
 
-        <div class="pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-white/50">
-            <p>{{ \App\Services\SettingsService::get('footer_copyright_text', '© ' . date('Y') . ' Desa Kertajaya. Hak cipta dilindungi.') }}</p>
-            <div class="flex items-center gap-4">
-                <a href="#" class="hover:text-white transition-colors">Kebijakan Privasi</a>
-                <a href="#" class="hover:text-white transition-colors">Syarat Ketentuan</a>
+        <div class="pt-4 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4 text-xs md:text-sm text-white/50">
+            <p class="truncate max-w-full md:max-w-[60%]">{{ \App\Services\SettingsService::get('footer_text', '© ' . date('Y') . ' Desa Kertajaya. Hak cipta dilindungi.') }}</p>
+            @php
+                $link1Label = \App\Services\SettingsService::get('footer_link_1_label');
+                $link1Url = \App\Services\SettingsService::get('footer_link_1_url');
+                $link2Label = \App\Services\SettingsService::get('footer_link_2_label');
+                $link2Url = \App\Services\SettingsService::get('footer_link_2_url');
+            @endphp
+            @if($link1Label || $link2Label)
+            <div class="flex items-center gap-4 whitespace-nowrap shrink-0 overflow-hidden text-ellipsis">
+                @if($link1Label)
+                <a href="{{ $link1Url ?: '#' }}" class="hover:text-white transition-colors truncate max-w-[150px] md:max-w-[200px] block" title="{{ $link1Label }}">{{ $link1Label }}</a>
+                @endif
+                @if($link2Label)
+                <a href="{{ $link2Url ?: '#' }}" class="hover:text-white transition-colors truncate max-w-[150px] md:max-w-[200px] block" title="{{ $link2Label }}">{{ $link2Label }}</a>
+                @endif
             </div>
+            @endif
         </div>
     </div>
 </footer>

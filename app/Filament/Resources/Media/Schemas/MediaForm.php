@@ -27,13 +27,17 @@ class MediaForm
                                     ->required()
                                     ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'application/pdf'])
                                     ->maxSize(10240)
-                                    ->disk('private')
+                                    ->disk('local')
                                     ->directory('originals')
                                     ->storeFileNamesIn('filename')
                                     ->visibility('private')
                                     ->downloadable(false)
                                     ->openable(false)
                                     ->visibleOn('create'),
+                                \Filament\Forms\Components\ViewField::make('preview')
+                                    ->label('Pratinjau Media')
+                                    ->view('filament.forms.media-preview')
+                                    ->visibleOn('edit'),
                             ]),
                     ])
                     ->extraAttributes(['class' => 'admin-media-upload-main'])

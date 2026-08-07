@@ -17,7 +17,9 @@ class GalleryAlbumPreviewRenderer
         $merged = array_merge($snapshot, $state);
 
         $album = new GalleryAlbum();
-        $album->forceFill($merged);
+        $albumData = $merged;
+        unset($albumData['items']);
+        $album->forceFill($albumData);
         $album->id = $merged['id'] ?? null;
 
         $coverMedia = null;
@@ -26,22 +28,27 @@ class GalleryAlbumPreviewRenderer
         }
         $album->setRelation('coverMedia', $coverMedia);
 
-        $mediaItems = collect();
-        if (isset($merged['gallery_media']) && is_array($merged['gallery_media'])) {
-            foreach ($merged['gallery_media'] as $itemData) {
+        $albumItems = collect();
+        if (isset($merged['items']) && is_array($merged['items'])) {
+            foreach ($merged['items'] as $itemData) {
+                $item = new \App\Models\GalleryAlbumItem();
+                $item->forceFill([
+                    'caption' => $itemData['caption'] ?? null,
+                    'alt_text' => $itemData['alt_text'] ?? null,
+                ]);
                 if (!empty($itemData['media_id'])) {
                     $media = Media::find($itemData['media_id']);
                     if ($media) {
-                        $mediaItems->push($media);
+                        $item->setRelation('media', $media);
                     }
                 }
+                $albumItems->push($item);
             }
         }
-        $album->setRelation('galleryMedia', $mediaItems); // Assuming relations are set this way or we mock it.
+        $album->setRelation('items', $albumItems);
 
         return View::make('public.gallery.show', [
             'album' => $album,
-            'mediaItems' => $mediaItems,
             'isPreview' => true,
         ]);
     }

@@ -31,7 +31,7 @@ class MediaProcessingService
         ]);
 
         // Dispatch processing job
-        ProcessMediaJob::dispatch($media);
+        ProcessMediaJob::dispatchSync($media);
 
         return $media;
     }

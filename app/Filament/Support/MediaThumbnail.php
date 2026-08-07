@@ -12,14 +12,14 @@ class MediaThumbnail
 {
     public static function path(?Media $media): ?string
     {
-        if (! self::isEligibleImage($media)) {
+        if (! self::isEligibleMedia($media)) {
             return null;
         }
 
         $derivative = $media->derivatives
             ->first(fn ($item): bool => (is_object($item->derivative_type) ? $item->derivative_type->value : $item->derivative_type) === 'public');
 
-        if ((! $derivative) || (! str_starts_with((string) $derivative->mime_type, 'image/'))) {
+        if ((! $derivative) || (! (str_starts_with((string) $derivative->mime_type, 'image/') || $derivative->mime_type === 'application/pdf'))) {
             return null;
         }
 
@@ -58,11 +58,11 @@ SVG;
         return 'data:image/svg+xml,'.rawurlencode($svg);
     }
 
-    private static function isEligibleImage(?Media $media): bool
+    private static function isEligibleMedia(?Media $media): bool
     {
         return $media
             && ($media->processing_status === MediaProcessingStatus::COMPLETED)
             && ($media->invisible_watermark_status === InvisibleWatermarkStatus::VERIFIED)
-            && str_starts_with((string) $media->mime_type, 'image/');
+            && (str_starts_with((string) $media->mime_type, 'image/') || $media->mime_type === 'application/pdf');
     }
 }

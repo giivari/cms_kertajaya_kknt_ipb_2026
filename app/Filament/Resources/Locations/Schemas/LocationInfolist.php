@@ -12,24 +12,24 @@ class LocationInfolist
     public static function configure(Schema $schema): Schema
     {
         return $schema->components([
-            \Filament\Infolists\Components\Group::make()->schema([
-                \Filament\Infolists\Components\Section::make('Informasi Utama')->schema([
+            \Filament\Schemas\Components\Group::make()->schema([
+                \Filament\Schemas\Components\Section::make('Informasi Utama')->schema([
                     TextEntry::make('name')->label('Nama Lokasi'),
                     TextEntry::make('category.name')->label('Kategori'),
                     TextEntry::make('short_description')->label('Deskripsi Singkat')->placeholder('-')->columnSpanFull(),
                     TextEntry::make('description')->label('Deskripsi Lengkap')->html()->placeholder('-')->columnSpanFull(),
                 ])->columns(2),
-                \Filament\Infolists\Components\Section::make('Peta & Koordinat')->schema([
+                \Filament\Schemas\Components\Section::make('Peta & Koordinat')->schema([
                     TextEntry::make('address')->label('Alamat')->placeholder('-')->columnSpanFull(),
                     TextEntry::make('latitude')->label('Garis Lintang'),
                     TextEntry::make('longitude')->label('Garis Bujur'),
                 ])->columns(2),
             ])->columnSpan(['lg' => 2]),
-            \Filament\Infolists\Components\Group::make()->schema([
-                \Filament\Infolists\Components\Section::make('Gambar Utama')->schema([
+            \Filament\Schemas\Components\Group::make()->schema([
+                \Filament\Schemas\Components\Section::make('Gambar Utama')->schema([
                     ImageEntry::make('media.url')->label('')->placeholder('Tidak ada gambar')->hiddenLabel(),
                 ]),
-                \Filament\Infolists\Components\Section::make('Status & Publikasi')->schema([
+                \Filament\Schemas\Components\Section::make('Status & Publikasi')->schema([
                     TextEntry::make('status')->label('Status')->badge()->formatStateUsing(fn (string $state): string => match ($state) {
                         'published' => 'Terbit',
                         'archived' => 'Diarsipkan',

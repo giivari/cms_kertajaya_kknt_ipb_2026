@@ -3,7 +3,6 @@
 namespace App\Filament\Resources\Media\Pages;
 
 use App\Filament\Resources\Media\MediaResource;
-use App\Filament\Support\Concerns\HasEditPreview;
 use App\Services\MediaUsageService;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\ForceDeleteAction;
@@ -13,7 +12,6 @@ use Filament\Resources\Pages\EditRecord;
 
 class EditMedia extends EditRecord
 {
-    use HasEditPreview;
 
     protected static string $resource = MediaResource::class;
 
@@ -25,11 +23,6 @@ class EditMedia extends EditRecord
     public function getSubheading(): ?string
     {
         return 'Perbarui nama, teks alternatif, atau keterangan tanpa mengganti berkas asli.';
-    }
-
-    protected function previewType(): string
-    {
-        return 'media';
     }
 
     protected function getHeaderActions(): array

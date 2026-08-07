@@ -27,6 +27,16 @@
                     </p>
                 @endif
 
+                <div class="mt-6">
+                    <a href="https://www.google.com/maps/search/?api=1&query={{ $location->latitude }},{{ $location->longitude }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 rounded-xl bg-teal px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-emerald">
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                        Buka di Google Maps
+                    </a>
+                </div>
+
                 @if($location->short_description)
                     <p class="mt-6 text-lg leading-relaxed text-gray-600">{{ $location->short_description }}</p>
                 @endif
@@ -45,7 +55,7 @@
                     data-category="{{ $location->category->name }}"
                     data-summary="{{ $location->address ?: $location->short_description }}"
                     data-image="{{ $location->media?->url }}"
-                    data-url="{{ route('public.map.show', $location) }}"
+                    data-url="{{ (empty($isPreview) && $location->exists) ? route('public.map.show', $location) : '#' }}"
                 ></div>
             </div>
         </div>

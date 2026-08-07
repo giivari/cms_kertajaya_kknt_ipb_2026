@@ -7,9 +7,8 @@ use App\Filament\Exports\ContactMessageExporter;
 use App\Filament\Resources\ContactMessageResource\Pages;
 use App\Filament\Support\AdminTable;
 use App\Models\ContactMessage;
-use Filament\Infolists\Infolist;
-use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Schema;
+use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\View;
 use Filament\Resources\Resource;
@@ -35,7 +34,7 @@ class ContactMessageResource extends Resource
     public static function infolist(Schema $schema): Schema
     {
         return $schema
-            ->schema([
+            ->components([
                 Section::make('Informasi Pengirim')
                     ->schema([
                         TextEntry::make('name')

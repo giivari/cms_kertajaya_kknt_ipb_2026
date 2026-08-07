@@ -8,6 +8,8 @@ use Filament\Resources\Pages\CreateRecord;
 
 class CreateNewsCategory extends CreateRecord
 {
+    protected static bool $canCreateAnother = false;
+
     use HasCreatePreview;
 
     protected static string $resource = NewsCategoryResource::class;

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\GalleryAlbums\Schemas;
 
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -89,15 +90,7 @@ class GalleryAlbumForm
                         Section::make('Publikasi')
                             ->description('Tentukan apakah album masih disiapkan atau sudah dapat dilihat pengunjung.')
                             ->schema([
-                                Select::make('status')
-                                    ->label('Status')
-                                    ->options([
-                                        'draft' => 'Draf',
-                                        'published' => 'Terbit',
-                                        'archived' => 'Diarsipkan',
-                                    ])
-                                    ->helperText('Waktu publikasi dicatat otomatis saat status menjadi Terbit.')
-                                    ->required()
+                                Hidden::make('status')
                                     ->default('draft'),
                                 Toggle::make('is_featured')
                                     ->label('Jadikan Galeri Unggulan')

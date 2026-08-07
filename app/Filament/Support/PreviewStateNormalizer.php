@@ -234,7 +234,8 @@ class PreviewStateNormalizer
         }
 
         return [
-            'file' => $upload,
+            'file_url' => $upload ? $upload->temporaryUrl() : null,
+            'file_mime_type' => $upload ? $upload->getMimeType() : null,
             'original_filename' => self::text($state['original_filename'] ?? null),
             'alt_text' => self::text($state['alt_text'] ?? null),
             'caption' => self::text($state['caption'] ?? null),
@@ -281,13 +282,32 @@ class PreviewStateNormalizer
             'address_street', 'address_village', 'address_subdistrict', 'address_district',
             'address_province', 'address_postal_code', 'social_facebook', 'social_instagram',
             'social_twitter', 'social_youtube', 'meta_title', 'meta_description',
-            'footer_copyright_text', 'watermark_text',
+            'footer_text', 'footer_link_1_label', 'footer_link_1_url',
+            'footer_link_2_label', 'footer_link_2_url', 'watermark_text',
+            
+            // Beranda text fields
+            'hero_title', 'hero_description', 'profil_title', 'profil_description',
+            'potensi_title', 'potensi_description',
+            'potensi_1_title', 'potensi_1_desc', 'potensi_1_link',
+            'potensi_2_title', 'potensi_2_desc', 'potensi_2_link',
+            'potensi_3_title', 'potensi_3_desc', 'potensi_3_link',
+            'potensi_all_link',
+            'stat_population', 'stat_families', 'stat_area', 'stat_hamlets',
         ];
 
         $normalized = collect($textKeys)
             ->mapWithKeys(fn (string $key): array => [$key => self::text($state[$key] ?? null)])
             ->all();
-        $normalized['village_logo'] = self::mediaId($state['village_logo'] ?? null);
+
+        $mediaKeys = [
+            'village_logo', 'favicon', 'hero_image', 'profil_image_1', 'profil_image_2',
+            'potensi_1_image', 'potensi_2_image', 'potensi_3_image'
+        ];
+        
+        foreach ($mediaKeys as $key) {
+            $normalized[$key] = self::mediaId($state[$key] ?? null);
+        }
+
         $normalized['enable_visible_watermark'] = self::boolean($state['enable_visible_watermark'] ?? false);
 
         return $normalized;

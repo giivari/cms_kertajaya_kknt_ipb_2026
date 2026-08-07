@@ -54,6 +54,28 @@ class MediaResource extends Resource
         return MediaTable::configure($table);
     }
 
+    public static function infolist(\Filament\Schemas\Schema $schema): \Filament\Schemas\Schema
+    {
+        return $schema
+            ->components([
+                \Filament\Schemas\Components\Section::make('Informasi Media')
+                    ->schema([
+                        \Filament\Infolists\Components\ImageEntry::make('url')
+                            ->label('Pratinjau')
+                            ->hidden(fn ($record) => !str_starts_with($record->mime_type, 'image/'))
+                            ->columnSpanFull()
+                            ->height(250),
+                        \Filament\Infolists\Components\TextEntry::make('original_filename')->label('Nama Media'),
+                        \Filament\Infolists\Components\TextEntry::make('mime_type')->label('Jenis Berkas'),
+                        \Filament\Infolists\Components\TextEntry::make('size')->label('Ukuran')->formatStateUsing(fn ($state) => \Illuminate\Support\Number::fileSize((int) $state, precision: 1)),
+                        \Filament\Infolists\Components\TextEntry::make('processing_status')->label('Status Pemrosesan')->badge(),
+                        \Filament\Infolists\Components\TextEntry::make('invisible_watermark_status')->label('Status Tanda Air')->badge(),
+                        \Filament\Infolists\Components\TextEntry::make('created_at')->label('Diunggah pada')->dateTime('d/m/Y H.i', timezone: 'Asia/Jakarta'),
+                        \Filament\Infolists\Components\TextEntry::make('updated_at')->label('Terakhir Diproses')->dateTime('d/m/Y H.i', timezone: 'Asia/Jakarta'),
+                    ])->columns(2),
+            ]);
+    }
+
     public static function getRelations(): array
     {
         return [
@@ -66,6 +88,7 @@ class MediaResource extends Resource
         return [
             'index' => ListMedia::route('/'),
             'create' => CreateMedia::route('/create'),
+            'view' => \App\Filament\Resources\Media\Pages\ViewMedia::route('/{record}'),
             'edit' => EditMedia::route('/{record}/edit'),
         ];
     }

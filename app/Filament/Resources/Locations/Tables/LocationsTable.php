@@ -44,6 +44,16 @@ class LocationsTable
                 \Filament\Actions\ActionGroup::make([
                     ViewAction::make()->label('Lihat')->icon('heroicon-o-eye'),
                     EditAction::make()->label('Ubah')->icon('heroicon-o-pencil-square'),
+                    \Filament\Tables\Actions\Action::make('archive')
+                        ->label('Arsipkan')
+                        ->icon('heroicon-o-archive-box')
+                        ->color('warning')
+                        ->visible(fn ($record) => (is_object($record->status) ? $record->status->value : $record->status) === 'published')
+                        ->action(fn ($record) => $record->update(['status' => 'archived']))
+                        ->requiresConfirmation()
+                        ->modalHeading('Arsipkan Lokasi')
+                        ->modalDescription('Apakah Anda yakin ingin mengarsipkan lokasi ini?')
+                        ->modalSubmitActionLabel('Arsipkan'),
                     \Filament\Actions\DeleteAction::make()->label('Hapus')->icon('heroicon-o-trash'),
                     \Filament\Actions\ForceDeleteAction::make()->label('Hapus Permanen')->icon('heroicon-o-x-circle'),
                     \Filament\Actions\RestoreAction::make()->label('Pulihkan')->icon('heroicon-o-arrow-uturn-left'),

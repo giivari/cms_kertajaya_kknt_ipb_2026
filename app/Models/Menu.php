@@ -17,7 +17,7 @@ class Menu extends Model
         'description',
     ];
 
-    public const HEADER = 'header_menu';
+    public const HEADER = 'primary';
 
     public const FOOTER = 'footer_menu';
 

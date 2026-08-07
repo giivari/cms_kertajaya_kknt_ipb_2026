@@ -10,7 +10,6 @@ use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Component;
 use Filament\Schemas\Schema;
 use Illuminate\Contracts\Support\Htmlable;
-use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Validation\ValidationException;
 use SensitiveParameter;
 
@@ -18,38 +17,25 @@ class Login extends BaseLogin
 {
     public function authenticate(): ?LoginResponse
     {
-        $data = $this->form->getState();
-        $key = 'login.'.strtolower($data['username']).'.'.request()->ip();
-
-        if (RateLimiter::tooManyAttempts($key, 5)) {
-            $seconds = RateLimiter::availableIn($key);
-            $this->addError('data.username', __('filament-panels::pages/auth/login.messages.throttled', [
-                'seconds' => $seconds,
-                'minutes' => ceil($seconds / 60),
-            ]));
-
-            return null;
-        }
-
-        // Progressive delay via sleep removed in favor of strict rate limiting.
-
         try {
             $response = parent::authenticate();
-            if ($response) {
-                RateLimiter::clear($key);
-            }
-
+            
+            // Logout other devices to enforce single session
+            \Illuminate\Support\Facades\Auth::logoutOtherDevices($this->data['password']);
+            
             return $response;
         } catch (ValidationException $e) {
-            if (filled($this->userUndertakingMultiFactorAuthentication)) {
-                throw $e;
+            $this->dispatch('turnstile-reset');
+            
+            // Filament membuang error ke 'data.email' secara bawaan.
+            // Kita petakan ulang ke 'data.username' dan paksa menggunakan Bahasa Indonesia.
+            if (isset($e->validator->errors()->messages()['data.email'])) {
+                throw ValidationException::withMessages([
+                    'data.username' => 'Kombinasi nama pengguna dan kata sandi salah.',
+                ]);
             }
-
-            RateLimiter::hit($key, 900);
-
-            throw ValidationException::withMessages([
-                'data.username' => __('filament-panels::pages/auth/login.messages.failed'),
-            ]);
+            
+            throw $e;
         }
     }
 

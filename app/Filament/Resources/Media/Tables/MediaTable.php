@@ -39,7 +39,7 @@ class MediaTable
             ->columns([
                 ImageColumn::make('thumbnail')
                     ->label('Pratinjau')
-                    ->state(fn (Media $record): ?string => MediaThumbnail::path($record))
+                    ->state(fn (Media $record): ?string => str_starts_with((string) $record->mime_type, 'image/') ? MediaThumbnail::path($record) : null)
                     ->disk(fn (Media $record): string => MediaThumbnail::disk($record))
                     ->defaultImageUrl(fn (Media $record): string => MediaThumbnail::placeholderUrl($record->mime_type))
                     ->extraImgAttributes(fn (Media $record): array => [
@@ -91,7 +91,11 @@ class MediaTable
                     ->label('Diunggah pada')
                     ->dateTime('d/m/Y H.i', timezone: 'Asia/Jakarta')
                     ->toggleable(isToggledHiddenByDefault: true)
-                    ->visibleFrom('md')
+                    ->sortable(),
+                TextColumn::make('updated_at')
+                    ->label('Terakhir Diproses')
+                    ->dateTime('d/m/Y H.i', timezone: 'Asia/Jakarta')
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->sortable(),
             ])
             ->filters([
@@ -124,6 +128,7 @@ class MediaTable
             ])
             ->recordActions([
                 ActionGroup::make([
+                    \Filament\Actions\ViewAction::make()->label('Lihat')->icon('heroicon-o-eye'),
                     EditAction::make()->label('Ubah')->icon('heroicon-o-pencil-square'),
                     Action::make('verify')
                         ->label('Verifikasi')
@@ -142,7 +147,7 @@ class MediaTable
                         ->label('Proses Ulang')
                         ->icon('heroicon-o-arrow-path')
                         ->action(function ($record) {
-                            ProcessMediaJob::dispatch($record);
+                            ProcessMediaJob::dispatchSync($record);
                         })
                         ->requiresConfirmation()
                         ->modalHeading('Proses Ulang Media')

@@ -71,7 +71,7 @@
                 <div class="w-12 h-12 rounded-full bg-teal/10 flex items-center justify-center text-teal group-hover:bg-teal group-hover:text-white transition-colors">
                     {!! $item['icon'] !!}
                 </div>
-                <span class="font-medium text-sm text-navy">{{ $item['label'] }}</span>
+                <span class="font-medium text-sm text-navy text-center whitespace-nowrap">{{ $item['label'] }}</span>
             </a>
             @endforeach
         </div>
@@ -227,36 +227,36 @@
 </section>
 
 <!-- Statistik Section -->
-<section class="pt-32 pb-16 md:pt-56 md:pb-24 bg-navy text-white">
+<section class="pt-16 pb-16 md:pt-24 md:pb-24 bg-navy text-white">
     <div class="container mx-auto px-4 md:px-8 max-w-7xl">
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
-            <div class="flex flex-col items-center md:items-start border-l border-white/20 pl-6">
-                <div class="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-lime mb-4">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-8 md:gap-12">
+            <div class="flex flex-col items-center text-center md:items-start md:text-left border-l-0 md:border-l border-white/20 pl-0 md:pl-6">
+                <div class="w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/10 flex items-center justify-center text-lime mb-3 md:mb-4">
+                    <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
                 </div>
-                <div class="text-4xl md:text-5xl font-bold text-white mb-2 font-display">{{ \App\Services\SettingsService::get('stat_population', '3.450') }}</div>
-                <div class="text-white/70 font-medium">Jumlah Penduduk</div>
+                <div class="text-3xl md:text-5xl font-bold text-white mb-1 md:mb-2 font-display">{{ \App\Services\SettingsService::get('stat_population', '3.450') }}</div>
+                <div class="text-sm md:text-base text-white/70 font-medium">Jumlah Penduduk</div>
             </div>
-            <div class="flex flex-col items-center md:items-start border-l border-white/20 pl-6">
-                <div class="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-lime mb-4">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+            <div class="flex flex-col items-center text-center md:items-start md:text-left border-l-0 md:border-l border-white/20 pl-0 md:pl-6">
+                <div class="w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/10 flex items-center justify-center text-lime mb-3 md:mb-4">
+                    <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
                 </div>
-                <div class="text-4xl md:text-5xl font-bold text-white mb-2 font-display">{{ \App\Services\SettingsService::get('stat_families', '850') }}</div>
-                <div class="text-white/70 font-medium">Kepala Keluarga</div>
+                <div class="text-3xl md:text-5xl font-bold text-white mb-1 md:mb-2 font-display">{{ \App\Services\SettingsService::get('stat_families', '850') }}</div>
+                <div class="text-sm md:text-base text-white/70 font-medium">Kepala Keluarga</div>
             </div>
-            <div class="flex flex-col items-center md:items-start border-l border-white/20 pl-6">
-                <div class="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-lime mb-4">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+            <div class="flex flex-col items-center text-center md:items-start md:text-left border-l-0 md:border-l border-white/20 pl-0 md:pl-6">
+                <div class="w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/10 flex items-center justify-center text-lime mb-3 md:mb-4">
+                    <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
                 </div>
-                <div class="text-4xl md:text-5xl font-bold text-white mb-2 font-display">{{ \App\Services\SettingsService::get('stat_area', '1.250') }}</div>
-                <div class="text-white/70 font-medium">Luas Wilayah (Ha)</div>
+                <div class="text-3xl md:text-5xl font-bold text-white mb-1 md:mb-2 font-display">{{ \App\Services\SettingsService::get('stat_area', '1.250') }}</div>
+                <div class="text-sm md:text-base text-white/70 font-medium">Luas Wilayah (Ha)</div>
             </div>
-            <div class="flex flex-col items-center md:items-start border-l border-white/20 pl-6">
-                <div class="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-lime mb-4">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path></svg>
+            <div class="flex flex-col items-center text-center md:items-start md:text-left border-l-0 md:border-l border-white/20 pl-0 md:pl-6">
+                <div class="w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/10 flex items-center justify-center text-lime mb-3 md:mb-4">
+                    <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path></svg>
                 </div>
-                <div class="text-4xl md:text-5xl font-bold text-white mb-2 font-display">{{ \App\Services\SettingsService::get('stat_hamlets', '4') }}</div>
-                <div class="text-white/70 font-medium">Jumlah Dusun</div>
+                <div class="text-3xl md:text-5xl font-bold text-white mb-1 md:mb-2 font-display">{{ \App\Services\SettingsService::get('stat_hamlets', '4') }}</div>
+                <div class="text-sm md:text-base text-white/70 font-medium">Jumlah Dusun</div>
             </div>
         </div>
     </div>

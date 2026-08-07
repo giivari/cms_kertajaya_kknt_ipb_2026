@@ -4,6 +4,7 @@ namespace App\Filament\Resources\News\Pages;
 
 use App\Filament\Resources\News\NewsResource;
 use App\Filament\Support\Concerns\HasEditPreview;
+use App\Filament\Support\PreviewAction;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\ForceDeleteAction;
@@ -12,6 +13,7 @@ use Filament\Resources\Pages\EditRecord;
 
 class EditNews extends EditRecord
 {
+    use \App\Filament\Support\Concerns\HasStatusActions;
     use HasEditPreview;
 
     protected static string $resource = NewsResource::class;
@@ -34,12 +36,7 @@ class EditNews extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Action::make('website')
-                ->label('Lihat di Website')
-                ->icon('heroicon-o-arrow-top-right-on-square')
-                ->url(fn (): string => route('news.show', $this->record->slug))
-                ->openUrlInNewTab()
-                ->visible(fn (): bool => $this->record->isPublished() && ! $this->record->trashed()),
+            PreviewAction::make($this->previewType(), editing: true),
             DeleteAction::make()
                 ->label('Hapus')
                 ->modalHeading('Hapus Berita')

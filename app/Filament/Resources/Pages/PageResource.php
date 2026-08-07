@@ -265,19 +265,8 @@ class PageResource extends Resource
 
                 Group::make()
                     ->schema([
-                        Section::make('Publikasi')
-                            ->description('Pilih status halaman. Waktu publikasi dicatat otomatis ketika status menjadi Terbit.')
-                            ->schema([
-                                Select::make('status')
-                                    ->label('Status')
-                                    ->options([
-                                        PageStatus::DRAFT->value => 'Draf',
-                                        PageStatus::PUBLISHED->value => 'Terbit',
-                                        PageStatus::ARCHIVED->value => 'Diarsipkan',
-                                    ])
-                                    ->default(PageStatus::DRAFT->value)
-                                    ->required(),
-                            ]),
+                                Hidden::make('status')
+                                    ->default('draft'),
                         Section::make('Gambar Utama')
                             ->description('Gambar opsional dari Perpustakaan Media yang sudah terverifikasi.')
                             ->schema([

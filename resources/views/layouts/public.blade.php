@@ -47,7 +47,7 @@
 
     @include('partials.header')
 
-    <main id="main-content" class="flex-grow {{ $isHome ? '' : 'pt-24' }}" tabindex="-1">
+    <main id="main-content" class="flex-grow {{ $isHome ? '' : 'pt-20' }}" tabindex="-1">
         @yield('content')
     </main>
 
@@ -56,5 +56,28 @@
     @if(isset($isPreview) && $isPreview)
         @include('public.preview.guard')
     @endif
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const fallbackSrc = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiNlNWU3ZWIiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTZweCIgZmlsbD0iIzZiNzI4MCIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+R2FtYmFyIHRpZGFrIGRpdGVtdWthbjwvdGV4dD48L3N2Zz4=';
+            
+            function handleBrokenImage(img) {
+                if (img.dataset.handled) return;
+                img.dataset.handled = true;
+                img.src = fallbackSrc;
+                img.classList.add('object-contain');
+                img.classList.remove('object-cover');
+                img.style.backgroundColor = '#f3f4f6'; // tailwind gray-100
+            }
+
+            document.querySelectorAll('img').forEach(function(img) {
+                if (img.complete) {
+                    if (img.naturalWidth === 0) handleBrokenImage(img);
+                } else {
+                    img.addEventListener('error', function() { handleBrokenImage(this); });
+                }
+            });
+        });
+    </script>
 </body>
 </html>

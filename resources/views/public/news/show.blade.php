@@ -6,7 +6,7 @@
 @endsection
 
 @section('content')
-<div class="container mx-auto px-4 py-8 max-w-4xl">
+<div class="container mx-auto px-4 py-4 max-w-4xl">
     <div class="mb-6">
         <a href="{{ route('news.index') }}" class="text-blue-600 hover:underline">&larr; Kembali ke Berita</a>
     </div>

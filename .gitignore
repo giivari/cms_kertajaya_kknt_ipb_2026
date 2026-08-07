@@ -31,3 +31,5 @@ pg.zip
 
 .guardrails.local.json
 .env.review
+*.zip
+/village-cms/

@@ -4,6 +4,8 @@ import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
 import 'leaflet/dist/leaflet.css';
 
+delete L.Icon.Default.prototype._getIconUrl;
+
 L.Icon.Default.mergeOptions({
     iconUrl: markerIcon,
     iconRetinaUrl: markerIcon2x,
@@ -45,6 +47,15 @@ function popupContent(item) {
     link.className = 'location-popup__link';
     link.textContent = 'Lihat detail';
     wrapper.append(link);
+
+    const gmapsLink = document.createElement('a');
+    gmapsLink.href = `https://www.google.com/maps/search/?api=1&query=${item.dataset.latitude},${item.dataset.longitude}`;
+    gmapsLink.target = '_blank';
+    gmapsLink.rel = 'noopener noreferrer';
+    gmapsLink.className = 'location-popup__link';
+    gmapsLink.style.display = 'block';
+    gmapsLink.textContent = 'Buka Google Maps ↗';
+    wrapper.append(gmapsLink);
 
     return wrapper;
 }

@@ -8,6 +8,8 @@ use Filament\Resources\Pages\CreateRecord;
 
 class CreateLocationCategory extends CreateRecord
 {
+    protected static bool $canCreateAnother = false;
+
     use HasCreatePreview;
 
     protected static string $resource = LocationCategoryResource::class;

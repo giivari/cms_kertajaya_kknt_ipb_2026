@@ -23,7 +23,7 @@ class PreviewAction
         };
 
         return Action::make('preview')
-            ->label($editing && $type !== 'settings' ? 'Pratinjau Perubahan' : 'Pratinjau')
+            ->label('Pratinjau')
             ->icon('heroicon-o-eye')
             ->color('info')
             ->extraAttributes([

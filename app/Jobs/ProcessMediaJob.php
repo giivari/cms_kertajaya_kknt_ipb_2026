@@ -32,19 +32,17 @@ class ProcessMediaJob implements ShouldQueue
 
     public function handle(WatermarkService $watermarkService, WatermarkVerificationService $verificationService): void
     {
-        if ($this->media->processing_status === MediaProcessingStatus::COMPLETED) {
-            return; // Idempotent: already completed
-        }
-
+        // Allow reprocessing by removing the idempotency check for COMPLETED status.
+        // This is needed so that the 'Proses Ulang' button works when watermark settings change.
         $this->media->update(['processing_status' => MediaProcessingStatus::PROCESSING]);
 
         try {
-            $originalPath = Storage::disk('private')->path('originals/'.$this->media->filename);
+            $originalPath = Storage::disk('local')->path('originals/'.$this->media->filename);
 
             // Generate staging derivative
             $stagingFilename = 'staging/'.$this->media->filename;
-            Storage::disk('private')->makeDirectory('staging');
-            $stagingPath = Storage::disk('private')->path($stagingFilename);
+            Storage::disk('local')->makeDirectory('staging');
+            $stagingPath = Storage::disk('local')->path($stagingFilename);
 
             // For MVP, copy the file. (Resize/optimize would happen here)
             copy($originalPath, $stagingPath);
@@ -60,7 +58,7 @@ class ProcessMediaJob implements ShouldQueue
             $watermarkSuccess = $watermarkService->injectInvisibleIdentifier($stagingPath, $this->media->mime_type, $payload);
 
             if (! $watermarkSuccess) {
-                Storage::disk('private')->delete($stagingFilename);
+                Storage::disk('local')->delete($stagingFilename);
                 $this->media->update([
                     'invisible_watermark_status' => InvisibleWatermarkStatus::FAILED,
                     'processing_status' => MediaProcessingStatus::FAILED,
@@ -74,7 +72,7 @@ class ProcessMediaJob implements ShouldQueue
                 'media_id' => $this->media->id,
                 'derivative_type' => DerivativeType::PUBLIC,
                 'filename' => $stagingFilename,
-                'disk' => 'private',
+                'disk' => 'local',
                 'size' => filesize($stagingPath),
                 'mime_type' => $this->media->mime_type,
             ]);
@@ -111,7 +109,7 @@ class ProcessMediaJob implements ShouldQueue
                     'checksum' => $checksum,
                 ]);
 
-                Storage::disk('private')->delete($stagingFilename);
+                Storage::disk('local')->delete($stagingFilename);
 
                 $this->media->update([
                     'processing_status' => MediaProcessingStatus::COMPLETED,
@@ -119,7 +117,7 @@ class ProcessMediaJob implements ShouldQueue
                     'checksum' => hash_file('sha256', $originalPath),
                 ]);
             } else {
-                Storage::disk('private')->delete($stagingFilename);
+                Storage::disk('local')->delete($stagingFilename);
                 $this->media->update([
                     'processing_status' => MediaProcessingStatus::FAILED,
                     'invisible_watermark_status' => InvisibleWatermarkStatus::FAILED,

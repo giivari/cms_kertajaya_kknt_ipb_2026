@@ -11,6 +11,7 @@ use Filament\Resources\Pages\EditRecord;
 
 class EditLocation extends EditRecord
 {
+    use \App\Filament\Support\Concerns\HasStatusActions;
     use HasEditPreview;
 
     protected static string $resource = LocationResource::class;

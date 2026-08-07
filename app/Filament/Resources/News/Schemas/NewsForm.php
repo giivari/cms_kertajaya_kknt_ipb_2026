@@ -67,20 +67,8 @@ class NewsForm
 
                 Group::make()
                     ->schema([
-                        Section::make('Publikasi')
-                            ->description('Tentukan apakah berita masih disiapkan atau sudah dapat dibaca pengunjung.')
-                            ->schema([
-                                Select::make('status')
-                                    ->label('Status')
-                                    ->options([
-                                        'draft' => 'Draf',
-                                        'published' => 'Terbit',
-                                        'archived' => 'Diarsipkan',
-                                    ])
-                                    ->helperText('Waktu publikasi dicatat otomatis saat status menjadi Terbit.')
-                                    ->required()
+                                Hidden::make('status')
                                     ->default('draft'),
-                            ]),
                         Section::make('Klasifikasi')
                             ->description('Kelompokkan berita agar lebih mudah ditemukan.')
                             ->schema([
@@ -97,7 +85,7 @@ class NewsForm
                                             ->maxLength(255),
                                     ])
                                     ->helperText('Anda dapat membuat kategori baru secara langsung, atau melalui tombol Kelola Kategori.')
-                                    ->suffixAction(
+                                    ->hintAction(
                                         Action::make('manageCategories')
                                             ->label('Kelola Kategori')
                                             ->icon('heroicon-m-cog-8-tooth')
