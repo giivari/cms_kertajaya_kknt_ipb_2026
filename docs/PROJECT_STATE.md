@@ -11,7 +11,7 @@
 ## 2. Roadmap Produk (Sprint & Status)
 - **Sprint 0-5:** Selesai (Mencakup Setup, Auth, MFA, Audit Log, Media Library, CMS Halaman, Menu, Berita, Galeri, Dokumen, Kontak, Search, Maps).
 - **Sprint 6 (UI Redesign & Stabilization):** Selesai (Penyelarasan visual seluruh fitur Admin & Publik).
-- **Sprint 7 (Final Audit & Deployment):** *In Progress* (Regression test, optimasi infrastruktur, rilis via Shared Hosting + Cloudflare, Handover).
+- **Sprint 7 (Final Audit & Deployment):** Selesai (Semua fitur telah diaudit menyeluruh, rilis stabil di VPS 103.93.160.112).
 
 *Catatan: B1.0–B1.5 adalah jalur remediasi Admin UI dan recovery, bukan sprint produk.*
 

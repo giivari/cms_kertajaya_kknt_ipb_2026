@@ -1,58 +1,67 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Sistem Informasi & Website Desa Kertajaya (CMS)
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Selamat datang di repositori resmi **Website & Content Management System (CMS) Desa Kertajaya**. 
+Sistem ini dibangun secara khusus (Custom-Built) menggunakan teknologi web modern untuk membantu pemerintah Desa Kertajaya mengelola informasi, potensi desa, dan pelayanan masyarakat secara digital dengan aman dan responsif.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## 🌟 Fitur Unggulan
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- **Panel Admin Berbasis Filament:** Antarmuka pengelola konten yang elegan, responsif, dan mudah digunakan (User Friendly).
+- **Keamanan Lapis Baja (Single Session):** Akses admin dikunci ketat; hanya satu admin atau perangkat yang dapat aktif dalam satu waktu untuk mencegah pembajakan sesi.
+- **Sistem Perpustakaan Media (Media Library):** Mengelola foto dan dokumen terpusat, lengkap dengan fitur pemberian tanda air (Watermarking) otomatis dan anti-maling.
+- **Dinamis & Terintegrasi:** Berita desa, galeri kegiatan, struktur organisasi, hingga manajemen kontak keluhan warga terhubung dalam satu portal utama.
+- **Arsitektur Berkinerja Tinggi:** Dioptimasi (Hyper-Optimized) agar web memuat dalam waktu seketika menggunakan mekanisme *Caching* tingkat lanjut pada *Views*, *Routes*, dan *Config*.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## 🛠 Teknologi yang Digunakan
 
-## Learning Laravel
+*   **Framework Inti:** Laravel (PHP)
+*   **Admin Panel:** Filament
+*   **Basis Data:** PostgreSQL
+*   **Tampilan Depan (Frontend):** Blade Templates & Tailwind CSS
+*   **Pemrosesan Sinkron:** Sistem *Queue* (Antrean) dirancang menggunakan mode `sync` untuk penanganan data secara seketika (*real-time*).
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## 🚀 Panduan Instalasi (Untuk Pengembang/Developer)
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+Jika Anda ingin menjalankan sistem ini di komputer lokal, ikuti langkah berikut:
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+1. **Kloning Repositori:**
+   ```bash
+   git clone https://github.com/UsernameAnda/nama-repo-anda.git
+   cd village-cms
+   ```
 
-## Agentic Development
+2. **Instalasi Dependensi:**
+   ```bash
+   composer install
+   npm install && npm run build
+   ```
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+3. **Konfigurasi Environment:**
+   ```bash
+   cp .env.example .env
+   php artisan key:generate
+   ```
+   *Sesuaikan pengaturan koneksi database (PostgreSQL) di file `.env`.*
 
-```bash
-composer require laravel/boost --dev
+4. **Migrasi Database & Penyemaian Data (Seeding):**
+   ```bash
+   php artisan migrate:fresh --seed
+   ```
 
-php artisan boost:install
-```
+5. **Jalankan Server Lokal:**
+   ```bash
+   php artisan serve
+   ```
+   *Akses web publik di `http://127.0.0.1:8000` dan Dasbor Admin di `http://127.0.0.1:8000/desa-dashboard`.*
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+---
 
-## Contributing
+## 🔒 Catatan Keamanan Penting (Deployment)
+Untuk peluncuran (*deployment*) ke VPS atau Server Produksi, pastikan:
+1. `APP_ENV=production` dan `APP_DEBUG=false`.
+2. Lakukan optimalisasi penuh: `php artisan optimize` dan `php artisan view:cache`.
+3. Hak akses folder (*Permission*) untuk `storage/` dan `bootstrap/cache/` diatur dengan tepat agar log dan *cache* tidak *error*.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+---
+*Dibangun dan dikembangkan dengan bangga dalam rangka mewujudkan Desa Kertajaya yang Go-Digital.*
