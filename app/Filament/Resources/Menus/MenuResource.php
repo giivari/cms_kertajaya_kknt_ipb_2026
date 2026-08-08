@@ -5,9 +5,7 @@ namespace App\Filament\Resources\Menus;
 use App\Enums\LinkType;
 use App\Enums\PageStatus;
 use App\Filament\Exports\MenuExporter;
-use App\Filament\Resources\Menus\Pages\CreateMenu;
 use App\Filament\Resources\Menus\Pages\EditMenu;
-use App\Filament\Resources\Menus\Pages\ListMenus;
 use App\Models\Menu;
 use App\Filament\Support\AdminTable;
 use Filament\Actions\BulkActionGroup;
@@ -76,21 +74,7 @@ class MenuResource extends Resource
                             ->columnSpanFull(),
                     ])
                     ->columnSpanFull(),
-                Section::make('Lokasi Tampilan')
-                    ->description('Menu adalah daftar tautan navigasi. Untuk membuat isi baru, gunakan fitur Halaman.')
-                    ->hidden()
-                    ->schema([
-                        Select::make('location')
-                            ->label('Posisi Menu')
-                            ->options(Menu::supportedLocations())
-                            ->required()
-                            ->unique(ignoreRecord: true),
-                        Forms\Components\Textarea::make('description')
-                            ->label('Keterangan')
-                            ->helperText('Catatan internal dan tidak ditampilkan kepada pengunjung.'),
-                    ])
-                    ->columns(['default' => 1, 'md' => 2])
-                    ->columnSpanFull(),
+
                 Section::make('Tautan yang Ditampilkan')
                     ->schema([
                         Repeater::make('items')
@@ -191,37 +175,10 @@ class MenuResource extends Resource
             ]);
     }
 
-    public static function table(Table $table): Table
-    {
-        return AdminTable::configure($table, 'admin-content-table admin-menu-table')
-            ->columns([
-                TextColumn::make('name')->label('Nama Menu')->limit(30),
-                TextColumn::make('location')
-                    ->label('Posisi Menu')
-                    ->formatStateUsing(fn (string $state): string => Menu::supportedLocations()[$state] ?? $state),
-                TextColumn::make('description')->label('Keterangan')->visibleFrom('md')->limit(50),
-                TextColumn::make('created_at')->label('Dibuat pada')->dateTime('d/m/Y H.i', timezone: 'Asia/Jakarta')->sortable()->toggleable(isToggledHiddenByDefault: true)
-                    ->visibleFrom('md'),
-            ])
-            ->filters([])
-            ->actions([
-                EditAction::make()->label('Ubah')->icon('heroicon-o-pencil-square'),
-            ])
-            ->toolbarActions([
-                AdminTable::exportAction(MenuExporter::class, self::class),
-            ]);
-    }
-
-    public static function getRelations(): array
-    {
-        return [];
-    }
-
     public static function getPages(): array
     {
         return [
-            'index' => ListMenus::route('/'),
-            'edit' => EditMenu::route('/{record}/edit'),
+            'index' => EditMenu::route('/'),
         ];
     }
 }

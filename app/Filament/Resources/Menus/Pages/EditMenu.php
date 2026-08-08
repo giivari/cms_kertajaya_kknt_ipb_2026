@@ -11,6 +11,16 @@ class EditMenu extends EditRecord
 {
     use HasEditPreview;
 
+    public function mount(int|string $record = null): void
+    {
+        $menu = \App\Models\Menu::firstOrCreate(
+            ['location' => 'header'],
+            ['name' => 'Navigasi Utama', 'description' => 'Menu utama website']
+        );
+        
+        parent::mount($menu->id);
+    }
+
     protected static string $resource = MenuResource::class;
 
     protected function previewType(): string

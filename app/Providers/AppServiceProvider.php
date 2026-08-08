@@ -104,7 +104,7 @@ class AppServiceProvider extends ServiceProvider
             $menu = null;
             if (app()->has(\App\Support\Preview\PreviewContext::class)) {
                 $context = app(\App\Support\Preview\PreviewContext::class);
-                if ($context->previewType === 'menu' && isset($context->normalizedState['location']) && $context->normalizedState['location'] === Menu::FOOTER) {
+                if ($context->previewType === 'menu' && isset($context->normalizedState['location']) && $context->normalizedState['location'] === Menu::HEADER) {
                     $attributes = array_merge($context->recordSnapshot ?? [], $context->normalizedState);
                     $itemsArray = $attributes['items'] ?? [];
                     unset($attributes['items']);
@@ -139,7 +139,7 @@ class AppServiceProvider extends ServiceProvider
             }
 
             if (!$menu) {
-                $menu = Menu::where('location', Menu::FOOTER)->with(['items' => function ($query) {
+                $menu = Menu::where('location', Menu::HEADER)->with(['items' => function ($query) {
                     $query->where('is_visible', true)->whereNull('parent_id')->orderBy('position');
                 }, 'items.page'])->first();
             }
