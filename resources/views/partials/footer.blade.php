@@ -1,9 +1,9 @@
 <footer role="contentinfo" class="bg-navy text-white pt-8 md:pt-12 pb-4 border-t border-white/10 mt-auto">
     <div class="w-full mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-24 2xl:px-32">
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-6 md:gap-8 mb-6 md:mb-8">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8 mb-6 md:mb-8">
             
             <!-- Col 1: Brand & Description -->
-            <div class="sm:col-span-2 lg:col-span-6 lg:pr-8">
+            <div class="sm:col-span-2 lg:col-span-2 lg:pr-8">
                 <a href="{{ route('home') }}" class="flex items-center gap-3 mb-4 group hover:opacity-90 transition-opacity">
                     @php
                         $villageName = \App\Services\SettingsService::get('village_name', 'Desa Kertajaya');
@@ -52,7 +52,7 @@
             </div>
 
             <!-- Col 3: Kontak -->
-            <div class="lg:col-span-3">
+            <div>
                 <h4 class="font-bold text-base md:text-lg mb-4 text-white font-display">Kontak</h4>
                 <ul class="space-y-3 text-sm md:text-base text-white/70">
                     <li class="flex items-start gap-3">
@@ -71,7 +71,7 @@
             </div>
 
             <!-- Col 4: Jam Pelayanan -->
-            <div class="lg:col-span-3">
+            <div>
                 <h4 class="font-bold text-base md:text-lg mb-4 text-white font-display">Jam Pelayanan</h4>
                 <ul class="space-y-2 md:space-y-3 text-sm md:text-base text-white/70">
                     @php
