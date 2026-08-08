@@ -95,10 +95,6 @@ class AdminPanelProvider extends PanelProvider
                 fn () => view('filament.brand.auth-brand'),
                 scopes: [\App\Filament\Pages\Auth\Login::class]
             )
-            ->renderHook(
-                PanelsRenderHook::BODY_END,
-                fn () => view('filament.global-loader')
-            )
             ->navigationGroups([
                 \Filament\Navigation\NavigationGroup::make('Kelola Konten')->collapsible(false),
                 \Filament\Navigation\NavigationGroup::make('Kelola Website')->collapsible(false),
