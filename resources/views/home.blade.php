@@ -93,21 +93,34 @@
     <div class="bg-cream backdrop-blur-md shadow-xl rounded-[24px] md:rounded-[32px] p-4 md:p-8">
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             @php
-                $quickAccess = [
-                    ['icon' => '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>', 'label' => 'Profil Desa', 'url' => '#profil-desa'],
-                    ['icon' => '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg>', 'label' => 'Potensi Desa', 'url' => '#potensi-desa'],
-                    ['icon' => '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>', 'label' => 'Berita', 'url' => '#berita'],
-                    ['icon' => '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>', 'label' => 'Galeri', 'url' => '#galeri'],
-                    ['icon' => '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>', 'label' => 'Dokumen', 'url' => '#dokumen'],
-                    ['icon' => '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>', 'label' => 'Pelayanan', 'url' => route('public.contact.show')],
-                ];
+                $quickAccess = \App\Services\SettingsService::get('quick_access_menu', []);
+                if (empty($quickAccess)) {
+                    $quickAccess = [
+                        ['icon' => '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>', 'label' => 'Profil Desa', 'type' => 'custom', 'custom_url' => '#profil-desa'],
+                        ['icon' => '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg>', 'label' => 'Potensi Desa', 'type' => 'custom', 'custom_url' => '#potensi-desa'],
+                        ['icon' => '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>', 'label' => 'Berita', 'type' => 'custom', 'custom_url' => '#berita'],
+                        ['icon' => '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>', 'label' => 'Galeri', 'type' => 'custom', 'custom_url' => '#galeri'],
+                        ['icon' => '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>', 'label' => 'Dokumen', 'type' => 'custom', 'custom_url' => '#dokumen'],
+                        ['icon' => '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>', 'label' => 'Pelayanan', 'type' => 'custom', 'custom_url' => route('public.contact.show')],
+                    ];
+                }
             @endphp
             @foreach($quickAccess as $item)
-            <a href="{{ $item['url'] }}" class="flex flex-col items-center justify-center p-3 sm:p-4 md:p-6 rounded-2xl hover:bg-white transition-all duration-300 group gap-3 border border-transparent hover:border-gray-200 hover:shadow-sm">
+            @php
+                $url = '#';
+                $type = $item['type'] ?? 'custom';
+                if ($type === 'custom') {
+                    $url = $item['custom_url'] ?? '#';
+                } elseif ($type === 'page' && !empty($item['page_id'])) {
+                    $page = \App\Models\Page::find($item['page_id']);
+                    if ($page) $url = route('pages.show', $page->slug);
+                }
+            @endphp
+            <a href="{{ $url }}" class="flex flex-col items-center justify-center p-3 sm:p-4 md:p-6 rounded-2xl hover:bg-white transition-all duration-300 group gap-3 border border-transparent hover:border-gray-200 hover:shadow-sm">
                 <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-teal/10 flex items-center justify-center text-teal group-hover:bg-teal group-hover:text-white transition-colors">
-                    {!! $item['icon'] !!}
+                    {!! $item['icon'] ?? '' !!}
                 </div>
-                <span class="font-medium text-[10px] sm:text-xs md:text-sm text-navy text-center whitespace-nowrap">{{ $item['label'] }}</span>
+                <span class="font-medium text-[10px] sm:text-xs md:text-sm text-navy text-center whitespace-nowrap">{{ $item['label'] ?? '' }}</span>
             </a>
             @endforeach
         </div>
