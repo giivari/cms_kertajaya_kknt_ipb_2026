@@ -75,12 +75,12 @@
             <div class="flex flex-wrap items-center gap-4">
                 @if($link1 = $resolveLink('hero_button_1'))
                 <a href="{{ $link1 }}" class="inline-flex items-center justify-center rounded-full font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-2 bg-teal text-white hover:bg-teal/90 shadow-sm px-8 py-4 text-base">
-                    Jelajahi Profil Desa
+                    {{ \App\Services\SettingsService::get('hero_button_1_text', 'Jelajahi Profil Desa') }}
                 </a>
                 @endif
                 @if($link2 = $resolveLink('hero_button_2'))
                 <a href="{{ $link2 }}" class="inline-flex items-center justify-center rounded-full font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-2 border-2 border-white bg-white/10 text-white hover:bg-white hover:text-navy backdrop-blur-sm px-8 py-4 text-base">
-                    Lihat Kabar Desa
+                    {{ \App\Services\SettingsService::get('hero_button_2_text', 'Lihat Kabar Desa') }}
                 </a>
                 @endif
             </div>
@@ -134,7 +134,7 @@
                 </div>
                 @if($linkProfil = $resolveLink('profil_button'))
                 <a href="{{ $linkProfil }}" class="inline-flex items-center justify-center rounded-full font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-2 border-2 border-navy text-navy hover:bg-navy hover:text-white px-6 py-3 text-sm group">
-                    Selengkapnya tentang desa
+                    {{ \App\Services\SettingsService::get('profil_button_text', 'Selengkapnya tentang desa') }}
                     <svg class="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                 </a>
                 @endif
@@ -185,7 +185,7 @@
             <div class="shrink-0">
                 @if($linkPotensi = $resolveLink('potensi_all'))
                 <a href="{{ $linkPotensi }}" class="inline-flex items-center justify-center rounded-full font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-2 border-2 border-navy text-navy hover:bg-navy hover:text-white px-6 py-3 text-sm">
-                    Lihat Semua Potensi
+                    {{ \App\Services\SettingsService::get('potensi_all_text', 'Lihat Semua Potensi') }}
                 </a>
                 @endif
             </div>
@@ -197,18 +197,21 @@
                 'desc' => \App\Services\SettingsService::get('potensi_1_desc', 'Hamparan sawah terasering dan perkebunan teh yang menjadi tulang punggung ekonomi warga.'),
                 'image' => \App\Services\SettingsService::get('potensi_1_image', null),
                 'link' => $resolveLink('potensi_1'),
+                'text' => \App\Services\SettingsService::get('potensi_1_text', 'Pelajari lebih lanjut'),
             ];
             $pot2 = [
                 'title' => \App\Services\SettingsService::get('potensi_2_title', 'Pariwisata Alam'),
                 'desc' => \App\Services\SettingsService::get('potensi_2_desc', 'Destinasi wisata curug dan desa wisata yang asri.'),
                 'image' => \App\Services\SettingsService::get('potensi_2_image', null),
                 'link' => $resolveLink('potensi_2'),
+                'text' => \App\Services\SettingsService::get('potensi_2_text', 'Lihat selengkapnya'),
             ];
             $pot3 = [
                 'title' => \App\Services\SettingsService::get('potensi_3_title', 'UMKM Lokal'),
                 'desc' => \App\Services\SettingsService::get('potensi_3_desc', 'Kerajinan bambu dan olahan makanan tradisional.'),
                 'image' => \App\Services\SettingsService::get('potensi_3_image', null),
                 'link' => $resolveLink('potensi_3'),
+                'text' => \App\Services\SettingsService::get('potensi_3_text', 'Lihat selengkapnya'),
             ];
         @endphp
 
@@ -223,7 +226,7 @@
                     <p class="text-white/80 text-lg max-w-md">{{ $pot1['desc'] }}</p>
                     @if($pot1['link'])
                     <div class="mt-6 flex items-center justify-between">
-                        <span class="text-white font-medium">Pelajari lebih lanjut</span>
+                        <span class="text-white font-medium">{{ $pot1['text'] }}</span>
                         <div class="w-12 h-12 rounded-full bg-white/20 backdrop-blur flex items-center justify-center text-white group-hover:bg-white group-hover:text-navy transition-colors">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
                         </div>
@@ -243,7 +246,7 @@
                         <p class="text-white/80">{{ $pot2['desc'] }}</p>
                         @if($pot2['link'])
                         <div class="mt-4 flex items-center gap-2 text-lime font-medium group-hover:text-white transition-colors">
-                            <span>Lihat selengkapnya</span>
+                            <span>{{ $pot2['text'] }}</span>
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                         </div>
                         @endif
@@ -259,7 +262,7 @@
                         <p class="text-white/80">{{ $pot3['desc'] }}</p>
                         @if($pot3['link'])
                         <div class="mt-4 flex items-center gap-2 text-lime font-medium group-hover:text-white transition-colors">
-                            <span>Lihat selengkapnya</span>
+                            <span>{{ $pot3['text'] }}</span>
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                         </div>
                         @endif

@@ -111,9 +111,15 @@ class WebsiteSettings extends Page
         ]);
     }
 
-    public static function getLinkSchema(string $prefix, string $label): array
+    public static function getLinkSchema(string $prefix, string $label, string $defaultText = 'Selengkapnya', bool $hasPrecedingImage = false): array
     {
         return [
+            \Filament\Forms\Components\TextInput::make("{$prefix}_text")
+                ->label("Teks Tombol")
+                ->default($defaultText)
+                ->visible(fn ($get) => $get("{$prefix}_type") !== 'none')
+                ->required(fn ($get) => $get("{$prefix}_type") !== 'none')
+                ->columnSpan(1),
             \Filament\Forms\Components\Select::make("{$prefix}_type")
                 ->label("Tujuan Tautan {$label}")
                 ->options([
@@ -130,7 +136,7 @@ class WebsiteSettings extends Page
                 ->default('none')
                 ->live()
                 ->required()
-                ->columnSpan(fn ($get) => in_array($get("{$prefix}_type"), [\App\Enums\LinkType::PAGE->value, \App\Enums\LinkType::CUSTOM->value]) ? 1 : 2),
+                ->columnSpan(fn ($get) => $get("{$prefix}_type") === 'none' ? ($hasPrecedingImage ? 3 : 'full') : (in_array($get("{$prefix}_type"), [\App\Enums\LinkType::PAGE->value, \App\Enums\LinkType::CUSTOM->value]) ? 1 : 2)),
             \Filament\Forms\Components\Select::make("{$prefix}_page_id")
                 ->label("Halaman yang Dituju ({$label})")
                 ->options(fn () => \App\Models\Page::where('status', \App\Enums\PageStatus::PUBLISHED->value)->pluck('title', 'id'))
@@ -186,11 +192,11 @@ class WebsiteSettings extends Page
                                         Textarea::make('hero_description')->label('Deskripsi Hero')->required()->live(debounce: 500),
                                         Select::make('hero_image')->label('Gambar Latar Hero')->options($mediaOptions)->searchable()->live(),
                                         Fieldset::make('Tombol Kiri Hero (opsional)')
-                                            ->schema(self::getLinkSchema('hero_button_1', 'Tombol Kiri Hero'))
-                                            ->columns(2),
+                                            ->schema(self::getLinkSchema('hero_button_1', 'Tombol Kiri Hero', 'Jelajahi Profil Desa'))
+                                            ->columns(3),
                                         Fieldset::make('Tombol Kanan Hero (opsional)')
-                                            ->schema(self::getLinkSchema('hero_button_2', 'Tombol Kanan Hero'))
-                                            ->columns(2),
+                                            ->schema(self::getLinkSchema('hero_button_2', 'Tombol Kanan Hero', 'Lihat Kabar Desa'))
+                                            ->columns(3),
                                     ])->columns(1),
                                 Section::make('Profil Singkat')
                                     ->schema([
@@ -199,41 +205,41 @@ class WebsiteSettings extends Page
                                         Select::make('profil_image_1')->label('Gambar Profil 1')->options($mediaOptions)->searchable()->live(),
                                         Select::make('profil_image_2')->label('Gambar Profil 2')->options($mediaOptions)->searchable()->live(),
                                         Fieldset::make('Tombol Selengkapnya')
-                                            ->schema(self::getLinkSchema('profil_button', 'Selengkapnya'))
-                                            ->columns(2),
+                                            ->schema(self::getLinkSchema('profil_button', 'Selengkapnya', 'Selengkapnya tentang desa'))
+                                            ->columns(3),
                                     ])->columns(2),
                                 Section::make('Potensi Desa')
                                     ->schema([
                                         TextInput::make('potensi_title')->label('Judul Utama Bagian Potensi')->columnSpanFull()->live(onBlur: true),
                                         Textarea::make('potensi_description')->label('Deskripsi Singkat Bagian Potensi')->columnSpanFull()->live(debounce: 500),
                                         Fieldset::make('Tombol "Lihat Semua Potensi"')
-                                            ->schema(self::getLinkSchema('potensi_all', 'Semua Potensi'))
-                                            ->columns(2)
+                                            ->schema(self::getLinkSchema('potensi_all', 'Semua Potensi', 'Lihat Semua Potensi'))
+                                            ->columns(3)
                                             ->columnSpanFull(),
                                         
                                         Fieldset::make('Kartu Potensi 1 (Besar)')
                                             ->schema([
-                                                TextInput::make('potensi_1_title')->label('Judul')->required()->live(onBlur: true),
-                                                Textarea::make('potensi_1_desc')->label('Deskripsi Singkat')->required()->columnSpanFull()->live(debounce: 500),
-                                                Select::make('potensi_1_image')->label('Gambar Utama')->options($mediaOptions)->searchable()->columnSpanFull()->live(),
-                                                ...self::getLinkSchema('potensi_1', 'Kartu 1'),
-                                            ])->columns(2),
+                                                TextInput::make('potensi_1_title')->label('Judul')->required()->live(onBlur: true)->columnSpan(1),
+                                                Textarea::make('potensi_1_desc')->label('Deskripsi Singkat')->required()->columnSpan(3)->live(debounce: 500),
+                                                Select::make('potensi_1_image')->label('Gambar Utama')->options($mediaOptions)->searchable()->columnSpan(1)->live(),
+                                                ...self::getLinkSchema('potensi_1', 'Kartu 1', 'Pelajari lebih lanjut', true),
+                                            ])->columns(4),
 
                                         Fieldset::make('Kartu Potensi 2 (Kecil Atas)')
                                             ->schema([
-                                                TextInput::make('potensi_2_title')->label('Judul')->required()->live(onBlur: true),
-                                                Textarea::make('potensi_2_desc')->label('Deskripsi Singkat')->required()->columnSpanFull()->live(debounce: 500),
-                                                Select::make('potensi_2_image')->label('Gambar Utama')->options($mediaOptions)->searchable()->columnSpanFull()->live(),
-                                                ...self::getLinkSchema('potensi_2', 'Kartu 2'),
-                                            ])->columns(2),
+                                                TextInput::make('potensi_2_title')->label('Judul')->required()->live(onBlur: true)->columnSpan(1),
+                                                Textarea::make('potensi_2_desc')->label('Deskripsi Singkat')->required()->columnSpan(3)->live(debounce: 500),
+                                                Select::make('potensi_2_image')->label('Gambar Utama')->options($mediaOptions)->searchable()->columnSpan(1)->live(),
+                                                ...self::getLinkSchema('potensi_2', 'Kartu 2', 'Lihat selengkapnya', true),
+                                            ])->columns(4),
 
                                         Fieldset::make('Kartu Potensi 3 (Kecil Bawah)')
                                             ->schema([
-                                                TextInput::make('potensi_3_title')->label('Judul')->required()->live(onBlur: true),
-                                                Textarea::make('potensi_3_desc')->label('Deskripsi Singkat')->required()->columnSpanFull()->live(debounce: 500),
-                                                Select::make('potensi_3_image')->label('Gambar Utama')->options($mediaOptions)->searchable()->columnSpanFull()->live(),
-                                                ...self::getLinkSchema('potensi_3', 'Kartu 3'),
-                                            ])->columns(2),
+                                                TextInput::make('potensi_3_title')->label('Judul')->required()->live(onBlur: true)->columnSpan(1),
+                                                Textarea::make('potensi_3_desc')->label('Deskripsi Singkat')->required()->columnSpan(3)->live(debounce: 500),
+                                                Select::make('potensi_3_image')->label('Gambar Utama')->options($mediaOptions)->searchable()->columnSpan(1)->live(),
+                                                ...self::getLinkSchema('potensi_3', 'Kartu 3', 'Lihat selengkapnya', true),
+                                            ])->columns(4),
                                     ])->columns(1),
                                 Section::make('Statistik Desa')
                                     ->schema([
