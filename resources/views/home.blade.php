@@ -61,7 +61,7 @@
         <div class="absolute inset-0 bg-black/20"></div>
     </div>
 
-    <div class="container relative z-10 mx-auto px-4 md:px-8 max-w-[1440px] pt-24 pb-32">
+    <div class="w-full relative z-10 mx-auto px-4 md:px-8 lg:px-12 xl:px-24 2xl:px-32 pt-24 pb-32">
         <div class="max-w-3xl">
             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wider bg-yellow text-navy mb-6">
                 Selamat Datang di
@@ -89,7 +89,7 @@
 </section>
 
 <!-- QuickAccess Section -->
-<div class="container mx-auto px-4 md:px-8 max-w-[1440px] relative z-20 -mt-16 md:-mt-24 mb-16">
+<div class="w-full mx-auto px-4 md:px-8 lg:px-12 xl:px-24 2xl:px-32 relative z-20 -mt-16 md:-mt-24 mb-16">
     <div class="bg-cream backdrop-blur-md shadow-xl rounded-[24px] md:rounded-[32px] p-4 md:p-8">
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             @php
@@ -116,7 +116,7 @@
 
 <!-- Introduksi Section -->
 <section id="profil-desa" class="py-16 md:py-24 bg-white !pt-0">
-    <div class="container mx-auto px-4 md:px-8 max-w-[1440px]">
+    <div class="w-full mx-auto px-4 md:px-8 lg:px-12 xl:px-24 2xl:px-32">
         <div class="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
             <div>
                 <div class="mb-12 flex flex-col md:flex-row md:items-end gap-6 text-left md:justify-between">
@@ -171,7 +171,7 @@
 
 <!-- PotensiDesa Section -->
 <section id="potensi-desa" class="pt-16 pb-16 md:pt-24 md:pb-24 bg-cream">
-    <div class="container mx-auto px-4 md:px-8 max-w-[1440px]">
+    <div class="w-full mx-auto px-4 md:px-8 lg:px-12 xl:px-24 2xl:px-32">
         <div class="mb-12 flex flex-col md:flex-row md:items-end gap-6 text-left md:justify-between">
             <div class="max-w-2xl">
                 <p class="text-teal font-semibold tracking-wider text-sm uppercase mb-3">Potensi Unggulan</p>
@@ -277,7 +277,7 @@
 
 <!-- Statistik Section -->
 <section class="pt-16 pb-16 md:pt-24 md:pb-24 bg-navy text-white">
-    <div class="container mx-auto px-4 md:px-8 max-w-[1440px]">
+    <div class="w-full mx-auto px-4 md:px-8 lg:px-12 xl:px-24 2xl:px-32">
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-8 md:gap-12">
             <div class="flex flex-col items-center text-center md:items-start md:text-left border-l-0 md:border-l border-white/20 pl-0 md:pl-6">
                 <div class="w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/10 flex items-center justify-center text-lime mb-3 md:mb-4">
@@ -314,7 +314,7 @@
 <!-- BeritaTerbaru Section -->
 @if(isset($latestNews) && $latestNews->isNotEmpty())
 <section id="berita" class="py-16 md:py-24 bg-white">
-    <div class="container mx-auto px-4 md:px-8 max-w-[1440px]">
+    <div class="w-full mx-auto px-4 md:px-8 lg:px-12 xl:px-24 2xl:px-32">
         <div class="mb-12 flex flex-col md:flex-row md:items-end gap-6 text-left md:justify-between">
             <div class="max-w-2xl">
                 <p class="text-teal font-semibold tracking-wider text-sm uppercase mb-3">Kabar Terbaru</p>
@@ -395,7 +395,7 @@
 <!-- GaleriDesa Section -->
 @if(isset($latestAlbums) && $latestAlbums->isNotEmpty())
 <section id="galeri" class="py-16 md:py-24 bg-cream">
-    <div class="container mx-auto px-4 md:px-8 max-w-[1440px]">
+    <div class="w-full mx-auto px-4 md:px-8 lg:px-12 xl:px-24 2xl:px-32">
         <div class="mb-12 flex flex-col md:flex-row md:items-center gap-6 text-center md:justify-center">
             <div class="max-w-2xl mx-auto">
                 <p class="text-teal font-semibold tracking-wider text-sm uppercase mb-3">Galeri Desa</p>
@@ -471,7 +471,7 @@
 <!-- DokumenPublik Section -->
 @if(isset($latestDocuments) && $latestDocuments->isNotEmpty())
 <section id="dokumen" class="py-16 md:py-24 bg-white">
-    <div class="container mx-auto px-4 md:px-8 max-w-[1440px]">
+    <div class="w-full mx-auto px-4 md:px-8 lg:px-12 xl:px-24 2xl:px-32">
         <div class="mb-12 flex flex-col md:flex-row md:items-end gap-6 text-left md:justify-between">
             <div class="max-w-2xl">
                 <p class="text-teal font-semibold tracking-wider text-sm uppercase mb-3">Transparansi & Dokumen</p>
