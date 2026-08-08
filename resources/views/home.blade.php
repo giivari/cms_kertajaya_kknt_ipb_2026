@@ -15,6 +15,25 @@
         } catch (\Exception $e) {}
         return $fallback;
     };
+
+    $resolveLink = function($prefix, $default = '#') {
+        $type = \App\Services\SettingsService::get("{$prefix}_type", 'custom');
+        if ($type === \App\Enums\LinkType::PAGE->value) {
+            $pageId = \App\Services\SettingsService::get("{$prefix}_page_id");
+            if ($pageId) {
+                $page = \App\Models\Page::find($pageId);
+                if ($page) return route('pages.show', $page->slug);
+            }
+            return $default;
+        }
+        if ($type === \App\Enums\LinkType::HOME->value) return route('home');
+        if ($type === \App\Enums\LinkType::NEWS_INDEX->value) return route('news.index');
+        if ($type === \App\Enums\LinkType::GALLERY_INDEX->value) return route('gallery.index');
+        if ($type === \App\Enums\LinkType::DOCUMENT_INDEX->value) return route('documents.index');
+        if ($type === \App\Enums\LinkType::MAP->value) return route('public.map.index');
+        if ($type === \App\Enums\LinkType::CONTACT->value) return route('public.contact.show');
+        return \App\Services\SettingsService::get("{$prefix}_custom_url", $default);
+    };
 @endphp
 
 <!-- Hero Section -->
@@ -41,10 +60,10 @@
                 {{ \App\Services\SettingsService::get('hero_description', 'Portal informasi resmi ' . \App\Services\SettingsService::get('village_name', 'Desa Kertajaya') . ' yang menghadirkan informasi, pelayanan, potensi, dan perkembangan desa secara terbuka untuk seluruh masyarakat.') }}
             </p>
             <div class="flex flex-wrap items-center gap-4">
-                <a href="#profil-desa" class="inline-flex items-center justify-center rounded-full font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-2 bg-teal text-white hover:bg-teal/90 shadow-sm px-8 py-4 text-base">
+                <a href="{{ $resolveLink('hero_button_1', '#profil-desa') }}" class="inline-flex items-center justify-center rounded-full font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-2 bg-teal text-white hover:bg-teal/90 shadow-sm px-8 py-4 text-base">
                     Jelajahi Profil Desa
                 </a>
-                <a href="#berita" class="inline-flex items-center justify-center rounded-full font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-2 border-2 border-white bg-white/10 text-white hover:bg-white hover:text-navy backdrop-blur-sm px-8 py-4 text-base">
+                <a href="{{ $resolveLink('hero_button_2', '#berita') }}" class="inline-flex items-center justify-center rounded-full font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-2 border-2 border-white bg-white/10 text-white hover:bg-white hover:text-navy backdrop-blur-sm px-8 py-4 text-base">
                     Lihat Kabar Desa
                 </a>
             </div>
@@ -96,7 +115,7 @@
                         {{ \App\Services\SettingsService::get('profil_description', 'Desa Kertajaya terletak di dataran tinggi yang dikelilingi oleh perbukitan hijau dan hamparan sawah yang subur. Masyarakat kami hidup berdampingan dengan alam, memelihara tradisi luhur sambil terus bergerak maju mengikuti perkembangan zaman.') }}
                     </p>
                 </div>
-                <a href="#" class="inline-flex items-center justify-center rounded-full font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-2 border-2 border-navy text-navy hover:bg-navy hover:text-white px-6 py-3 text-sm group">
+                <a href="{{ $resolveLink('profil_button', '#') }}" class="inline-flex items-center justify-center rounded-full font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-2 border-2 border-navy text-navy hover:bg-navy hover:text-white px-6 py-3 text-sm group">
                     Selengkapnya tentang desa
                     <svg class="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                 </a>
@@ -145,7 +164,7 @@
                 </p>
             </div>
             <div class="shrink-0">
-                <a href="{{ \App\Services\SettingsService::get('potensi_all_link', '#') }}" class="inline-flex items-center justify-center rounded-full font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-2 border-2 border-navy text-navy hover:bg-navy hover:text-white px-6 py-3 text-sm">
+                <a href="{{ $resolveLink('potensi_all', '#') }}" class="inline-flex items-center justify-center rounded-full font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-2 border-2 border-navy text-navy hover:bg-navy hover:text-white px-6 py-3 text-sm">
                     Lihat Semua Potensi
                 </a>
             </div>
@@ -156,19 +175,19 @@
                 'title' => \App\Services\SettingsService::get('potensi_1_title', 'Pertanian & Perkebunan'),
                 'desc' => \App\Services\SettingsService::get('potensi_1_desc', 'Hamparan sawah terasering dan perkebunan teh yang menjadi tulang punggung ekonomi warga.'),
                 'image' => \App\Services\SettingsService::get('potensi_1_image', null),
-                'link' => \App\Services\SettingsService::get('potensi_1_link', ''),
+                'link' => $resolveLink('potensi_1', '#'),
             ];
             $pot2 = [
                 'title' => \App\Services\SettingsService::get('potensi_2_title', 'Pariwisata Alam'),
                 'desc' => \App\Services\SettingsService::get('potensi_2_desc', 'Destinasi wisata curug dan desa wisata yang asri.'),
                 'image' => \App\Services\SettingsService::get('potensi_2_image', null),
-                'link' => \App\Services\SettingsService::get('potensi_2_link', ''),
+                'link' => $resolveLink('potensi_2', '#'),
             ];
             $pot3 = [
                 'title' => \App\Services\SettingsService::get('potensi_3_title', 'UMKM Lokal'),
                 'desc' => \App\Services\SettingsService::get('potensi_3_desc', 'Kerajinan bambu dan olahan makanan tradisional.'),
                 'image' => \App\Services\SettingsService::get('potensi_3_image', null),
-                'link' => \App\Services\SettingsService::get('potensi_3_link', ''),
+                'link' => $resolveLink('potensi_3', '#'),
             ];
         @endphp
 
