@@ -16,15 +16,26 @@
         return $fallback;
     };
 
-    $resolveLink = function($prefix, $default = '#') {
-        $type = \App\Services\SettingsService::get("{$prefix}_type", 'custom');
+    $resolveLink = function($prefix, $default = null) {
+        $type = \App\Services\SettingsService::get("{$prefix}_type");
+        
+        // Default fallbacks for backwards compatibility if not yet saved in new system
+        if (is_null($type)) {
+            if ($prefix === 'hero_button_1') return '#profil-desa';
+            if ($prefix === 'hero_button_2') return '#berita';
+            if (in_array($prefix, ['profil_button', 'potensi_all'])) return '#';
+            return $default; // For potensi_1/2/3, old default was empty/null
+        }
+
+        if ($type === 'none' || $type === '') return null; // Explicitly hidden
+
         if ($type === \App\Enums\LinkType::PAGE->value) {
             $pageId = \App\Services\SettingsService::get("{$prefix}_page_id");
             if ($pageId) {
                 $page = \App\Models\Page::find($pageId);
                 if ($page) return route('pages.show', $page->slug);
             }
-            return $default;
+            return null; // Don't redirect to '#' if page is not found or empty
         }
         if ($type === \App\Enums\LinkType::HOME->value) return route('home');
         if ($type === \App\Enums\LinkType::NEWS_INDEX->value) return route('news.index');
@@ -32,7 +43,9 @@
         if ($type === \App\Enums\LinkType::DOCUMENT_INDEX->value) return route('documents.index');
         if ($type === \App\Enums\LinkType::MAP->value) return route('public.map.index');
         if ($type === \App\Enums\LinkType::CONTACT->value) return route('public.contact.show');
-        return \App\Services\SettingsService::get("{$prefix}_custom_url", $default);
+        
+        $custom = \App\Services\SettingsService::get("{$prefix}_custom_url");
+        return $custom ? $custom : null;
     };
 @endphp
 
@@ -60,12 +73,16 @@
                 {{ \App\Services\SettingsService::get('hero_description', 'Portal informasi resmi ' . \App\Services\SettingsService::get('village_name', 'Desa Kertajaya') . ' yang menghadirkan informasi, pelayanan, potensi, dan perkembangan desa secara terbuka untuk seluruh masyarakat.') }}
             </p>
             <div class="flex flex-wrap items-center gap-4">
-                <a href="{{ $resolveLink('hero_button_1', '#profil-desa') }}" class="inline-flex items-center justify-center rounded-full font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-2 bg-teal text-white hover:bg-teal/90 shadow-sm px-8 py-4 text-base">
+                @if($link1 = $resolveLink('hero_button_1'))
+                <a href="{{ $link1 }}" class="inline-flex items-center justify-center rounded-full font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-2 bg-teal text-white hover:bg-teal/90 shadow-sm px-8 py-4 text-base">
                     Jelajahi Profil Desa
                 </a>
-                <a href="{{ $resolveLink('hero_button_2', '#berita') }}" class="inline-flex items-center justify-center rounded-full font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-2 border-2 border-white bg-white/10 text-white hover:bg-white hover:text-navy backdrop-blur-sm px-8 py-4 text-base">
+                @endif
+                @if($link2 = $resolveLink('hero_button_2'))
+                <a href="{{ $link2 }}" class="inline-flex items-center justify-center rounded-full font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-2 border-2 border-white bg-white/10 text-white hover:bg-white hover:text-navy backdrop-blur-sm px-8 py-4 text-base">
                     Lihat Kabar Desa
                 </a>
+                @endif
             </div>
         </div>
     </div>
@@ -115,10 +132,12 @@
                         {{ \App\Services\SettingsService::get('profil_description', 'Desa Kertajaya terletak di dataran tinggi yang dikelilingi oleh perbukitan hijau dan hamparan sawah yang subur. Masyarakat kami hidup berdampingan dengan alam, memelihara tradisi luhur sambil terus bergerak maju mengikuti perkembangan zaman.') }}
                     </p>
                 </div>
-                <a href="{{ $resolveLink('profil_button', '#') }}" class="inline-flex items-center justify-center rounded-full font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-2 border-2 border-navy text-navy hover:bg-navy hover:text-white px-6 py-3 text-sm group">
+                @if($linkProfil = $resolveLink('profil_button'))
+                <a href="{{ $linkProfil }}" class="inline-flex items-center justify-center rounded-full font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-2 border-2 border-navy text-navy hover:bg-navy hover:text-white px-6 py-3 text-sm group">
                     Selengkapnya tentang desa
                     <svg class="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                 </a>
+                @endif
             </div>
 
             <div class="relative">
@@ -164,9 +183,11 @@
                 </p>
             </div>
             <div class="shrink-0">
-                <a href="{{ $resolveLink('potensi_all', '#') }}" class="inline-flex items-center justify-center rounded-full font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-2 border-2 border-navy text-navy hover:bg-navy hover:text-white px-6 py-3 text-sm">
+                @if($linkPotensi = $resolveLink('potensi_all'))
+                <a href="{{ $linkPotensi }}" class="inline-flex items-center justify-center rounded-full font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-2 border-2 border-navy text-navy hover:bg-navy hover:text-white px-6 py-3 text-sm">
                     Lihat Semua Potensi
                 </a>
+                @endif
             </div>
         </div>
 
@@ -175,69 +196,75 @@
                 'title' => \App\Services\SettingsService::get('potensi_1_title', 'Pertanian & Perkebunan'),
                 'desc' => \App\Services\SettingsService::get('potensi_1_desc', 'Hamparan sawah terasering dan perkebunan teh yang menjadi tulang punggung ekonomi warga.'),
                 'image' => \App\Services\SettingsService::get('potensi_1_image', null),
-                'link' => $resolveLink('potensi_1', '#'),
+                'link' => $resolveLink('potensi_1'),
             ];
             $pot2 = [
                 'title' => \App\Services\SettingsService::get('potensi_2_title', 'Pariwisata Alam'),
                 'desc' => \App\Services\SettingsService::get('potensi_2_desc', 'Destinasi wisata curug dan desa wisata yang asri.'),
                 'image' => \App\Services\SettingsService::get('potensi_2_image', null),
-                'link' => $resolveLink('potensi_2', '#'),
+                'link' => $resolveLink('potensi_2'),
             ];
             $pot3 = [
                 'title' => \App\Services\SettingsService::get('potensi_3_title', 'UMKM Lokal'),
                 'desc' => \App\Services\SettingsService::get('potensi_3_desc', 'Kerajinan bambu dan olahan makanan tradisional.'),
                 'image' => \App\Services\SettingsService::get('potensi_3_image', null),
-                'link' => $resolveLink('potensi_3', '#'),
+                'link' => $resolveLink('potensi_3'),
             ];
         @endphp
 
         <div class="grid lg:grid-cols-2 gap-6 md:gap-8 items-stretch">
             <!-- Large Card -->
-            <a href="{{ $pot1['link'] ?: '#' }}" class="block relative rounded-[32px] overflow-hidden group ring-4 ring-white shadow-lg h-full" style="min-height: 450px;">
+            <{{ $pot1['link'] ? 'a' : 'div' }} {!! $pot1['link'] ? 'href="'.$pot1['link'].'"' : '' !!} class="block relative rounded-[32px] overflow-hidden group ring-4 ring-white shadow-lg h-full" style="min-height: 450px;">
                 <img src="{{ $getMediaUrl($pot1['image'], 'large', 'https://images.unsplash.com/photo-1559628233-100c798642d4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxpbmRvbmVzaWElMjBuYXR1cmUlMjBhZ3JpY3VsdHVyZXxlbnwxfHx8fDE3ODQyOTcyNTh8MA&ixlib=rb-4.1.0&q=80&w=1080') }}" alt="{{ $pot1['title'] }}" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
                 <div class="absolute inset-0 bg-gradient-to-t from-navy/90 via-navy/20 to-transparent"></div>
                 <div class="absolute inset-0 p-8 flex flex-col justify-end">
                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wider bg-yellow text-navy w-fit mb-4">Potensi Utama</span>
                     <h3 class="text-3xl md:text-4xl font-bold text-white mb-3 font-display">{{ $pot1['title'] }}</h3>
                     <p class="text-white/80 text-lg max-w-md">{{ $pot1['desc'] }}</p>
+                    @if($pot1['link'])
                     <div class="mt-6 flex items-center justify-between">
                         <span class="text-white font-medium">Pelajari lebih lanjut</span>
                         <div class="w-12 h-12 rounded-full bg-white/20 backdrop-blur flex items-center justify-center text-white group-hover:bg-white group-hover:text-navy transition-colors">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
                         </div>
                     </div>
+                    @endif
                 </div>
-            </a>
+            </{{ $pot1['link'] ? 'a' : 'div' }}>
             
             <!-- Small Cards -->
             <div class="flex flex-col gap-6 md:gap-8 h-full">
                 <!-- Card 2 -->
-                <a href="{{ $pot2['link'] ?: '#' }}" class="block relative rounded-[32px] overflow-hidden group ring-4 ring-white shadow-lg" style="flex: 1 1 0%; min-height: 250px;">
+                <{{ $pot2['link'] ? 'a' : 'div' }} {!! $pot2['link'] ? 'href="'.$pot2['link'].'"' : '' !!} class="block relative rounded-[32px] overflow-hidden group ring-4 ring-white shadow-lg" style="flex: 1 1 0%; min-height: 250px;">
                     <img src="{{ $getMediaUrl($pot2['image'], 'medium', 'https://images.unsplash.com/photo-1513415756790-2ac1db1297d0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwzfHxpbmRvbmVzaWElMjBuYXR1cmUlMjBhZ3JpY3VsdHVyZXxlbnwxfHx8fDE3ODQyOTcyNTh8MA&ixlib=rb-4.1.0&q=80&w=1080') }}" alt="{{ $pot2['title'] }}" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
                     <div class="absolute inset-0 bg-gradient-to-t from-navy/90 to-transparent"></div>
                     <div class="absolute inset-0 p-6 flex flex-col justify-end">
                         <h3 class="text-2xl font-bold text-white mb-2 font-display">{{ $pot2['title'] }}</h3>
                         <p class="text-white/80">{{ $pot2['desc'] }}</p>
+                        @if($pot2['link'])
                         <div class="mt-4 flex items-center gap-2 text-lime font-medium group-hover:text-white transition-colors">
                             <span>Lihat selengkapnya</span>
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                         </div>
+                        @endif
                     </div>
-                </a>
+                </{{ $pot2['link'] ? 'a' : 'div' }}>
                 
                 <!-- Card 3 -->
-                <a href="{{ $pot3['link'] ?: '#' }}" class="block relative rounded-[32px] overflow-hidden group ring-4 ring-white shadow-lg" style="flex: 1 1 0%; min-height: 250px;">
+                <{{ $pot3['link'] ? 'a' : 'div' }} {!! $pot3['link'] ? 'href="'.$pot3['link'].'"' : '' !!} class="block relative rounded-[32px] overflow-hidden group ring-4 ring-white shadow-lg" style="flex: 1 1 0%; min-height: 250px;">
                     <img src="{{ $getMediaUrl($pot3['image'], 'medium', 'https://images.unsplash.com/photo-1569134471968-872d5cd1fca9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwzfHxpbmRvbmVzaWElMjB2aWxsYWdlJTIwbGFuZHNjYXBlfGVufDF8fHx8MTc4NDI5NzI1OHww&ixlib=rb-4.1.0&q=80&w=1080') }}" alt="{{ $pot3['title'] }}" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
                     <div class="absolute inset-0 bg-gradient-to-t from-navy/90 to-transparent"></div>
                     <div class="absolute inset-0 p-6 flex flex-col justify-end">
                         <h3 class="text-2xl font-bold text-white mb-2 font-display">{{ $pot3['title'] }}</h3>
                         <p class="text-white/80">{{ $pot3['desc'] }}</p>
+                        @if($pot3['link'])
                         <div class="mt-4 flex items-center gap-2 text-lime font-medium group-hover:text-white transition-colors">
                             <span>Lihat selengkapnya</span>
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                         </div>
+                        @endif
                     </div>
-                </a>
+                </{{ $pot3['link'] ? 'a' : 'div' }}>
             </div>
         </div>
 

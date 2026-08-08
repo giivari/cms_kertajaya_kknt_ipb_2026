@@ -117,6 +117,7 @@ class WebsiteSettings extends Page
             \Filament\Forms\Components\Select::make("{$prefix}_type")
                 ->label("Tujuan Tautan {$label}")
                 ->options([
+                    'none' => 'Sembunyikan Tombol / Tanpa Tautan',
                     \App\Enums\LinkType::PAGE->value => 'Halaman Website',
                     \App\Enums\LinkType::HOME->value => 'Beranda',
                     \App\Enums\LinkType::NEWS_INDEX->value => 'Daftar Berita',
@@ -126,20 +127,24 @@ class WebsiteSettings extends Page
                     \App\Enums\LinkType::CONTACT->value => 'Kontak',
                     \App\Enums\LinkType::CUSTOM->value => 'Tautan Luar / Kustom',
                 ])
-                ->default(\App\Enums\LinkType::CUSTOM->value)
-                ->live(),
+                ->default('none')
+                ->live()
+                ->required()
+                ->columnSpan(fn ($get) => in_array($get("{$prefix}_type"), [\App\Enums\LinkType::PAGE->value, \App\Enums\LinkType::CUSTOM->value]) ? 1 : 2),
             \Filament\Forms\Components\Select::make("{$prefix}_page_id")
                 ->label("Halaman yang Dituju ({$label})")
                 ->options(fn () => \App\Models\Page::where('status', \App\Enums\PageStatus::PUBLISHED->value)->pluck('title', 'id'))
                 ->searchable()
                 ->visible(fn ($get) => $get("{$prefix}_type") === \App\Enums\LinkType::PAGE->value)
-                ->required(fn ($get) => $get("{$prefix}_type") === \App\Enums\LinkType::PAGE->value),
+                ->required(fn ($get) => $get("{$prefix}_type") === \App\Enums\LinkType::PAGE->value)
+                ->columnSpan(1),
             \Filament\Forms\Components\TextInput::make("{$prefix}_custom_url")
                 ->label("Alamat Tautan ({$label})")
                 ->placeholder('Contoh: /halaman/potensi-desa atau #profil-desa')
                 ->visible(fn ($get) => $get("{$prefix}_type") === \App\Enums\LinkType::CUSTOM->value)
                 ->required(fn ($get) => $get("{$prefix}_type") === \App\Enums\LinkType::CUSTOM->value)
-                ->live(onBlur: true),
+                ->live(onBlur: true)
+                ->columnSpan(1),
         ];
     }
 
@@ -181,9 +186,11 @@ class WebsiteSettings extends Page
                                         Textarea::make('hero_description')->label('Deskripsi Hero')->required()->live(debounce: 500),
                                         Select::make('hero_image')->label('Gambar Latar Hero')->options($mediaOptions)->searchable()->live(),
                                         Fieldset::make('Tombol Kiri Hero (opsional)')
-                                            ->schema(self::getLinkSchema('hero_button_1', 'Tombol Kiri Hero')),
+                                            ->schema(self::getLinkSchema('hero_button_1', 'Tombol Kiri Hero'))
+                                            ->columns(2),
                                         Fieldset::make('Tombol Kanan Hero (opsional)')
-                                            ->schema(self::getLinkSchema('hero_button_2', 'Tombol Kanan Hero')),
+                                            ->schema(self::getLinkSchema('hero_button_2', 'Tombol Kanan Hero'))
+                                            ->columns(2),
                                     ])->columns(1),
                                 Section::make('Profil Singkat')
                                     ->schema([
@@ -192,7 +199,8 @@ class WebsiteSettings extends Page
                                         Select::make('profil_image_1')->label('Gambar Profil 1')->options($mediaOptions)->searchable()->live(),
                                         Select::make('profil_image_2')->label('Gambar Profil 2')->options($mediaOptions)->searchable()->live(),
                                         Fieldset::make('Tombol Selengkapnya')
-                                            ->schema(self::getLinkSchema('profil_button', 'Selengkapnya')),
+                                            ->schema(self::getLinkSchema('profil_button', 'Selengkapnya'))
+                                            ->columns(2),
                                     ])->columns(2),
                                 Section::make('Potensi Desa')
                                     ->schema([
@@ -200,6 +208,7 @@ class WebsiteSettings extends Page
                                         Textarea::make('potensi_description')->label('Deskripsi Singkat Bagian Potensi')->columnSpanFull()->live(debounce: 500),
                                         Fieldset::make('Tombol "Lihat Semua Potensi"')
                                             ->schema(self::getLinkSchema('potensi_all', 'Semua Potensi'))
+                                            ->columns(2)
                                             ->columnSpanFull(),
                                         
                                         Fieldset::make('Kartu Potensi 1 (Besar)')
