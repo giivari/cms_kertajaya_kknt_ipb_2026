@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="bg-warm-white min-h-screen py-12 lg:py-20">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex flex-col lg:flex-row gap-12 lg:gap-20">
             <!-- Left Column: Info -->
             <div class="lg:w-5/12 flex flex-col justify-center">

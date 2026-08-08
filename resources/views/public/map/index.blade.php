@@ -5,7 +5,7 @@
 
 @section('content')
 <div class="min-h-screen bg-warm-white py-12 lg:py-20">
-    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <div class="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8">
         <div class="mb-8 max-w-3xl">
             <p class="mb-2 text-sm font-semibold uppercase tracking-wider text-teal">Direktori Desa</p>
             <h1 class="font-display text-3xl font-bold text-navy sm:text-4xl">Peta Desa Kertajaya</h1>

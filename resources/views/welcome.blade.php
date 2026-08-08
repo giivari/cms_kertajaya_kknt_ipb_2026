@@ -31,7 +31,7 @@
         @endif
     </div>
     
-    <div class="relative max-w-7xl mx-auto py-24 px-4 sm:py-32 sm:px-6 lg:px-8 flex flex-col items-center text-center">
+    <div class="relative max-w-[1440px] mx-auto py-24 px-4 sm:py-32 sm:px-6 lg:px-8 flex flex-col items-center text-center">
         <h1 class="text-4xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl font-display">
             Selamat Datang di <span class="text-lime-400">{{ \App\Services\SettingsService::get('village_name', 'Desa Kertajaya') }}</span>
         </h1>
@@ -61,7 +61,7 @@
 
 <!-- LATEST NEWS -->
 <div class="py-16 bg-white">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-end mb-10">
             <div>
                 <h2 class="text-base text-emerald-600 font-semibold tracking-wide uppercase">Informasi</h2>
@@ -141,7 +141,7 @@
 
 <!-- GALLERY MOSAIC -->
 <div class="py-16 bg-cream-50">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-end mb-10">
             <div>
                 <h2 class="text-base text-emerald-600 font-semibold tracking-wide uppercase">Dokumentasi</h2>
@@ -191,7 +191,7 @@
 
 <!-- LATEST DOCUMENTS -->
 <div class="py-16 bg-white border-t border-cream-200">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-end mb-10">
             <div>
                 <h2 class="text-base text-emerald-600 font-semibold tracking-wide uppercase">Informasi Publik</h2>
@@ -239,7 +239,7 @@
 <!-- FINAL CTA -->
 <div class="bg-navy-900 relative overflow-hidden">
     <div class="absolute inset-0 bg-gradient-to-r from-teal-900 to-navy-900 mix-blend-multiply opacity-50"></div>
-    <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:py-16 lg:px-8 lg:flex lg:items-center lg:justify-between relative z-10">
+    <div class="max-w-[1440px] mx-auto py-12 px-4 sm:px-6 lg:py-16 lg:px-8 lg:flex lg:items-center lg:justify-between relative z-10">
         <h2 class="text-3xl font-extrabold tracking-tight text-white sm:text-4xl font-display">
             <span class="block text-lime-400">Punya pertanyaan atau masukan?</span>
             <span class="block">Hubungi pemerintah desa sekarang.</span>

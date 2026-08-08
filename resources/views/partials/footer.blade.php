@@ -1,5 +1,5 @@
 <footer role="contentinfo" class="bg-navy text-white pt-8 md:pt-12 pb-4 border-t border-white/10 mt-auto">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8 mb-6 md:mb-8">
             
             <!-- Col 1: Brand & Description -->

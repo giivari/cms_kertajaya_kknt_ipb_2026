@@ -30,7 +30,7 @@
                 <div class="absolute inset-0 bg-black/30"></div>
             </div>
         @endif
-        <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center mt-8 mb-8">
+        <div class="relative max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 text-center mt-8 mb-8">
             <h1 class="text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl drop-shadow-md font-display">
                 {{ $page->title }}
             </h1>
@@ -43,7 +43,7 @@
     </div>
 
     <!-- Page Content -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-12">
         @foreach($page->sections as $section)
             @if($section->is_visible)
                 <div class="mb-12 {{ $section->layout_type === 'full_width' ? 'w-full max-w-none px-0' : '' }}">
