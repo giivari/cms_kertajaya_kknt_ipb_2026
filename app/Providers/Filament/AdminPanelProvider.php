@@ -36,6 +36,7 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path(config('village.admin_path', 'desa-dashboard'))
+            ->spa()
             ->login(Login::class)
             ->profile(EditProfile::class)
             ->userMenuItems([
