@@ -7,8 +7,10 @@
 </div>
 
 <script>
-    document.addEventListener("DOMContentLoaded", function() {
+    (function() {
         const loader = document.getElementById('global-filament-loader');
+        if (!loader) return;
+        
         let activeRequests = 0;
         let loaderTimeout;
         
@@ -30,40 +32,51 @@
                         loader.classList.remove('opacity-100');
                         loader.classList.add('opacity-0', 'pointer-events-none');
                     }
-                }, 300);
+                }, 100);
             }
         }
 
-        // Filament / Livewire v3 Hooks
-        if (typeof document.addEventListener !== 'undefined') {
-            document.addEventListener('livewire:init', () => {
-                Livewire.hook('commit', ({ commit, succeed, fail }) => {
-                    // Tampilkan loader untuk semua action (simpan, pratinjau, dll)
-                    if (commit.calls.length > 0) {
-                        showLoader();
-                        succeed(() => hideLoader());
-                        fail(() => hideLoader());
-                    }
-                });
-            });
-
-            // Hook untuk navigasi halaman SPA
-            document.addEventListener('livewire:navigating', () => {
-                showLoader();
-            });
+        let hooksRegistered = false;
+        function registerLivewireHooks() {
+            if (hooksRegistered || typeof window.Livewire === 'undefined') return;
+            hooksRegistered = true;
             
-            document.addEventListener('livewire:navigated', () => {
-                hideLoader();
-                activeRequests = 0; 
-            });
-
-            // Menangkap form biasa (misal halaman login)
-            document.addEventListener('submit', function(e) {
-                const form = e.target;
-                if (!form.target || form.target !== '_blank') {
-                    showLoader();
-                }
+            Livewire.hook('commit', ({ commit, succeed, fail }) => {
+                showLoader();
+                succeed(() => hideLoader());
+                fail(() => hideLoader());
             });
         }
-    });
+
+        // Try immediately
+        registerLivewireHooks();
+
+        // Listen for standard Livewire events
+        document.addEventListener('livewire:init', registerLivewireHooks);
+        document.addEventListener('livewire:initialized', registerLivewireHooks);
+
+        document.addEventListener('livewire:navigating', () => {
+            showLoader();
+        });
+        
+        document.addEventListener('livewire:navigated', () => {
+            hideLoader();
+            activeRequests = 0; 
+        });
+
+        // Catch standard interactions
+        document.addEventListener('submit', function(e) {
+            const form = e.target;
+            if (!form.target || form.target !== '_blank') {
+                showLoader();
+            }
+        });
+        
+        document.addEventListener('click', function(e) {
+            const btn = e.target.closest('button');
+            if (btn && (btn.hasAttribute('wire:click') || btn.type === 'submit')) {
+                showLoader();
+            }
+        });
+    })();
 </script>
