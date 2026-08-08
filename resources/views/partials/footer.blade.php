@@ -74,18 +74,19 @@
             <div class="lg:col-span-3">
                 <h4 class="font-bold text-base md:text-lg mb-4 text-white font-display">Jam Pelayanan</h4>
                 <ul class="space-y-2 md:space-y-3 text-sm md:text-base text-white/70">
+                    @php
+                        $serviceHours = \App\Services\SettingsService::get('service_hours', [
+                            ['day' => 'Senin - Kamis:', 'time' => '08.00 - 15.00'],
+                            ['day' => 'Jumat:', 'time' => '08.00 - 11.30'],
+                            ['day' => 'Sabtu - Minggu:', 'time' => 'Tutup'],
+                        ]);
+                    @endphp
+                    @foreach($serviceHours as $sh)
                     <li class="flex justify-between">
-                        <span>Senin - Kamis:</span>
-                        <span class="text-white font-medium">08.00 - 15.00</span>
+                        <span>{{ $sh['day'] ?? '' }}</span>
+                        <span class="text-white font-medium">{{ $sh['time'] ?? '' }}</span>
                     </li>
-                    <li class="flex justify-between">
-                        <span>Jumat:</span>
-                        <span class="text-white font-medium">08.00 - 11.30</span>
-                    </li>
-                    <li class="flex justify-between">
-                        <span>Sabtu - Minggu:</span>
-                        <span class="text-white font-medium">Tutup</span>
-                    </li>
+                    @endforeach
                 </ul>
             </div>
 

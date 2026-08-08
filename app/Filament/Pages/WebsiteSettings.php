@@ -144,15 +144,10 @@ class WebsiteSettings extends Page
             'potensi_3_text' => SettingsService::get('potensi_3_text', 'Lihat selengkapnya'),
             'potensi_3_type' => SettingsService::get('potensi_3_type', 'none'),
             'potensi_3_page_id' => SettingsService::get('potensi_3_page_id', null),
-            'potensi_3_custom_url' => SettingsService::get('potensi_3_custom_url', null),
-
-            'quick_access_menu' => SettingsService::get('quick_access_menu', [
-                ['icon' => '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>', 'label' => 'Profil Desa', 'type' => 'custom', 'custom_url' => '#profil-desa'],
-                ['icon' => '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg>', 'label' => 'Potensi Desa', 'type' => 'custom', 'custom_url' => '#potensi-desa'],
-                ['icon' => '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>', 'label' => 'Berita', 'type' => 'custom', 'custom_url' => '#berita'],
-                ['icon' => '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>', 'label' => 'Galeri', 'type' => 'custom', 'custom_url' => '#galeri'],
-                ['icon' => '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>', 'label' => 'Dokumen', 'type' => 'custom', 'custom_url' => '#dokumen'],
-                ['icon' => '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>', 'label' => 'Pelayanan', 'type' => 'custom', 'custom_url' => route('public.contact.show')],
+            'service_hours' => SettingsService::get('service_hours', [
+                ['day' => 'Senin - Kamis:', 'time' => '08.00 - 15.00'],
+                ['day' => 'Jumat:', 'time' => '08.00 - 11.30'],
+                ['day' => 'Sabtu - Minggu:', 'time' => 'Tutup'],
             ]),
         ]);
     }
@@ -247,37 +242,6 @@ class WebsiteSettings extends Page
                                             ->columns(2)
                                             ->columnSpan(1),
                                     ])->columns(2),
-                                Section::make('Pintasan Akses Cepat (Quick Access)')
-                                    ->schema([
-                                        Repeater::make('quick_access_menu')
-                                            ->label('Daftar Menu')
-                                            ->schema([
-                                                TextInput::make('label')->label('Teks Tombol')->required(),
-                                                Select::make('type')
-                                                    ->label('Tujuan Tautan')
-                                                    ->options([
-                                                        \App\Enums\LinkType::PAGE->value => 'Halaman Internal',
-                                                        \App\Enums\LinkType::CUSTOM->value => 'Tautan Luar / Kustom',
-                                                    ])
-                                                    ->default(\App\Enums\LinkType::CUSTOM->value)
-                                                    ->live()
-                                                    ->required(),
-                                                Select::make('page_id')
-                                                    ->label('Pilih Halaman')
-                                                    ->options(fn () => \App\Models\Page::pluck('title', 'id'))
-                                                    ->visible(fn ($get) => $get('type') === \App\Enums\LinkType::PAGE->value)
-                                                    ->required(fn ($get) => $get('type') === \App\Enums\LinkType::PAGE->value),
-                                                TextInput::make('custom_url')
-                                                    ->label('Alamat Tautan')
-                                                    ->visible(fn ($get) => $get('type') === \App\Enums\LinkType::CUSTOM->value)
-                                                    ->required(fn ($get) => $get('type') === \App\Enums\LinkType::CUSTOM->value),
-                                                Textarea::make('icon')->label('Ikon (SVG)')->required()->rows(3)->helperText('Masukkan kode SVG ikon (bebas dari web mana pun, disarankan heroicons.com)')->columnSpanFull(),
-                                            ])
-                                            ->columns(2)
-                                            ->defaultItems(6)
-                                            ->reorderable(true)
-                                            ->collapsible(),
-                                    ]),
                                 Section::make('Profil Singkat')
                                     ->schema([
                                         TextInput::make('profil_title')->label('Judul Profil')->live(onBlur: true),
@@ -342,6 +306,19 @@ class WebsiteSettings extends Page
                                         TextInput::make('address_province')->label('Provinsi')->live(onBlur: true),
                                         TextInput::make('address_postal_code')->label('Kode Pos')->live(onBlur: true),
                                     ])->columns(2),
+                                Section::make('Jam Pelayanan')
+                                    ->schema([
+                                        Repeater::make('service_hours')
+                                            ->label('Daftar Jam Pelayanan')
+                                            ->schema([
+                                                TextInput::make('day')->label('Hari')->required(),
+                                                TextInput::make('time')->label('Jam')->required(),
+                                            ])
+                                            ->columns(2)
+                                            ->defaultItems(3)
+                                            ->reorderable(true)
+                                            ->collapsible(),
+                                    ]),
                             ]),
                         \Filament\Schemas\Components\Tabs\Tab::make('Media Sosial')
                             ->schema([
