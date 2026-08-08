@@ -15,14 +15,14 @@
 <div class="fi-auth-theme-switcher">
     <x-filament-panels::theme-switcher />
 </div>
-<div class="admin-auth-brand flex flex-col items-center justify-center mt-8 sm:mt-10 pt-4 pb-2" style="gap: 1.5rem;">
+<div class="admin-auth-brand flex flex-col items-center justify-center mt-8 sm:mt-10 pt-4 pb-2" style="gap: 1.25rem;">
     @if($logoUrl)
-        <div class="admin-auth-brand-mark flex items-center justify-center rounded-full ring-1 ring-gray-950/10" style="width: 6rem; height: 6rem; overflow: hidden; flex-shrink: 0; background-color: #ffffff; box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);">
-            <img src="{{ $logoUrl }}" alt="{{ $villageName }}" style="width: 4.5rem; height: 4.5rem; object-fit: contain; transition: transform 0.3s ease;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+        <div class="admin-auth-brand-mark flex items-center justify-center rounded-full ring-1 ring-gray-950/10" style="width: 5rem; height: 5rem; overflow: hidden; flex-shrink: 0; background-color: #ffffff; box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);">
+            <img src="{{ $logoUrl }}" alt="{{ $villageName }}" style="width: 3.75rem; height: 3.75rem; object-fit: contain; transition: transform 0.3s ease;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
         </div>
     @else
-        <div class="admin-auth-brand-mark flex items-center justify-center rounded-full text-teal-600 ring-1 ring-teal-500/20" style="width: 6rem; height: 6rem; flex-shrink: 0; background-color: #ffffff; box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);">
-            @svg('heroicon-s-shield-check', 'w-8 h-8', ['style' => 'width: 3rem; height: 3rem;'])
+        <div class="admin-auth-brand-mark flex items-center justify-center rounded-full text-teal-600 ring-1 ring-teal-500/20" style="width: 5rem; height: 5rem; flex-shrink: 0; background-color: #ffffff; box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);">
+            @svg('heroicon-s-shield-check', 'w-8 h-8', ['style' => 'width: 2.5rem; height: 2.5rem;'])
         </div>
     @endif
     
