@@ -108,6 +108,42 @@ class WebsiteSettings extends Page
             'stat_families' => SettingsService::get('stat_families', '850'),
             'stat_area' => SettingsService::get('stat_area', '1.250'),
             'stat_hamlets' => SettingsService::get('stat_hamlets', '4'),
+            
+            // Buttons initialization
+            'hero_button_1_text' => SettingsService::get('hero_button_1_text', 'Jelajahi Profil Desa'),
+            'hero_button_1_type' => SettingsService::get('hero_button_1_type', \App\Enums\LinkType::CUSTOM->value),
+            'hero_button_1_page_id' => SettingsService::get('hero_button_1_page_id', null),
+            'hero_button_1_custom_url' => SettingsService::get('hero_button_1_custom_url', '#profil-desa'),
+
+            'hero_button_2_text' => SettingsService::get('hero_button_2_text', 'Lihat Kabar Desa'),
+            'hero_button_2_type' => SettingsService::get('hero_button_2_type', \App\Enums\LinkType::CUSTOM->value),
+            'hero_button_2_page_id' => SettingsService::get('hero_button_2_page_id', null),
+            'hero_button_2_custom_url' => SettingsService::get('hero_button_2_custom_url', '#berita'),
+
+            'profil_button_text' => SettingsService::get('profil_button_text', 'Selengkapnya tentang desa'),
+            'profil_button_type' => SettingsService::get('profil_button_type', \App\Enums\LinkType::CUSTOM->value),
+            'profil_button_page_id' => SettingsService::get('profil_button_page_id', null),
+            'profil_button_custom_url' => SettingsService::get('profil_button_custom_url', '#'),
+
+            'potensi_all_text' => SettingsService::get('potensi_all_text', 'Lihat Semua Potensi'),
+            'potensi_all_type' => SettingsService::get('potensi_all_type', \App\Enums\LinkType::CUSTOM->value),
+            'potensi_all_page_id' => SettingsService::get('potensi_all_page_id', null),
+            'potensi_all_custom_url' => SettingsService::get('potensi_all_custom_url', '#'),
+
+            'potensi_1_text' => SettingsService::get('potensi_1_text', 'Pelajari lebih lanjut'),
+            'potensi_1_type' => SettingsService::get('potensi_1_type', 'none'),
+            'potensi_1_page_id' => SettingsService::get('potensi_1_page_id', null),
+            'potensi_1_custom_url' => SettingsService::get('potensi_1_custom_url', null),
+
+            'potensi_2_text' => SettingsService::get('potensi_2_text', 'Lihat selengkapnya'),
+            'potensi_2_type' => SettingsService::get('potensi_2_type', 'none'),
+            'potensi_2_page_id' => SettingsService::get('potensi_2_page_id', null),
+            'potensi_2_custom_url' => SettingsService::get('potensi_2_custom_url', null),
+
+            'potensi_3_text' => SettingsService::get('potensi_3_text', 'Lihat selengkapnya'),
+            'potensi_3_type' => SettingsService::get('potensi_3_type', 'none'),
+            'potensi_3_page_id' => SettingsService::get('potensi_3_page_id', null),
+            'potensi_3_custom_url' => SettingsService::get('potensi_3_custom_url', null),
         ]);
     }
 
