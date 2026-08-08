@@ -15,14 +15,14 @@
 <div class="fi-auth-theme-switcher">
     <x-filament-panels::theme-switcher />
 </div>
-<div class="admin-auth-brand flex flex-col items-center justify-center space-y-4 mt-8 sm:mt-10 pt-4 pb-2">
+<div class="admin-auth-brand flex flex-col items-center justify-center mt-8 sm:mt-10 pt-4 pb-2" style="gap: 1.5rem;">
     @if($logoUrl)
-        <div class="admin-auth-brand-mark flex items-center justify-center w-16 h-16 bg-white dark:bg-gray-800 rounded-full shadow-sm ring-1 ring-gray-950/10 dark:ring-white/20">
-            <img src="{{ $logoUrl }}" alt="{{ $villageName }}" class="h-10 w-10 object-contain">
+        <div class="admin-auth-brand-mark flex items-center justify-center bg-white dark:bg-gray-800 rounded-full ring-1 ring-gray-950/10 dark:ring-white/20" style="width: 6rem; height: 6rem; overflow: hidden; flex-shrink: 0; box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);">
+            <img src="{{ $logoUrl }}" alt="{{ $villageName }}" style="width: 4.5rem; height: 4.5rem; object-fit: contain; transition: transform 0.3s ease;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
         </div>
     @else
-        <div class="admin-auth-brand-mark flex items-center justify-center w-14 h-14 rounded-full bg-teal-500/10 text-teal-600 dark:bg-teal-400/10 dark:text-teal-400 ring-1 ring-teal-500/20 dark:ring-teal-400/20">
-            @svg('heroicon-s-shield-check', 'w-8 h-8')
+        <div class="admin-auth-brand-mark flex items-center justify-center rounded-full bg-teal-500/10 text-teal-600 dark:bg-teal-400/10 dark:text-teal-400 ring-1 ring-teal-500/20 dark:ring-teal-400/20" style="width: 6rem; height: 6rem; flex-shrink: 0; box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);">
+            @svg('heroicon-s-shield-check', 'w-8 h-8', ['style' => 'width: 3rem; height: 3rem;'])
         </div>
     @endif
     
