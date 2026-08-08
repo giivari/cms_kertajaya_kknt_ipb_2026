@@ -111,7 +111,7 @@ class WebsiteSettings extends Page
         ]);
     }
 
-    public static function getLinkSchema(string $prefix, string $label, string $defaultText = 'Selengkapnya', bool $hasPrecedingImage = false): array
+    public static function getLinkSchema(string $prefix, string $label, string $defaultText = 'Selengkapnya', bool $hasPrecedingImage = false, string $defaultType = 'none', ?string $defaultUrl = null): array
     {
         return [
             \Filament\Forms\Components\TextInput::make("{$prefix}_text")
@@ -133,7 +133,7 @@ class WebsiteSettings extends Page
                     \App\Enums\LinkType::CONTACT->value => 'Kontak',
                     \App\Enums\LinkType::CUSTOM->value => 'Tautan Luar / Kustom',
                 ])
-                ->default('none')
+                ->default($defaultType)
                 ->live()
                 ->required()
                 ->columnSpan(fn ($get) => $get("{$prefix}_type") === 'none' ? ($hasPrecedingImage ? 3 : 'full') : (in_array($get("{$prefix}_type"), [\App\Enums\LinkType::PAGE->value, \App\Enums\LinkType::CUSTOM->value]) ? 1 : 2)),
@@ -146,6 +146,7 @@ class WebsiteSettings extends Page
                 ->columnSpan(1),
             \Filament\Forms\Components\TextInput::make("{$prefix}_custom_url")
                 ->label("Alamat Tautan ({$label})")
+                ->default($defaultUrl)
                 ->placeholder('Contoh: /halaman/potensi-desa atau #profil-desa')
                 ->visible(fn ($get) => $get("{$prefix}_type") === \App\Enums\LinkType::CUSTOM->value)
                 ->required(fn ($get) => $get("{$prefix}_type") === \App\Enums\LinkType::CUSTOM->value)
@@ -188,16 +189,18 @@ class WebsiteSettings extends Page
                             ->schema([
                                 Section::make('Bagian Pahlawan (Hero)')
                                     ->schema([
-                                        TextInput::make('hero_title')->label('Judul Hero')->required()->live(onBlur: true),
-                                        Textarea::make('hero_description')->label('Deskripsi Hero')->required()->live(debounce: 500),
-                                        Select::make('hero_image')->label('Gambar Latar Hero')->options($mediaOptions)->searchable()->live(),
+                                        TextInput::make('hero_title')->label('Judul Hero')->required()->live(onBlur: true)->columnSpanFull(),
+                                        Textarea::make('hero_description')->label('Deskripsi Hero')->required()->live(debounce: 500)->columnSpanFull(),
+                                        Select::make('hero_image')->label('Gambar Latar Hero')->options($mediaOptions)->searchable()->live()->columnSpanFull(),
                                         Fieldset::make('Tombol Kiri Hero (opsional)')
-                                            ->schema(self::getLinkSchema('hero_button_1', 'Tombol Kiri Hero', 'Jelajahi Profil Desa'))
-                                            ->columns(3),
+                                            ->schema(self::getLinkSchema('hero_button_1', 'Tombol Kiri Hero', 'Jelajahi Profil Desa', false, \App\Enums\LinkType::CUSTOM->value, '#profil-desa'))
+                                            ->columns(3)
+                                            ->columnSpan(1),
                                         Fieldset::make('Tombol Kanan Hero (opsional)')
-                                            ->schema(self::getLinkSchema('hero_button_2', 'Tombol Kanan Hero', 'Lihat Kabar Desa'))
-                                            ->columns(3),
-                                    ])->columns(1),
+                                            ->schema(self::getLinkSchema('hero_button_2', 'Tombol Kanan Hero', 'Lihat Kabar Desa', false, \App\Enums\LinkType::CUSTOM->value, '#berita'))
+                                            ->columns(3)
+                                            ->columnSpan(1),
+                                    ])->columns(2),
                                 Section::make('Profil Singkat')
                                     ->schema([
                                         TextInput::make('profil_title')->label('Judul Profil')->live(onBlur: true),
@@ -205,7 +208,7 @@ class WebsiteSettings extends Page
                                         Select::make('profil_image_1')->label('Gambar Profil 1')->options($mediaOptions)->searchable()->live(),
                                         Select::make('profil_image_2')->label('Gambar Profil 2')->options($mediaOptions)->searchable()->live(),
                                         Fieldset::make('Tombol Selengkapnya')
-                                            ->schema(self::getLinkSchema('profil_button', 'Selengkapnya', 'Selengkapnya tentang desa'))
+                                            ->schema(self::getLinkSchema('profil_button', 'Selengkapnya', 'Selengkapnya tentang desa', false, \App\Enums\LinkType::CUSTOM->value, '#'))
                                             ->columns(3),
                                     ])->columns(2),
                                 Section::make('Potensi Desa')
@@ -213,7 +216,7 @@ class WebsiteSettings extends Page
                                         TextInput::make('potensi_title')->label('Judul Utama Bagian Potensi')->columnSpanFull()->live(onBlur: true),
                                         Textarea::make('potensi_description')->label('Deskripsi Singkat Bagian Potensi')->columnSpanFull()->live(debounce: 500),
                                         Fieldset::make('Tombol "Lihat Semua Potensi"')
-                                            ->schema(self::getLinkSchema('potensi_all', 'Semua Potensi', 'Lihat Semua Potensi'))
+                                            ->schema(self::getLinkSchema('potensi_all', 'Semua Potensi', 'Lihat Semua Potensi', false, \App\Enums\LinkType::CUSTOM->value, '#'))
                                             ->columns(3)
                                             ->columnSpanFull(),
                                         
