@@ -1,9 +1,9 @@
 <footer role="contentinfo" class="bg-navy text-white pt-8 md:pt-12 pb-4 border-t border-white/10 mt-auto">
     <div class="w-full mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-24 2xl:px-32">
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8 mb-6 md:mb-8">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 mb-6 md:mb-8">
             
             <!-- Col 1: Brand & Description -->
-            <div class="sm:col-span-2 lg:col-span-2 lg:pr-8">
+            <div class="sm:col-span-2 lg:col-span-1 lg:pr-8">
                 <a href="{{ route('home') }}" class="flex items-center gap-3 mb-4 group hover:opacity-90 transition-opacity">
                     @php
                         $villageName = \App\Services\SettingsService::get('village_name', 'Desa Kertajaya');
