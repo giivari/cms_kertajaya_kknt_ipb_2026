@@ -132,13 +132,13 @@ class WebsiteSettings extends Page
                 ->label("Halaman yang Dituju ({$label})")
                 ->options(fn () => \App\Models\Page::where('status', \App\Enums\PageStatus::PUBLISHED->value)->pluck('title', 'id'))
                 ->searchable()
-                ->visible(fn (\Filament\Forms\Get $get) => $get("{$prefix}_type") === \App\Enums\LinkType::PAGE->value)
-                ->required(fn (\Filament\Forms\Get $get) => $get("{$prefix}_type") === \App\Enums\LinkType::PAGE->value),
+                ->visible(fn ($get) => $get("{$prefix}_type") === \App\Enums\LinkType::PAGE->value)
+                ->required(fn ($get) => $get("{$prefix}_type") === \App\Enums\LinkType::PAGE->value),
             \Filament\Forms\Components\TextInput::make("{$prefix}_custom_url")
                 ->label("Alamat Tautan ({$label})")
                 ->placeholder('Contoh: /halaman/potensi-desa atau #profil-desa')
-                ->visible(fn (\Filament\Forms\Get $get) => $get("{$prefix}_type") === \App\Enums\LinkType::CUSTOM->value)
-                ->required(fn (\Filament\Forms\Get $get) => $get("{$prefix}_type") === \App\Enums\LinkType::CUSTOM->value)
+                ->visible(fn ($get) => $get("{$prefix}_type") === \App\Enums\LinkType::CUSTOM->value)
+                ->required(fn ($get) => $get("{$prefix}_type") === \App\Enums\LinkType::CUSTOM->value)
                 ->live(onBlur: true),
         ];
     }
