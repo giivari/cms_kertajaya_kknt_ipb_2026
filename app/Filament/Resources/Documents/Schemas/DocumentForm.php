@@ -25,10 +25,11 @@ class DocumentForm
                                 TextInput::make('title')
                                     ->label('Judul Dokumen')
                                     ->required()
+                                    ->placeholder('Contoh: Laporan Keuangan Desa Tahun 2026')
                                     ->maxLength(255),
                                 Textarea::make('description')
                                     ->label('Deskripsi')
-                                    ->placeholder('Penjelasan singkat mengenai isi dokumen...')
+                                    ->placeholder('Contoh: Dokumen ini berisi rincian laporan anggaran dan pengeluaran...')
                                     ->columnSpanFull(),
                             ]),
                     ])

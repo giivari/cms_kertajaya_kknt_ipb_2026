@@ -31,18 +31,18 @@ class NewsForm
                             ->schema([
                                 TextInput::make('title')
                                     ->label('Judul Berita')
-                                    ->placeholder('Masukkan judul berita yang jelas dan singkat')
+                                    ->placeholder('Contoh: Pelaksanaan Upacara Bendera HUT RI ke-81')
                                     ->required()
                                     ->maxLength(255),
                                 Textarea::make('excerpt')
                                     ->label('Ringkasan')
-                                    ->placeholder('Ringkasan singkat yang tampil pada daftar berita')
+                                    ->placeholder('Contoh: Desa Kertajaya merayakan HUT RI ke-81 dengan mengadakan berbagai perlombaan menarik yang diikuti oleh seluruh warga desa...')
                                     ->helperText('Opsional, maksimal 500 karakter.')
                                     ->rows(3)
                                     ->maxLength(500),
                                 RichEditor::make('content')
                                     ->label('Isi Berita')
-                                    ->placeholder('Mulai menulis isi berita...')
+                                    ->placeholder('Contoh: Pada hari Senin, tanggal 17 Agustus 2026, Desa Kertajaya telah merayakan...')
                                     ->required(),
                             ]),
                         Section::make('Pengaturan Lanjutan')
@@ -51,10 +51,12 @@ class NewsForm
                                 TextInput::make('seo_title')
                                     ->label('Judul untuk Mesin Pencari')
                                     ->helperText('Jika kosong, judul berita akan digunakan.')
+                                    ->placeholder('Contoh: Upacara Bendera HUT RI - Desa Kertajaya')
                                     ->maxLength(255),
                                 Textarea::make('seo_description')
                                     ->label('Deskripsi untuk Mesin Pencari')
                                     ->helperText('Jika kosong, ringkasan berita akan digunakan.')
+                                    ->placeholder('Contoh: Berita selengkapnya mengenai pelaksanaan upacara bendera dan lomba 17-an di Desa Kertajaya...')
                                     ->rows(3)
                                     ->maxLength(320),
                             ])

@@ -23,26 +23,30 @@ class LocationForm
                             TextInput::make('name')
                                 ->label('Nama Lokasi')
                                 ->required()
+                                ->placeholder('Contoh: Curug Sawer')
                                 ->maxLength(255),
                             Textarea::make('short_description')
                                 ->label('Deskripsi Singkat')
                                 ->helperText('Opsional, maksimal 500 karakter.')
                                 ->maxLength(500)
+                                ->placeholder('Contoh: Air terjun indah dengan pemandangan alam yang asri...')
                                 ->rows(3),
                             RichEditor::make('description')
                                 ->label('Deskripsi Lengkap')
-                                ->placeholder('Mulai menulis isi deskripsi...'),
+                                ->placeholder('Contoh: Curug Sawer terletak di kawasan Gunung Gede Pangrango, menawarkan...'),
                         ]),
                     \Filament\Schemas\Components\Section::make('Peta & Kordinat')
                         ->description('Detail koordinat dan alamat lengkap dari lokasi ini.')
                         ->schema([
                             Textarea::make('address')
                                 ->label('Alamat Lengkap')
+                                ->placeholder('Contoh: Jl. Situgunung Km. 4, Kadudampit')
                                 ->rows(3)
                                 ->columnSpanFull(),
                             TextInput::make('latitude')
                                 ->label('Garis Lintang (Latitude)')
                                 ->helperText('Contoh: -6.9876543')
+                                ->placeholder('Contoh: -6.9876543')
                                 ->required()
                                 ->numeric()
                                 ->minValue(-90)
@@ -50,6 +54,7 @@ class LocationForm
                             TextInput::make('longitude')
                                 ->label('Garis Bujur (Longitude)')
                                 ->helperText('Contoh: 106.1234567')
+                                ->placeholder('Contoh: 106.1234567')
                                 ->required()
                                 ->numeric()
                                 ->minValue(-180)

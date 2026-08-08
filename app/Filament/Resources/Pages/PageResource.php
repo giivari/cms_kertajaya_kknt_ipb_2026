@@ -109,12 +109,12 @@ class PageResource extends Resource
                                     ->helperText('Pilih templat untuk mengisi susunan awal halaman.'),
                                 TextInput::make('title')
                                     ->label('Judul')
-                                    ->placeholder('Masukkan judul halaman')
+                                    ->placeholder('Contoh: Sejarah Desa')
                                     ->maxLength(255)
                                     ->required(),
                                 Forms\Components\Textarea::make('excerpt')
                                     ->label('Ringkasan')
-                                    ->placeholder('Ringkasan singkat isi halaman')
+                                    ->placeholder('Contoh: Desa Kertajaya memiliki sejarah yang panjang dan kaya akan budaya lokal...')
                                     ->helperText('Opsional. Ringkasan dapat digunakan pada daftar tautan dan hasil pencarian.')
                                     ->rows(3),
                             ]),
@@ -129,7 +129,7 @@ class PageResource extends Resource
                                     ->itemLabel(fn (array $state): ?string => $state['name'] ?? 'Bagian Baru')
                                     ->schema([
                                         Hidden::make('id'),
-                                        TextInput::make('name')->label('Nama Bagian')->required(),
+                                        TextInput::make('name')->label('Nama Bagian')->required()->placeholder('Contoh: Bagian Sambutan'),
                                         Select::make('layout_type')
                                             ->label('Tata Letak')
                                             ->options([
@@ -149,7 +149,7 @@ class PageResource extends Resource
                                                 Block::make('heading')
                                                     ->label('Judul')
                                                     ->schema([
-                                                        TextInput::make('text')->label('Teks')->required(),
+                                                        TextInput::make('text')->label('Teks')->required()->placeholder('Contoh: Sambutan Kepala Desa'),
                                                         Select::make('level')->label('Tingkat Judul')->options(['h1' => 'H1', 'h2' => 'H2', 'h3' => 'H3', 'h4' => 'H4'])->default('h2')->required(),
                                                         Select::make('alignment')->label('Perataan')->options(['left' => 'Kiri', 'center' => 'Tengah', 'right' => 'Kanan'])->default('left'),
                                                     ]),
@@ -166,8 +166,8 @@ class PageResource extends Resource
                                                             ->relationship('featuredMedia', 'original_filename', fn (EloquentBuilder $query) => static::validMediaQuery($query, 'image/'))
                                                             ->searchable()
                                                             ->required(),
-                                                        TextInput::make('caption')->label('Keterangan'),
-                                                        TextInput::make('alt_text')->label('Teks Alternatif'),
+                                                        TextInput::make('caption')->label('Keterangan')->placeholder('Contoh: Foto Balai Desa Kertajaya saat pagi hari.'),
+                                                        TextInput::make('alt_text')->label('Teks Alternatif')->placeholder('Contoh: Tampak depan Balai Desa Kertajaya'),
                                                     ]),
                                                 Block::make('gallery')
                                                     ->label('Galeri')
@@ -184,22 +184,22 @@ class PageResource extends Resource
                                                         Repeater::make('items')
                                                             ->label('Data Statistik')
                                                             ->schema([
-                                                                TextInput::make('label')->label('Nama')->required(),
-                                                                TextInput::make('value')->label('Nilai')->required(),
-                                                                TextInput::make('icon')->label('Ikon'),
+                                                                TextInput::make('label')->label('Nama')->required()->placeholder('Contoh: Jumlah Penduduk'),
+                                                                TextInput::make('value')->label('Nilai')->required()->placeholder('Contoh: 3500'),
+                                                                TextInput::make('icon')->label('Ikon')->placeholder('Contoh: heroicon-o-users'),
                                                             ]),
                                                     ]),
                                                 Block::make('video')
                                                     ->label('Video')
                                                     ->schema([
-                                                        TextInput::make('video_url')->label('Alamat Video')->url()->required(),
-                                                        TextInput::make('caption')->label('Keterangan'),
+                                                        TextInput::make('video_url')->label('Alamat Video')->url()->required()->placeholder('Contoh: https://youtube.com/watch?v=...'),
+                                                        TextInput::make('caption')->label('Keterangan')->placeholder('Contoh: Video Profil Desa Kertajaya Tahun 2026'),
                                                     ]),
                                                 Block::make('map')
                                                     ->label('Peta')
                                                     ->schema([
-                                                        TextInput::make('latitude')->label('Garis Lintang')->numeric()->required(),
-                                                        TextInput::make('longitude')->label('Garis Bujur')->numeric()->required(),
+                                                        TextInput::make('latitude')->label('Garis Lintang')->numeric()->required()->placeholder('Contoh: -6.917464'),
+                                                        TextInput::make('longitude')->label('Garis Bujur')->numeric()->required()->placeholder('Contoh: 107.619123'),
                                                         TextInput::make('zoom')->label('Tingkat Pembesaran')->numeric()->default(15),
                                                     ]),
                                                 Block::make('documents')
@@ -214,8 +214,8 @@ class PageResource extends Resource
                                                 Block::make('cta_button')
                                                     ->label('Tombol Tautan')
                                                     ->schema([
-                                                        TextInput::make('text')->label('Teks')->required(),
-                                                        TextInput::make('url')->label('Alamat Tautan')->required(),
+                                                        TextInput::make('text')->label('Teks')->required()->placeholder('Contoh: Hubungi Kami Sekarang'),
+                                                        TextInput::make('url')->label('Alamat Tautan')->required()->placeholder('Contoh: /kontak'),
                                                         Select::make('style')->label('Tampilan')->options(['primary' => 'Utama', 'secondary' => 'Sekunder', 'outline' => 'Garis Tepi'])->default('primary'),
                                                     ]),
                                                 Block::make('card_grid')
@@ -224,17 +224,17 @@ class PageResource extends Resource
                                                         Repeater::make('cards')
                                                             ->label('Daftar Kartu')
                                                             ->schema([
-                                                                TextInput::make('title')->label('Judul')->required(),
-                                                                Forms\Components\Textarea::make('description')->label('Deskripsi'),
-                                                                TextInput::make('link_url')->label('Alamat Tautan'),
+                                                                TextInput::make('title')->label('Judul')->required()->placeholder('Contoh: Transparansi'),
+                                                                Forms\Components\Textarea::make('description')->label('Deskripsi')->placeholder('Contoh: Pemerintah desa selalu transparan...'),
+                                                                TextInput::make('link_url')->label('Alamat Tautan')->placeholder('Contoh: /halaman/transparansi'),
                                                             ]),
                                                     ]),
                                                 Block::make('contact_block')
                                                     ->label('Informasi Kontak')
                                                     ->schema([
-                                                        TextInput::make('email')->label('Email')->email(),
-                                                        TextInput::make('phone')->label('Nomor Telepon'),
-                                                        Forms\Components\Textarea::make('address')->label('Alamat'),
+                                                        TextInput::make('email')->label('Email')->email()->placeholder('Contoh: kontak@kertajaya.desa.id'),
+                                                        TextInput::make('phone')->label('Nomor Telepon')->placeholder('Contoh: 081234567890'),
+                                                        Forms\Components\Textarea::make('address')->label('Alamat')->placeholder('Contoh: Jl. Raya Kertajaya No. 1, RT 01/RW 02'),
                                                     ]),
                                             ])
                                             ->collapsed(),
@@ -249,10 +249,12 @@ class PageResource extends Resource
                                 TextInput::make('seo_title')
                                     ->label('Judul untuk Mesin Pencari')
                                     ->helperText('Jika kosong, judul halaman akan digunakan.')
+                                    ->placeholder('Contoh: Sejarah - Desa Kertajaya')
                                     ->maxLength(255),
                                 Forms\Components\Textarea::make('seo_description')
                                     ->label('Deskripsi untuk Mesin Pencari')
                                     ->helperText('Jika kosong, ringkasan halaman akan digunakan.')
+                                    ->placeholder('Contoh: Baca selengkapnya mengenai sejarah dan asal-usul Desa Kertajaya...')
                                     ->rows(3)
                                     ->maxLength(320),
                             ])

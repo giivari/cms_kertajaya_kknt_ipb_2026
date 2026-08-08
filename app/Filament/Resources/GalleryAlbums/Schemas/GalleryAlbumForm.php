@@ -34,7 +34,7 @@ class GalleryAlbumForm
                                     ->maxLength(255),
                                 Textarea::make('description')
                                     ->label('Deskripsi')
-                                    ->placeholder('Jelaskan isi atau kegiatan yang didokumentasikan dalam album ini')
+                                    ->placeholder('Contoh: Album ini berisi kumpulan foto kegiatan gotong royong warga dalam membersihkan selokan...')
                                     ->helperText('Opsional. Gunakan kalimat singkat dan mudah dipahami.')
                                     ->rows(4),
                             ]),
