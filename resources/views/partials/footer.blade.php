@@ -12,9 +12,9 @@
                         if ($logoId) {
                             try {
                                 $media = \App\Models\Media::find($logoId);
-                                if ($media && $media->invisible_watermark_status === 'verified') {
+                                if ($media && $media->invisible_watermark_status?->value === 'verified') {
                                     $deriv = $media->getPublicDerivative('thumbnail');
-                                    if ($deriv) $logoUrl = Storage::disk('public')->url($deriv->file_path);
+                                    if ($deriv) $logoUrl = Storage::disk('public')->url($deriv->filename);
                                 }
                             } catch (\Exception $e) {}
                         }
