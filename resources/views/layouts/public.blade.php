@@ -46,7 +46,7 @@
 @php
     $isHome = $isHome ?? request()->routeIs('home');
 @endphp
-<body class="font-sans antialiased text-gray-900 bg-gray-50 {{ $isHome && (!isset($isPreview) || !$isPreview) ? 'overflow-hidden h-screen' : 'flex flex-col min-h-screen' }}">
+<body class="font-sans antialiased text-gray-900 bg-gray-50 flex flex-col min-h-screen">
     <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:z-[100] focus:p-4 focus:bg-white focus:text-navy">Skip to content</a>
 
     @include('partials.header')
@@ -55,9 +55,7 @@
         @yield('content')
     </main>
 
-    @if(!$isHome || (isset($isPreview) && $isPreview))
-        @include('partials.footer')
-    @endif
+    @include('partials.footer')
 
     @if(isset($isPreview) && $isPreview)
         @include('public.preview.guard')

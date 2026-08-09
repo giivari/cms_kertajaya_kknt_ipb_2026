@@ -49,17 +49,27 @@
     };
 @endphp
 
-@php
-    $isSwiper = !(isset($isPreview) && $isPreview);
-@endphp
-
-<!-- Swiper Container -->
-<div class="{{ $isSwiper ? 'swiper swiper-container' : '' }} w-full h-[100dvh] bg-navy">
-    <div class="{{ $isSwiper ? 'swiper-wrapper' : '' }} w-full h-full">
+<style>
+    .responsive-section {
+        padding-top: 4rem;
+        padding-bottom: 4rem;
+    }
+    .responsive-cta {
+        padding-top: 6rem;
+        padding-bottom: 6rem;
+    }
+    @media (min-width: 768px) {
+        .responsive-section { padding-top: 6rem; padding-bottom: 6rem; }
+        .responsive-cta { padding-top: 8rem; padding-bottom: 8rem; }
+    }
+    @media (min-width: 1024px) {
+        .responsive-section { padding-top: 8rem; padding-bottom: 8rem; }
+        .responsive-cta { padding-top: 10rem; padding-bottom: 10rem; }
+    }
+</style>
 
         <!-- Hero Section -->
-        <div class="{{ $isSwiper ? 'swiper-slide' : '' }} h-[100dvh] w-full overflow-y-auto bg-navy flex flex-col justify-center">
-<section class="relative min-h-[90vh] md:min-h-screen w-full flex flex-col justify-center overflow-hidden">
+<section class="relative min-h-[100dvh] w-full flex flex-col justify-center overflow-hidden" style="min-height: 100dvh;">
     <div class="absolute inset-0 z-0">
         <img 
             src="{{ $getMediaUrl(\App\Services\SettingsService::get('hero_image'), 'large', 'https://images.unsplash.com/photo-1644496580843-07a889de9072?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwyfHxpbmRvbmVzaWElMjB2aWxsYWdlJTIwbGFuZHNjYXBlfGVufDF8fHx8MTc4NDI5NzI1OHww&ixlib=rb-4.1.0&q=80&w=1080') }}" 
@@ -96,11 +106,8 @@
         </div>
     </div>
 </section>
-        </div>
-
         <!-- Introduksi Section -->
-        <div class="{{ $isSwiper ? 'swiper-slide' : '' }} h-[100dvh] w-full overflow-y-auto bg-white flex flex-col justify-center">
-<section id="profil-desa" class="py-24 md:py-32 bg-white">
+<section id="profil-desa" class="bg-white responsive-section">
     <div class="w-full mx-auto px-4 md:px-8 lg:px-12 xl:px-24 2xl:px-32">
         <div class="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
             <div>
@@ -126,7 +133,7 @@
             </div>
 
             <div class="relative">
-                <div class="aspect-[4/5] rounded-[32px] overflow-hidden">
+                <div class="aspect-square lg:aspect-[4/5] rounded-[32px] overflow-hidden">
                     <img 
                         src="{{ $getMediaUrl(\App\Services\SettingsService::get('profil_image_1'), 'large', 'https://images.unsplash.com/photo-1661239733924-a1fa018b0737?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwzfHxpbmRvbmVzaWElMjB2aWxsYWdlJTIwbGFuZHNjYXBlfGVufDF8fHx8MTc4NDI5NzI1OHww&ixlib=rb-4.1.0&q=80&w=1080') }}"
                         alt="Pemandangan Desa"
@@ -153,11 +160,8 @@
         </div>
     </div>
 </section>
-        </div>
-
         <!-- PotensiDesa Section -->
-        <div class="{{ $isSwiper ? 'swiper-slide' : '' }} h-[100dvh] w-full overflow-y-auto bg-cream flex flex-col justify-center">
-<section id="potensi-desa" class="pt-24 pb-16 md:pt-32 md:pb-24 bg-cream">
+<section id="potensi-desa" class="bg-cream responsive-section">
     <div class="w-full mx-auto px-4 md:px-8 lg:px-12 xl:px-24 2xl:px-32">
         <div class="mb-12 flex flex-col md:flex-row md:items-end gap-6 text-left md:justify-between">
             <div class="max-w-2xl">
@@ -261,11 +265,8 @@
 
     </div>
 </section>
-        </div>
-
         <!-- Statistik Section -->
-        <div class="{{ $isSwiper ? 'swiper-slide' : '' }} h-[100dvh] w-full overflow-y-auto bg-navy flex flex-col justify-center">
-<section class="pt-24 pb-16 md:pt-32 md:pb-24 bg-navy text-white">
+<section class="bg-navy text-white responsive-section">
     <div class="w-full mx-auto px-4 md:px-8 lg:px-12 xl:px-24 2xl:px-32">
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-8 md:gap-12">
             <div class="flex flex-col items-center text-center md:items-start md:text-left border-l-0 md:border-l border-white/20 pl-0 md:pl-6">
@@ -299,12 +300,9 @@
         </div>
     </div>
 </section>
-        </div>
-
         <!-- BeritaTerbaru Section -->
-        <div class="{{ $isSwiper ? 'swiper-slide' : '' }} h-[100dvh] w-full overflow-y-auto bg-white flex flex-col justify-center">
 @if(isset($latestNews) && $latestNews->isNotEmpty())
-<section id="berita" class="pt-24 pb-16 md:pt-32 md:pb-24 bg-white">
+<section id="berita" class="bg-white responsive-section">
     <div class="w-full mx-auto px-4 md:px-8 lg:px-12 xl:px-24 2xl:px-32">
         <div class="mb-12 flex flex-col md:flex-row md:items-end gap-6 text-left md:justify-between">
             <div class="max-w-2xl">
@@ -382,12 +380,9 @@
     </div>
 </section>
 @endif
-        </div>
-
         <!-- GaleriDesa Section -->
-        <div class="{{ $isSwiper ? 'swiper-slide' : '' }} h-[100dvh] w-full overflow-y-auto bg-cream flex flex-col justify-center">
 @if(isset($latestAlbums) && $latestAlbums->isNotEmpty())
-<section id="galeri" class="pt-24 pb-16 md:pt-32 md:pb-24 bg-cream">
+<section id="galeri" class="bg-cream responsive-section">
     <div class="w-full mx-auto px-4 md:px-8 lg:px-12 xl:px-24 2xl:px-32">
         <div class="mb-12 flex flex-col md:flex-row md:items-center gap-6 text-center md:justify-center">
             <div class="max-w-2xl mx-auto">
@@ -460,12 +455,9 @@
     </div>
 </section>
 @endif
-        </div>
-
         <!-- DokumenPublik Section -->
-        <div class="{{ $isSwiper ? 'swiper-slide' : '' }} h-[100dvh] w-full overflow-y-auto bg-white flex flex-col justify-center">
 @if(isset($latestDocuments) && $latestDocuments->isNotEmpty())
-<section id="dokumen" class="pt-24 pb-16 md:pt-32 md:pb-24 bg-white">
+<section id="dokumen" class="bg-white responsive-section">
     <div class="w-full mx-auto px-4 md:px-8 lg:px-12 xl:px-24 2xl:px-32">
         <div class="mb-12 flex flex-col md:flex-row md:items-end gap-6 text-left md:justify-between">
             <div class="max-w-2xl">
@@ -506,11 +498,8 @@
     </div>
 </section>
 @endif
-        </div>
-
         <!-- FinalCTA Section -->
-        <div class="{{ $isSwiper ? 'swiper-slide' : '' }} h-[100dvh] w-full overflow-y-auto bg-teal flex flex-col justify-between">
-<section class="relative overflow-hidden text-center pt-32 pb-24 md:pt-40 md:pb-32 bg-teal text-white flex-grow flex flex-col justify-center">
+<section class="relative overflow-hidden text-center bg-teal text-white flex-grow flex flex-col justify-center responsive-cta">
     <div class="absolute top-0 left-0 w-full h-full overflow-hidden opacity-10 pointer-events-none">
         <div class="absolute -top-[20%] -left-[10%] w-[50%] h-[150%] bg-white rounded-full blur-[100px] transform rotate-12"></div>
         <div class="absolute top-[30%] -right-[10%] w-[40%] h-[120%] bg-lime rounded-full blur-[120px] transform -rotate-12"></div>
@@ -528,41 +517,6 @@
         </a>
     </div>
 </section>
-            
-            @if($isSwiper)
-                @include('partials.footer')
-            @endif
-        </div>
-    </div> <!-- end swiper-wrapper -->
-</div> <!-- end swiper -->
 
-@if($isSwiper)
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        if (typeof Swiper !== "undefined") {
-            const swiper = new Swiper(".swiper-container", {
-                direction: "vertical",
-                slidesPerView: 1,
-                mousewheel: {
-                    forceToAxis: true,
-                    sensitivity: 1,
-                    releaseOnEdges: true,
-                },
-                speed: 800,
-                autoHeight: false,
-                keyboard: {
-                    enabled: true,
-                    onlyInViewport: false,
-                },
-                on: {
-                    slideChange: function () {
-                        window.dispatchEvent(new CustomEvent('swiper-scrolled', { detail: this.activeIndex > 0 }));
-                    }
-                }
-            });
-        }
-    });
-</script>
-@endif
 
 @endsection
