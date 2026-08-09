@@ -12,7 +12,7 @@
                     <span class="text-sm font-medium text-gray-900">{{ $media->original_filename }}</span>
                 </div>
                 <div class="ml-4 flex-shrink-0">
-                    <a href="{{ Storage::url($media->file_path) }}" target="_blank" class="font-medium text-emerald-600 hover:text-emerald-500 text-sm">Download</a>
+                    <a href="{{ Storage::url($media->filename) }}" target="_blank" class="font-medium text-emerald-600 hover:text-emerald-500 text-sm">Download</a>
                 </div>
             </li>
         @endforeach

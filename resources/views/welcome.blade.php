@@ -16,7 +16,7 @@
             if ($media) {
                 $deriv = $media->getPublicDerivative('large');
                 if ($deriv) {
-                    $heroImage = Storage::disk('public')->url($deriv->file_path);
+                    $heroImage = Storage::disk('public')->url($deriv->filename);
                 }
             }
         } catch (\Exception $e) {}
@@ -88,9 +88,9 @@
                                 $imgUrl = null;
                                 try {
                                     $media = \App\Models\Media::find($news->featured_image_id);
-                                    if ($media && $media->invisible_watermark_status === 'verified') {
+                                    if ($media && $media->invisible_watermark_status\?->value === 'verified') {
                                         $deriv = $media->getPublicDerivative('medium');
-                                        if ($deriv) $imgUrl = Storage::disk('public')->url($deriv->file_path);
+                                        if ($deriv) $imgUrl = Storage::disk('public')->url($deriv->filename);
                                     }
                                 } catch(\Exception $e){}
                             @endphp
@@ -160,9 +160,9 @@
                         if ($album->cover_image_id) {
                             try {
                                 $media = \App\Models\Media::find($album->cover_image_id);
-                                if ($media && $media->invisible_watermark_status === 'verified') {
+                                if ($media && $media->invisible_watermark_status\?->value === 'verified') {
                                     $deriv = $media->getPublicDerivative($index === 0 ? 'large' : 'medium');
-                                    if ($deriv) $coverUrl = Storage::disk('public')->url($deriv->file_path);
+                                    if ($deriv) $coverUrl = Storage::disk('public')->url($deriv->filename);
                                 }
                             } catch(\Exception $e){}
                         }

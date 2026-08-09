@@ -13,10 +13,10 @@
         if ($faviconId) {
             try {
                 $faviconMedia = \App\Models\Media::find($faviconId);
-                if ($faviconMedia && $faviconMedia->invisible_watermark_status === 'verified') {
+                if ($faviconMedia && $faviconMedia->invisible_watermark_status\?->value === 'verified') {
                     $faviconDerivative = $faviconMedia->getPublicDerivative('thumbnail');
                     if ($faviconDerivative) {
-                        $faviconUrl = Storage::disk('public')->url($faviconDerivative->file_path);
+                        $faviconUrl = Storage::disk('public')->url($faviconDerivative->filename);
                     }
                 }
             } catch (\Exception $e) {}
