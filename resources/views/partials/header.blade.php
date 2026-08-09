@@ -26,6 +26,7 @@
         }
     }"
     @scroll.window="isScrolled = (window.pageYOffset > 20)"
+    @swiper-scrolled.window="isScrolled = $event.detail"
     :class="isTransparent ? 'bg-transparent py-6' : 'bg-white shadow-sm py-4'"
     class="fixed top-0 left-0 right-0 z-50 transition-all duration-300"
 >

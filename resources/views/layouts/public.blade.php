@@ -34,6 +34,10 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
+    <!-- Swiper.js for Slideshow -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+
     <!-- AlpineJS for interactivity (Header transparent & mobile menu) -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
@@ -42,7 +46,7 @@
 @php
     $isHome = $isHome ?? request()->routeIs('home');
 @endphp
-<body class="font-sans antialiased text-gray-900 bg-gray-50  flex flex-col min-h-screen">
+<body class="font-sans antialiased text-gray-900 bg-gray-50 {{ $isHome && (!isset($isPreview) || !$isPreview) ? 'overflow-hidden h-screen' : 'flex flex-col min-h-screen' }}">
     <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:z-[100] focus:p-4 focus:bg-white focus:text-navy">Skip to content</a>
 
     @include('partials.header')
@@ -51,7 +55,9 @@
         @yield('content')
     </main>
 
-    @include('partials.footer')
+    @if(!$isHome || (isset($isPreview) && $isPreview))
+        @include('partials.footer')
+    @endif
 
     @if(isset($isPreview) && $isPreview)
         @include('public.preview.guard')
