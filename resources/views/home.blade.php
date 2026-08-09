@@ -54,7 +54,7 @@
 @endphp
 
 <!-- Swiper Container -->
-<div class="{{ $isSwiper ? 'swiper swiper-container' : '' }} w-full h-full bg-navy">
+<div class="{{ $isSwiper ? 'swiper swiper-container' : '' }} w-full h-[100dvh] bg-navy">
     <div class="{{ $isSwiper ? 'swiper-wrapper' : '' }} w-full h-full">
 
         <!-- Hero Section -->
