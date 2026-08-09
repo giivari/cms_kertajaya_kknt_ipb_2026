@@ -14,7 +14,7 @@ class EditMenu extends EditRecord
     public function mount(int|string $record = null): void
     {
         $menu = \App\Models\Menu::firstOrCreate(
-            ['location' => 'header'],
+            ['location' => \App\Models\Menu::HEADER],
             ['name' => 'Navigasi Utama', 'description' => 'Menu utama website']
         );
         
