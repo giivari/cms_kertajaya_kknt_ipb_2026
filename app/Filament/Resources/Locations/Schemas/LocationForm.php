@@ -92,7 +92,7 @@ class LocationForm
                         ->schema([
                             Select::make('media_id')
                                 ->label('Pilih Gambar')
-                                ->relationship('media', 'original_filename', fn (Builder $query) => $query->approvedImages())
+                                ->relationship('media', 'original_filename', fn ($query) => $query->approvedImages())
                                 ->searchable()
                                 ->preload()
                                 ->placeholder('Belum ada gambar dipilih'),

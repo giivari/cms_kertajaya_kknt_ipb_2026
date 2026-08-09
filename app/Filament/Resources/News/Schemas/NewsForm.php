@@ -138,7 +138,7 @@ class NewsForm
                             ->schema([
                                 Select::make('featured_media_id')
                                     ->label('Pilih Gambar')
-                                    ->relationship('featuredMedia', 'original_filename', fn (Builder $query) => $query->approvedImages())
+                                    ->relationship('featuredMedia', 'original_filename', fn ($query) => $query->approvedImages())
                                     ->searchable()
                                     ->preload()
                                     ->placeholder('Belum ada gambar dipilih'),

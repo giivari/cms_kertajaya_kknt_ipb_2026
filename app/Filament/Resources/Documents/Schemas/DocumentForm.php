@@ -52,13 +52,13 @@ class DocumentForm
                             ->schema([
                                 Select::make('file_media_id')
                                     ->label('Berkas Dokumen (PDF)')
-                                    ->relationship('fileMedia', 'original_filename', fn (Builder $query) => $query->approved())
+                                    ->relationship('fileMedia', 'original_filename', fn ($query) => $query->approved())
                                     ->required()
                                     ->searchable()
                                     ->preload(),
                                 Select::make('thumbnail_media_id')
                                     ->label('Gambar Sampul')
-                                    ->relationship('thumbnailMedia', 'original_filename', fn (Builder $query) => $query->approved())
+                                    ->relationship('thumbnailMedia', 'original_filename', fn ($query) => $query->approved())
                                     ->searchable()
                                     ->preload(),
                             ]),

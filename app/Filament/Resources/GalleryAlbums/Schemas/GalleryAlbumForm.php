@@ -51,7 +51,7 @@ class GalleryAlbumForm
                                     ->schema([
                                         Select::make('media_id')
                                             ->label('Pilih Foto')
-                                            ->relationship('media', 'original_filename', fn (Builder $query) => $query->approvedImages())
+                                            ->relationship('media', 'original_filename', fn ($query) => $query->approvedImages())
                                             ->placeholder('Pilih gambar dari Perpustakaan Media')
                                             ->helperText('Hanya gambar yang sudah selesai diproses dan terverifikasi yang tersedia.')
                                             ->required()
@@ -102,7 +102,7 @@ class GalleryAlbumForm
                             ->schema([
                                 Select::make('cover_media_id')
                                     ->label('Pilih Gambar')
-                                    ->relationship('coverMedia', 'original_filename', fn (Builder $query) => $query->approvedImages())
+                                    ->relationship('coverMedia', 'original_filename', fn ($query) => $query->approvedImages())
                                     ->placeholder('Belum ada gambar dipilih')
                                     ->searchable()
                                     ->preload()

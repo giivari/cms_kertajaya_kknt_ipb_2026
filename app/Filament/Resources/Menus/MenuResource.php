@@ -101,7 +101,7 @@ class MenuResource extends Resource
                                     ->required(),
                                 Select::make('page_id')
                                     ->label('Halaman yang Dituju')
-                                    ->relationship('page', 'title', fn (Builder $query) => $query->where('status', PageStatus::PUBLISHED->value))
+                                    ->relationship('page', 'title', fn ($query) => $query->where('status', PageStatus::PUBLISHED->value))
                                     ->searchable()
                                     ->visible(fn (Get $get) => $get('link_type') === LinkType::PAGE->value)
                                     ->required(fn (Get $get) => $get('link_type') === LinkType::PAGE->value),
@@ -141,7 +141,7 @@ class MenuResource extends Resource
                                             ->required(),
                                         Select::make('page_id')
                                             ->label('Halaman yang Dituju')
-                                            ->relationship('page', 'title', fn (Builder $query) => $query->where('status', PageStatus::PUBLISHED->value))
+                                            ->relationship('page', 'title', fn ($query) => $query->where('status', PageStatus::PUBLISHED->value))
                                             ->searchable()
                                             ->visible(fn (Get $get) => $get('link_type') === LinkType::PAGE->value)
                                             ->required(fn (Get $get) => $get('link_type') === LinkType::PAGE->value),
