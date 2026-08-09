@@ -8,7 +8,7 @@
         if (!$mediaId) return $fallback;
         try {
             $media = \App\Models\Media::find($mediaId);
-            if ($media && $media->invisible_watermark_status\?->value === 'verified') {
+            if ($media && $media->invisible_watermark_status?->value === 'verified') {
                 $deriv = $media->getPublicDerivative($derivative);
                 if ($deriv) return Storage::disk('public')->url($deriv->filename);
             }
@@ -309,7 +309,7 @@
             @if($mainNews)
             <a href="{{ route('news.show', $mainNews->slug) }}" class="lg:col-span-7 group cursor-pointer block">
                 <div class="rounded-[24px] overflow-hidden aspect-[4/3] md:aspect-[16/9] mb-6 relative bg-gray-100">
-                    @if($mainNews->featuredMedia && $mainNews->featuredMedia->invisible_watermark_status\?->value === 'verified' && ($deriv = $mainNews->featuredMedia->getPublicDerivative('large')))
+                    @if($mainNews->featuredMedia && $mainNews->featuredMedia->invisible_watermark_status?->value === 'verified' && ($deriv = $mainNews->featuredMedia->getPublicDerivative('large')))
                         <img src="{{ Storage::disk('public')->url($deriv->filename) }}" alt="{{ $mainNews->title }}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
                     @else
                         <div class="w-full h-full bg-gray-200 transition-transform duration-500 group-hover:scale-105 flex items-center justify-center text-gray-400">
@@ -338,7 +338,7 @@
                 @foreach($latestNews->skip(1)->take(3) as $item)
                 <a href="{{ route('news.show', $item->slug) }}" class="group cursor-pointer flex flex-col sm:flex-row gap-6 items-start">
                     <div class="rounded-[16px] overflow-hidden w-full sm:w-48 shrink-0 aspect-[4/3] relative bg-gray-100">
-                        @if($item->featuredMedia && $item->featuredMedia->invisible_watermark_status\?->value === 'verified' && ($deriv = $item->featuredMedia->getPublicDerivative('medium')))
+                        @if($item->featuredMedia && $item->featuredMedia->invisible_watermark_status?->value === 'verified' && ($deriv = $item->featuredMedia->getPublicDerivative('medium')))
                             <img src="{{ Storage::disk('public')->url($deriv->filename) }}" alt="{{ $item->title }}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
                         @else
                             <div class="w-full h-full bg-gray-200 transition-transform duration-500 group-hover:scale-105 flex items-center justify-center text-gray-400">
@@ -387,7 +387,7 @@
                 @if($idx === 0)
                     <!-- Main large album -->
                     <a href="{{ route('gallery.show', $album->slug) }}" class="col-span-2 row-span-1 md:row-span-2 rounded-[24px] overflow-hidden group relative block bg-gray-200">
-                        @if($album->coverMedia && $album->coverMedia->invisible_watermark_status\?->value === 'verified' && ($deriv = $album->coverMedia->getPublicDerivative('large')))
+                        @if($album->coverMedia && $album->coverMedia->invisible_watermark_status?->value === 'verified' && ($deriv = $album->coverMedia->getPublicDerivative('large')))
                             <img src="{{ Storage::disk('public')->url($deriv->filename) }}" alt="{{ $album->title }}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
                         @else
                             <div class="w-full h-full bg-gray-300 flex items-center justify-center text-gray-400">
@@ -403,7 +403,7 @@
                 @elseif($idx === 1)
                     <!-- Second album -->
                     <a href="{{ route('gallery.show', $album->slug) }}" class="col-span-2 row-span-1 rounded-[24px] overflow-hidden group relative block bg-gray-200">
-                        @if($album->coverMedia && $album->coverMedia->invisible_watermark_status\?->value === 'verified' && ($deriv = $album->coverMedia->getPublicDerivative('medium')))
+                        @if($album->coverMedia && $album->coverMedia->invisible_watermark_status?->value === 'verified' && ($deriv = $album->coverMedia->getPublicDerivative('medium')))
                             <img src="{{ Storage::disk('public')->url($deriv->filename) }}" alt="{{ $album->title }}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
                         @else
                             <div class="w-full h-full bg-gray-300 flex items-center justify-center text-gray-400">
@@ -418,7 +418,7 @@
                 @elseif($idx === 2)
                     <!-- Third album -->
                     <a href="{{ route('gallery.show', $album->slug) }}" class="col-span-1 row-span-1 rounded-[24px] overflow-hidden group relative block bg-gray-200">
-                        @if($album->coverMedia && $album->coverMedia->invisible_watermark_status\?->value === 'verified' && ($deriv = $album->coverMedia->getPublicDerivative('medium')))
+                        @if($album->coverMedia && $album->coverMedia->invisible_watermark_status?->value === 'verified' && ($deriv = $album->coverMedia->getPublicDerivative('medium')))
                             <img src="{{ Storage::disk('public')->url($deriv->filename) }}" alt="{{ $album->title }}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
                         @else
                             <div class="w-full h-full bg-gray-300 flex items-center justify-center text-gray-400">
