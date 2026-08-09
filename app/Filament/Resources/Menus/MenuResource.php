@@ -114,7 +114,7 @@ class MenuResource extends Resource
                                 Toggle::make('target')
                                     ->label('Buka di Tab Baru')
                                     ->formatStateUsing(fn ($state): bool => $state === '_blank' || $state === true)
-                                    ->dehydrateStateUsing(fn (bool $state): string => $state ? '_blank' : '_self')
+                                    ->dehydrateStateUsing(fn ($state): string => ($state === true || $state === '1' || $state === '_blank') ? '_blank' : '_self')
                                     ->default(false),
                                 Toggle::make('is_visible')->label('Tampilkan')->default(true),
 
@@ -154,7 +154,7 @@ class MenuResource extends Resource
                                         Toggle::make('target')
                                             ->label('Buka di Tab Baru')
                                             ->formatStateUsing(fn ($state): bool => $state === '_blank' || $state === true)
-                                            ->dehydrateStateUsing(fn (bool $state): string => $state ? '_blank' : '_self')
+                                            ->dehydrateStateUsing(fn ($state): string => ($state === true || $state === '1' || $state === '_blank') ? '_blank' : '_self')
                                             ->default(false),
                                         Toggle::make('is_visible')->label('Tampilkan')->default(true),
                                     ])
