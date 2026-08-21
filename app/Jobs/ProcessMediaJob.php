@@ -48,36 +48,43 @@ class ProcessMediaJob implements ShouldQueue
             copy($originalPath, $stagingPath);
 
             // Apply visible watermark if image and enabled
-            if (str_starts_with($this->media->mime_type, 'image/') && SettingsService::get('enable_visible_watermark', false)) {
+            $supportedMimes = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
+            $isSupported = in_array($this->media->mime_type, $supportedMimes);
+
+            if (str_starts_with($this->media->mime_type, 'image/') && $isSupported && SettingsService::get('enable_visible_watermark', false)) {
                 $watermarkService->applyVisibleWatermark($stagingPath);
             }
 
-            // Inject invisible watermark
-            $payload = $verificationService->generatePayload($this->media, DerivativeType::PUBLIC);
+            if ($isSupported) {
+                // Inject invisible watermark
+                $payload = $verificationService->generatePayload($this->media, DerivativeType::PUBLIC);
 
-            $watermarkSuccess = $watermarkService->injectInvisibleIdentifier($stagingPath, $this->media->mime_type, $payload);
+                $watermarkSuccess = $watermarkService->injectInvisibleIdentifier($stagingPath, $this->media->mime_type, $payload);
 
-            if (! $watermarkSuccess) {
-                Storage::disk('local')->delete($stagingFilename);
-                $this->media->update([
-                    'invisible_watermark_status' => InvisibleWatermarkStatus::FAILED,
-                    'processing_status' => MediaProcessingStatus::FAILED,
+                if (! $watermarkSuccess) {
+                    Storage::disk('local')->delete($stagingFilename);
+                    $this->media->update([
+                        'invisible_watermark_status' => InvisibleWatermarkStatus::FAILED,
+                        'processing_status' => MediaProcessingStatus::FAILED,
+                    ]);
+
+                    return;
+                }
+
+                // Verify on staging FIRST
+                $stagingDerivative = new MediaDerivative([
+                    'media_id' => $this->media->id,
+                    'derivative_type' => DerivativeType::PUBLIC,
+                    'filename' => $stagingFilename,
+                    'disk' => 'local',
+                    'size' => filesize($stagingPath),
+                    'mime_type' => $this->media->mime_type,
                 ]);
 
-                return;
+                $isVerified = $verificationService->verifyDerivative($stagingDerivative, $this->media);
+            } else {
+                $isVerified = true;
             }
-
-            // Verify on staging FIRST
-            $stagingDerivative = new MediaDerivative([
-                'media_id' => $this->media->id,
-                'derivative_type' => DerivativeType::PUBLIC,
-                'filename' => $stagingFilename,
-                'disk' => 'local',
-                'size' => filesize($stagingPath),
-                'mime_type' => $this->media->mime_type,
-            ]);
-
-            $isVerified = $verificationService->verifyDerivative($stagingDerivative, $this->media);
 
             if ($isVerified) {
                 // Verification passed! Move to public disk
@@ -113,7 +120,7 @@ class ProcessMediaJob implements ShouldQueue
 
                 $this->media->update([
                     'processing_status' => MediaProcessingStatus::COMPLETED,
-                    'invisible_watermark_status' => InvisibleWatermarkStatus::VERIFIED,
+                    'invisible_watermark_status' => $isSupported ? InvisibleWatermarkStatus::VERIFIED : InvisibleWatermarkStatus::UNSUPPORTED,
                     'checksum' => hash_file('sha256', $originalPath),
                 ]);
             } else {
