@@ -71,9 +71,23 @@ class EditMedia extends EditRecord
         return 'Informasi media berhasil disimpan';
     }
 
+    protected function mutateFormDataBeforeFill(array $data): array
+    {
+        // Inject the full path so Filament's FileUpload can preview it
+        $data['file'] = 'originals/' . $this->record->filename;
+        return $data;
+    }
+
     protected function mutateFormDataBeforeSave(array $data): array
     {
         $this->oldFilename = $this->record->filename;
+        
+        if (isset($data['file'])) {
+            $newPath = is_array($data['file']) ? array_values($data['file'])[0] : $data['file'];
+            $data['filename'] = basename($newPath);
+            unset($data['file']);
+        }
+        
         return $data;
     }
 
