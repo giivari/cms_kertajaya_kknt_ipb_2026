@@ -21,7 +21,7 @@ class MediaForm
                             ->icon('heroicon-o-cloud-arrow-up')
                             ->description('Berkas asli disimpan secara privat dan diproses sebelum dapat digunakan pada website.')
                             ->schema([
-                                FileUpload::make('file')
+                                FileUpload::make('filename')
                                     ->label('Pilih Berkas')
                                     ->imageEditor()
                                     ->helperText('Format yang diterima: JPEG, PNG, WebP, HEIC, Word, atau PDF. Ukuran maksimal 10 MB.')
@@ -38,7 +38,6 @@ class MediaForm
                                     ->maxSize(10240)
                                     ->disk('local')
                                     ->directory('originals')
-                                    ->storeFileNamesIn('filename')
                                     ->visibility('private')
                                     ->downloadable(false)
                                     ->openable(false),

@@ -29,7 +29,7 @@ class CreateMedia extends CreateRecord
 
     protected function handleRecordCreation(array $data): Model
     {
-        $filePath = is_array($data['file']) ? array_values($data['file'])[0] : $data['file'];
+        $filePath = is_array($data['filename']) ? array_values($data['filename'])[0] : $data['filename'];
 
         $fullPath = Storage::disk('local')->path($filePath);
         $fileSize = filesize($fullPath);
