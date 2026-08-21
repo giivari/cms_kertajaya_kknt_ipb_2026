@@ -23,9 +23,17 @@ class MediaForm
                             ->schema([
                                 FileUpload::make('file')
                                     ->label('Pilih Berkas')
-                                    ->helperText('Format yang diterima: JPEG, PNG, WebP, atau PDF. Ukuran maksimal 10 MB.')
+                                    ->helperText('Format yang diterima: JPEG, PNG, WebP, HEIC, Word, atau PDF. Ukuran maksimal 10 MB.')
                                     ->required()
-                                    ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'application/pdf'])
+                                    ->acceptedFileTypes([
+                                        'image/jpeg', 
+                                        'image/png', 
+                                        'image/webp', 
+                                        'image/heic', 
+                                        'application/pdf', 
+                                        'application/msword', 
+                                        'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+                                    ])
                                     ->maxSize(10240)
                                     ->disk('local')
                                     ->directory('originals')
