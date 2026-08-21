@@ -5,9 +5,9 @@
 @section('content')
 <div class="bg-warm-white min-h-screen py-12 lg:py-20">
     <div class="w-full mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-24 2xl:px-32">
-        <div class="flex flex-col lg:flex-row gap-12 lg:gap-20">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20">
             <!-- Left Column: Info -->
-            <div class="lg:w-5/12 flex flex-col justify-center">
+            <div class="lg:col-span-5 flex flex-col justify-center">
                 <h2 class="text-4xl sm:text-5xl font-display font-bold text-navy mb-6">Hubungi Kami</h2>
                 <p class="text-lg text-gray-600 mb-10 font-sans leading-relaxed">
                     Jika Anda memiliki pertanyaan, masukan, atau keperluan administrasi lainnya, silakan hubungi kami melalui formulir di samping atau melalui informasi kontak di bawah ini.
@@ -69,7 +69,7 @@
             </div>
 
             <!-- Right Column: Form Card -->
-            <div class="lg:w-7/12">
+            <div class="lg:col-span-7">
                 <div class="bg-white rounded-[24px] border border-border shadow-sm p-6 sm:p-10">
                     @if(session('success'))
                         <div class="bg-green-50 border border-green-200 rounded-2xl p-6 text-center">

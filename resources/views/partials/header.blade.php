@@ -117,7 +117,6 @@
                 @else
                     <a href="{{ route('home') }}" :class="isTransparent ? 'text-white drop-shadow-sm hover:opacity-80' : 'text-navy hover:text-teal'" class="text-sm font-medium transition-colors duration-200">Beranda</a>
                     <a href="{{ route('public.map.index') }}" :class="isTransparent ? 'text-white drop-shadow-sm hover:opacity-80' : 'text-navy hover:text-teal'" class="text-sm font-medium transition-colors duration-200">Peta</a>
-                    <a href="{{ route('public.contact.show') }}" :class="isTransparent ? 'text-white drop-shadow-sm hover:opacity-80' : 'text-navy hover:text-teal'" class="text-sm font-medium transition-colors duration-200">Kontak</a>
                 @endif
             </nav>
 
@@ -241,7 +240,6 @@
                 @else
                     <a href="{{ route('home') }}" class="block py-3 border-b border-gray-100 text-lg font-medium text-navy hover:text-teal transition-colors">Beranda</a>
                     <a href="{{ route('public.map.index') }}" class="block py-3 border-b border-gray-100 text-lg font-medium text-navy hover:text-teal transition-colors">Peta</a>
-                    <a href="{{ route('public.contact.show') }}" class="block py-3 border-b border-gray-100 text-lg font-medium text-navy hover:text-teal transition-colors">Kontak</a>
                 @endif
             </div>
 
