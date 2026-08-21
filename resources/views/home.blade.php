@@ -63,20 +63,22 @@
 
 <style>
     .responsive-section {
-        padding-top: 4rem;
-        padding-bottom: 4rem;
+        padding-top: 1.5rem;
+        padding-bottom: 1.5rem;
+        scroll-margin-top: 7rem;
     }
     .responsive-cta {
-        padding-top: 6rem;
-        padding-bottom: 6rem;
+        padding-top: 2rem;
+        padding-bottom: 2rem;
+        scroll-margin-top: 7rem;
     }
     @media (min-width: 768px) {
-        .responsive-section { padding-top: 6rem; padding-bottom: 6rem; }
-        .responsive-cta { padding-top: 8rem; padding-bottom: 8rem; }
+        .responsive-section { padding-top: 2rem; padding-bottom: 2rem; scroll-margin-top: 7rem; }
+        .responsive-cta { padding-top: 2.5rem; padding-bottom: 2.5rem; scroll-margin-top: 7rem; }
     }
     @media (min-width: 1024px) {
-        .responsive-section { padding-top: 8rem; padding-bottom: 8rem; }
-        .responsive-cta { padding-top: 10rem; padding-bottom: 10rem; }
+        .responsive-section { padding-top: 2.5rem; padding-bottom: 2.5rem; scroll-margin-top: 8rem; }
+        .responsive-cta { padding-top: 3rem; padding-bottom: 3rem; scroll-margin-top: 8rem; }
     }
 </style>
 
@@ -160,7 +162,7 @@
             </div>
 
             <div class="relative">
-                <div class="aspect-square lg:aspect-[4/5] rounded-[32px] overflow-hidden">
+                <div class="aspect-square lg:aspect-square rounded-[32px] overflow-hidden">
                     <img 
                         src="{{ $getMediaUrl(\App\Services\SettingsService::get('profil_image_1'), 'large', 'https://images.unsplash.com/photo-1661239733924-a1fa018b0737?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwzfHxpbmRvbmVzaWElMjB2aWxsYWdlJTIwbGFuZHNjYXBlfGVufDF8fHx8MTc4NDI5NzI1OHww&ixlib=rb-4.1.0&q=80&w=1080') }}"
                         alt="Pemandangan Desa"
