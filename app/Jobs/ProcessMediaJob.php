@@ -47,6 +47,29 @@ class ProcessMediaJob implements ShouldQueue
             // For MVP, copy the file. (Resize/optimize would happen here)
             copy($originalPath, $stagingPath);
 
+            // Auto-convert HEIC to JPG if the server has heif-convert installed
+            if ($this->media->mime_type === 'image/heic') {
+                $newStagingPath = preg_replace('/\.heic$/i', '.jpg', $stagingPath);
+                $returnCode = 0;
+                exec("heif-convert -q 90 " . escapeshellarg($stagingPath) . " " . escapeshellarg($newStagingPath) . " 2>/dev/null", $output, $returnCode);
+                
+                if ($returnCode === 0 && file_exists($newStagingPath)) {
+                    unlink($stagingPath);
+                    $stagingPath = $newStagingPath;
+                    $stagingFilename = preg_replace('/\.heic$/i', '.jpg', $stagingFilename);
+                    
+                    $this->media->mime_type = 'image/jpeg';
+                    $this->media->filename = preg_replace('/\.heic$/i', '.jpg', $this->media->filename);
+                    $this->media->extension = 'jpg';
+                    $this->media->save();
+                    
+                    $newOriginalPath = preg_replace('/\.heic$/i', '.jpg', $originalPath);
+                    copy($stagingPath, $newOriginalPath);
+                    unlink($originalPath);
+                    $originalPath = $newOriginalPath;
+                }
+            }
+
             // Apply visible watermark if image and enabled
             $supportedMimes = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
             $isSupported = in_array($this->media->mime_type, $supportedMimes);
