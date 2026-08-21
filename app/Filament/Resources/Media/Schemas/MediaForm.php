@@ -41,8 +41,7 @@ class MediaForm
                                     ->storeFileNamesIn('filename')
                                     ->visibility('private')
                                     ->downloadable(false)
-                                    ->openable(false)
-                                    ->visibleOn('create'),
+                                    ->openable(false),
                                 \Filament\Forms\Components\ViewField::make('preview')
                                     ->label('Pratinjau Media')
                                     ->view('filament.forms.media-preview')
