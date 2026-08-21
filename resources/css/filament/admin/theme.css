@@ -796,6 +796,16 @@
     box-shadow: var(--admin-shadow-card);
 }
 
+aside.fi-collapsed .fi-brand-text {
+    display: none !important;
+}
+
+.fi-topbar .fi-user-avatar {
+    object-fit: cover !important;
+    width: 2.25rem !important;
+    height: 2.25rem !important;
+}
+
 .admin-content-table .fi-ta-header-toolbar {
     min-height: 3.75rem;
     gap: 0.625rem;
@@ -1972,3 +1982,17 @@ img::after {
     box-sizing: border-box;
 }
 
+.fi-sidebar-item-icon {
+    width: 2rem !important;
+    height: 2rem !important;
+}
+
+aside.fi-collapsed .fi-brand-text {
+    display: none !important;
+}
+
+.fi-topbar .fi-user-avatar {
+    object-fit: cover !important;
+    width: 1.5rem !important;
+    height: 1.5rem !important;
+}

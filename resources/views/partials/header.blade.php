@@ -60,21 +60,33 @@
                     @foreach($headerMenu->items as $item)
                         @if($item->children->isNotEmpty())
                             <div class="relative group" x-data="{ open: false }" @mouseenter="open = true" @mouseleave="open = false">
-                                <button 
-                                    :class="isTransparent ? 'text-white drop-shadow-sm hover:opacity-80' : 'text-navy hover:text-teal'"
-                                    class="inline-flex items-center text-sm font-medium whitespace-nowrap transition-colors duration-200"
-                                >
-                                    {{ $item->label }}
-                                    <svg class="ml-1 h-4 w-4 transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                                </button>
-                                <div 
-                                    x-show="open" 
-                                    x-transition:enter="transition ease-out duration-200"
-                                    x-transition:enter-start="opacity-0 translate-y-2"
-                                    x-transition:enter-end="opacity-100 translate-y-0"
-                                    x-transition:leave="transition ease-in duration-150"
-                                    x-transition:leave-start="opacity-100 translate-y-0"
-                                    x-transition:leave-end="opacity-0 translate-y-2"
+                                    @php 
+                                        $isActiveChild = false;
+                                        foreach($item->children as $child) {
+                                            $childUrl = url($child->url);
+                                            if(request()->url() === $childUrl || request()->fullUrl() === $childUrl) {
+                                                $isActiveChild = true;
+                                                break;
+                                            }
+                                        }
+                                    @endphp
+                                    <a href="{{ $item->url }}" 
+                                        :class="isTransparent 
+                                            ? ({{ $isActiveChild ? 'true' : 'false' }} ? 'bg-white/20 text-white shadow-sm' : 'text-white drop-shadow-sm hover:opacity-80') 
+                                            : ({{ $isActiveChild ? 'true' : 'false' }} ? 'bg-cream text-teal shadow-sm ring-1 ring-border/50' : 'text-navy hover:text-teal')"
+                                        class="inline-flex items-center px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-200"
+                                    >
+                                        {{ $item->label }}
+                                        <svg class="ml-1 h-4 w-4 transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                    </a>
+                                    <div 
+                                        x-show="open" 
+                                        x-transition:enter="transition ease-out duration-200"
+                                        x-transition:enter-start="opacity-0 translate-y-2"
+                                        x-transition:enter-end="opacity-100 translate-y-0"
+                                        x-transition:leave="transition ease-in duration-150"
+                                        x-transition:leave-start="opacity-100 translate-y-0"
+                                        x-transition:leave-end="opacity-0 translate-y-2"
                                     class="absolute left-0 mt-2 w-48 rounded-2xl shadow-xl bg-white ring-1 ring-border ring-opacity-100 z-50 py-2"
                                     style="display: none;"
                                 >
@@ -86,11 +98,17 @@
                                 </div>
                             </div>
                         @else
+                            @php 
+                                $itemUrl = url($item->url);
+                                $isActive = request()->url() === $itemUrl || request()->fullUrl() === $itemUrl || (request()->routeIs('home') && $itemUrl === route('home'));
+                            @endphp
                             <a 
                                 href="{{ $item->url }}" 
                                 target="{{ $item->target }}" 
-                                :class="isTransparent ? 'text-white drop-shadow-sm hover:opacity-80' : 'text-navy hover:text-teal'"
-                                class="text-sm font-medium whitespace-nowrap transition-colors duration-200"
+                                :class="isTransparent 
+                                    ? ({{ $isActive ? 'true' : 'false' }} ? 'bg-white/20 text-white shadow-sm' : 'text-white drop-shadow-sm hover:opacity-80') 
+                                    : ({{ $isActive ? 'true' : 'false' }} ? 'bg-cream text-teal shadow-sm ring-1 ring-border/50' : 'text-navy hover:text-teal')"
+                                class="px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-200"
                             >
                                 {{ $item->label }}
                             </a>
@@ -118,7 +136,7 @@
                     :class="isTransparent ? 'bg-white text-navy hover:bg-white/90' : 'bg-teal text-white hover:bg-teal/90'"
                     class="hidden md:inline-flex items-center justify-center rounded-full font-medium whitespace-nowrap transition-colors shadow-sm px-4 xl:px-6 py-2 xl:py-2.5 text-sm"
                 >
-                    Informasi Publik
+                    Hubungi Kami
                 </a>
                 
                 <button 
@@ -179,21 +197,43 @@
                 @if(isset($headerMenu) && $headerMenu->items->isNotEmpty())
                     @foreach($headerMenu->items as $item)
                         @if($item->children->isNotEmpty())
-                            <div x-data="{ expanded: false }" class="border-b border-gray-100 pb-2 mb-2">
-                                <button @click="expanded = !expanded" class="w-full flex items-center justify-between text-lg font-medium text-navy hover:text-teal py-2 transition-colors">
-                                    {{ $item->label }}
-                                    <svg class="w-5 h-5 transition-transform duration-200" :class="expanded ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                                </button>
+                            @php 
+                                $isActiveChild = false;
+                                foreach($item->children as $child) {
+                                    $childUrl = url($child->url);
+                                    if(request()->url() === $childUrl || request()->fullUrl() === $childUrl) {
+                                        $isActiveChild = true;
+                                        break;
+                                    }
+                                }
+                            @endphp
+                            <div x-data="{ expanded: {{ $isActiveChild ? 'true' : 'false' }} }" class="border-b border-gray-100 pb-2 mb-2">
+                                <div class="flex items-center justify-between rounded-lg transition-colors {{ $isActiveChild ? 'bg-cream text-teal' : 'text-navy hover:text-teal hover:bg-gray-50' }}">
+                                    <a href="{{ $item->url }}" class="flex-1 text-lg font-medium py-2 px-3">
+                                        {{ $item->label }}
+                                    </a>
+                                    <button @click="expanded = !expanded" class="p-3" aria-label="Toggle submenu">
+                                        <svg class="w-5 h-5 transition-transform duration-200" :class="expanded ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                    </button>
+                                </div>
                                 <div x-show="expanded" x-collapse class="pl-4 mt-2 space-y-2">
                                     @foreach($item->children as $child)
-                                        <a href="{{ $child->url }}" target="{{ $child->target }}" class="block py-2 text-base text-gray-600 hover:text-teal transition-colors">
+                                        @php 
+                                            $childUrl = url($child->url);
+                                            $isChildActive = request()->url() === $childUrl || request()->fullUrl() === $childUrl;
+                                        @endphp
+                                        <a href="{{ $child->url }}" target="{{ $child->target }}" class="block py-2 px-3 rounded-md text-base transition-colors {{ $isChildActive ? 'text-teal font-semibold bg-cream/50' : 'text-gray-600 hover:text-teal hover:bg-gray-50' }}">
                                             {{ $child->label }}
                                         </a>
                                     @endforeach
                                 </div>
                             </div>
                         @else
-                            <a href="{{ $item->url }}" target="{{ $item->target }}" class="block py-3 border-b border-gray-100 text-lg font-medium text-navy hover:text-teal transition-colors">
+                            @php 
+                                $itemUrl = url($item->url);
+                                $isActive = request()->url() === $itemUrl || request()->fullUrl() === $itemUrl || (request()->routeIs('home') && $itemUrl === route('home'));
+                            @endphp
+                            <a href="{{ $item->url }}" target="{{ $item->target }}" class="block py-2.5 px-3 mb-1 rounded-lg text-lg font-medium transition-colors {{ $isActive ? 'bg-cream text-teal' : 'text-navy hover:text-teal hover:bg-gray-50' }}">
                                 {{ $item->label }}
                             </a>
                         @endif
@@ -207,7 +247,7 @@
 
             <div class="p-6 border-t border-border mt-auto">
                 <a href="{{ route('public.contact.show') }}" class="flex w-full items-center justify-center rounded-full bg-teal px-6 py-3 text-base font-medium text-white hover:bg-teal/90 shadow-sm transition-colors">
-                    Informasi Publik
+                    Hubungi Kami
                 </a>
             </div>
         </div>

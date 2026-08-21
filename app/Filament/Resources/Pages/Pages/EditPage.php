@@ -38,7 +38,6 @@ class EditPage extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            PreviewAction::make($this->previewType(), editing: true),
             DeleteAction::make()
                 ->label('Hapus')
                 ->modalHeading('Hapus Halaman')

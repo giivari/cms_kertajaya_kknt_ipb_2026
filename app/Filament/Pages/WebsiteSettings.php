@@ -105,6 +105,21 @@ class WebsiteSettings extends Page
             'potensi_3_image' => SettingsService::get('potensi_3_image', null),
             'potensi_3_link' => SettingsService::get('potensi_3_link', ''),
             'potensi_all_link' => SettingsService::get('potensi_all_link', ''),
+            
+            // Latar Belakang (Baru)
+            'profil_bg_image' => SettingsService::get('profil_bg_image', null),
+            'profil_bg_color' => SettingsService::get('profil_bg_color', '#ffffff'),
+            'profil_bg_opacity' => SettingsService::get('profil_bg_opacity', '90'),
+            'potensi_bg_image' => SettingsService::get('potensi_bg_image', null),
+            'potensi_bg_color' => SettingsService::get('potensi_bg_color', '#FDFBF7'),
+            'potensi_bg_opacity' => SettingsService::get('potensi_bg_opacity', '90'),
+            'stat_bg_image' => SettingsService::get('stat_bg_image', null),
+            'stat_bg_color' => SettingsService::get('stat_bg_color', '#0B2136'),
+            'stat_bg_opacity' => SettingsService::get('stat_bg_opacity', '90'),
+            'cta_bg_image' => SettingsService::get('cta_bg_image', null),
+            'cta_bg_color' => SettingsService::get('cta_bg_color', '#005B5C'),
+            'cta_bg_opacity' => SettingsService::get('cta_bg_opacity', '85'),
+
             'stat_population' => SettingsService::get('stat_population', '3.450'),
             'stat_families' => SettingsService::get('stat_families', '850'),
             'stat_area' => SettingsService::get('stat_area', '1.250'),
@@ -247,6 +262,12 @@ class WebsiteSettings extends Page
                                     ->schema([
                                         TextInput::make('profil_title')->label('Judul Profil')->live(onBlur: true)->placeholder('Contoh: Keindahan Alam dan Harmoni Masyarakat'),
                                         Textarea::make('profil_description')->label('Deskripsi Profil')->live(debounce: 500)->placeholder('Contoh: Desa Kertajaya terletak di dataran tinggi yang dikelilingi oleh perbukitan hijau...'),
+                                        Fieldset::make('Pengaturan Latar Belakang')
+                                            ->schema([
+                                                Select::make('profil_bg_image')->label('Gambar Latar (Opsional)')->options($mediaOptions)->searchable()->live()->columnSpanFull(),
+                                                \Filament\Forms\Components\ColorPicker::make('profil_bg_color')->label('Warna Overlay')->live(onBlur: true),
+                                                TextInput::make('profil_bg_opacity')->label('Opasitas Overlay (%)')->numeric()->minValue(0)->maxValue(100)->live(onBlur: true)->placeholder('Contoh: 90'),
+                                            ])->columns(2),
                                         Select::make('profil_image_1')->label('Gambar Profil 1')->options($mediaOptions)->searchable()->live(),
                                         Select::make('profil_image_2')->label('Gambar Profil 2')->options($mediaOptions)->searchable()->live(),
                                         Fieldset::make('Tombol Selengkapnya')
@@ -257,6 +278,12 @@ class WebsiteSettings extends Page
                                     ->schema([
                                         TextInput::make('potensi_title')->label('Judul Utama Bagian Potensi')->columnSpanFull()->live(onBlur: true)->placeholder('Contoh: Potensi Unggulan'),
                                         Textarea::make('potensi_description')->label('Deskripsi Singkat Bagian Potensi')->columnSpanFull()->live(debounce: 500)->placeholder('Contoh: Berbagai potensi dari alam dan masyarakat Desa Kertajaya.'),
+                                        Fieldset::make('Pengaturan Latar Belakang')
+                                            ->schema([
+                                                Select::make('potensi_bg_image')->label('Gambar Latar (Opsional)')->options($mediaOptions)->searchable()->live()->columnSpanFull(),
+                                                \Filament\Forms\Components\ColorPicker::make('potensi_bg_color')->label('Warna Overlay')->live(onBlur: true),
+                                                TextInput::make('potensi_bg_opacity')->label('Opasitas Overlay (%)')->numeric()->minValue(0)->maxValue(100)->live(onBlur: true)->placeholder('Contoh: 90'),
+                                            ])->columns(2),
                                         Fieldset::make('Tombol "Lihat Semua Potensi"')
                                             ->schema(self::getLinkSchema('potensi_all', 'Semua Potensi', 'Lihat Semua Potensi', false, \App\Enums\LinkType::CUSTOM->value, '#'))
                                             ->columns(2)
@@ -292,6 +319,21 @@ class WebsiteSettings extends Page
                                         TextInput::make('stat_families')->label('Kepala Keluarga')->live(onBlur: true)->placeholder('Contoh: 1200'),
                                         TextInput::make('stat_area')->label('Luas Wilayah (Ha)')->live(onBlur: true)->placeholder('Contoh: 450'),
                                         TextInput::make('stat_hamlets')->label('Jumlah Dusun')->live(onBlur: true)->placeholder('Contoh: 5'),
+                                        Fieldset::make('Pengaturan Latar Belakang')
+                                            ->schema([
+                                                Select::make('stat_bg_image')->label('Gambar Latar (Opsional)')->options($mediaOptions)->searchable()->live()->columnSpanFull(),
+                                                \Filament\Forms\Components\ColorPicker::make('stat_bg_color')->label('Warna Overlay')->live(onBlur: true),
+                                                TextInput::make('stat_bg_opacity')->label('Opasitas Overlay (%)')->numeric()->minValue(0)->maxValue(100)->live(onBlur: true)->placeholder('Contoh: 90'),
+                                            ])->columns(2)->columnSpanFull(),
+                                    ])->columns(2),
+                                Section::make('Tindakan Akhir (CTA)')
+                                    ->schema([
+                                        Fieldset::make('Pengaturan Latar Belakang CTA')
+                                            ->schema([
+                                                Select::make('cta_bg_image')->label('Gambar Latar (Opsional)')->options($mediaOptions)->searchable()->live()->columnSpanFull(),
+                                                \Filament\Forms\Components\ColorPicker::make('cta_bg_color')->label('Warna Overlay')->live(onBlur: true),
+                                                TextInput::make('cta_bg_opacity')->label('Opasitas Overlay (%)')->numeric()->minValue(0)->maxValue(100)->live(onBlur: true)->placeholder('Contoh: 85'),
+                                            ])->columns(2)->columnSpanFull(),
                                     ])->columns(2),
                             ]),
                         \Filament\Schemas\Components\Tabs\Tab::make('Alamat & Kontak')

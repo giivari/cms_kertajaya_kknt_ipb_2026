@@ -47,6 +47,18 @@
         $custom = \App\Services\SettingsService::get("{$prefix}_custom_url");
         return $custom ? $custom : null;
     };
+
+    $getContrastColor = function($hexColor) {
+        $hex = str_replace('#', '', $hexColor);
+        if (strlen($hex) === 3) {
+            $hex = $hex[0] . $hex[0] . $hex[1] . $hex[1] . $hex[2] . $hex[2];
+        }
+        $r = hexdec(substr($hex, 0, 2));
+        $g = hexdec(substr($hex, 2, 2));
+        $b = hexdec(substr($hex, 4, 2));
+        $yiq = (($r * 299) + ($g * 587) + ($b * 114)) / 1000;
+        return ($yiq >= 128) ? '#0f172a' : '#ffffff';
+    };
 @endphp
 
 <style>
@@ -107,25 +119,40 @@
     </div>
 </section>
         <!-- Introduksi Section -->
-<section id="profil-desa" class="bg-white responsive-section">
-    <div class="w-full mx-auto px-4 md:px-8 lg:px-12 xl:px-24 2xl:px-32">
+<section id="profil-desa" class="relative bg-white responsive-section overflow-hidden">
+    @if($bg = \App\Services\SettingsService::get('profil_bg_image'))
+    <div class="absolute inset-0 z-0">
+        <img src="{{ $getMediaUrl($bg, 'large') }}" class="w-full h-full object-cover" alt="" />
+        @php
+            $bgColor = \App\Services\SettingsService::get('profil_bg_color', '#ffffff');
+            $bgOpacity = floatval(\App\Services\SettingsService::get('profil_bg_opacity', '90')) / 100;
+        @endphp
+        <div class="absolute inset-0" style="background-color: {{ $bgColor }}; opacity: {{ $bgOpacity }};"></div>
+    </div>
+    @endif
+    <div class="w-full relative z-10 mx-auto px-4 md:px-8 lg:px-12 xl:px-24 2xl:px-32">
+        @php
+            $profilContrast = $bg ? $getContrastColor($bgColor) : null;
+            $profilShadow = $profilContrast === '#ffffff' ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.5)';
+            $textStyle = $bg ? "color: {$profilContrast}; text-shadow: 0 1px 8px {$profilShadow};" : "";
+        @endphp
         <div class="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-            <div>
-                <div class="mb-12 flex flex-col md:flex-row md:items-end gap-6 text-left md:justify-between">
+            <div style="{{ $textStyle }}">
+                <div class="mb-8 md:mb-10 flex flex-col md:flex-row md:items-end gap-6 text-left md:justify-between">
                     <div class="max-w-2xl">
-                        <p class="text-teal font-semibold tracking-wider text-[10px] sm:text-xs md:text-sm uppercase mb-2 md:mb-3">Mengenal Desa</p>
-                        <h2 class="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold mb-3 md:mb-4 font-display">
+                        <p class="font-bold tracking-wider text-[10px] sm:text-xs md:text-sm uppercase mb-2 md:mb-3 {{ $bg ? 'opacity-90' : 'text-teal' }}">Mengenal Desa</p>
+                        <h2 class="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold mb-3 md:mb-4 font-display {{ $bg ? '' : 'text-navy' }}">
                             {{ \App\Services\SettingsService::get('profil_title', 'Keindahan Alam dan Harmoni Masyarakat') }}
                         </h2>
                     </div>
                 </div>
-                <div class="space-y-6 text-gray-500 text-sm sm:text-base md:text-lg mb-6 md:mb-8">
+                <div class="space-y-6 text-sm sm:text-base md:text-lg mb-8 md:mb-10 leading-relaxed {{ $bg ? 'opacity-90' : 'text-gray-700' }}">
                     <p>
                         {{ \App\Services\SettingsService::get('profil_description', 'Desa Kertajaya terletak di dataran tinggi yang dikelilingi oleh perbukitan hijau dan hamparan sawah yang subur. Masyarakat kami hidup berdampingan dengan alam, memelihara tradisi luhur sambil terus bergerak maju mengikuti perkembangan zaman.') }}
                     </p>
                 </div>
                 @if($linkProfil = $resolveLink('profil_button'))
-                <a href="{{ $linkProfil }}" class="inline-flex items-center justify-center rounded-full font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-2 border-2 border-navy text-navy hover:bg-navy hover:text-white px-4 py-2 sm:px-5 sm:py-2.5 lg:px-6 lg:py-3 text-xs sm:text-sm lg:text-base group">
+                <a href="{{ $linkProfil }}" class="inline-flex items-center justify-center rounded-full font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-2 border-2 {{ $bg && $profilContrast === '#ffffff' ? 'border-white text-navy bg-white hover:bg-transparent hover:text-white' : 'border-navy bg-navy text-white hover:bg-transparent hover:text-navy' }} px-5 py-2.5 sm:px-6 sm:py-3 lg:px-8 lg:py-4 text-xs sm:text-sm lg:text-base group" style="text-shadow: none;">
                     {{ \App\Services\SettingsService::get('profil_button_text', 'Selengkapnya tentang desa') }}
                     <svg class="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                 </a>
@@ -161,21 +188,36 @@
     </div>
 </section>
         <!-- PotensiDesa Section -->
-<section id="potensi-desa" class="bg-cream responsive-section">
-    <div class="w-full mx-auto px-4 md:px-8 lg:px-12 xl:px-24 2xl:px-32">
-        <div class="mb-12 flex flex-col md:flex-row md:items-end gap-6 text-left md:justify-between">
+<section id="potensi-desa" class="relative bg-cream responsive-section overflow-hidden">
+    @if($bg = \App\Services\SettingsService::get('potensi_bg_image'))
+    <div class="absolute inset-0 z-0">
+        <img src="{{ $getMediaUrl($bg, 'large') }}" class="w-full h-full object-cover" alt="" />
+        @php
+            $bgColor = \App\Services\SettingsService::get('potensi_bg_color', '#FDFBF7');
+            $bgOpacity = floatval(\App\Services\SettingsService::get('potensi_bg_opacity', '90')) / 100;
+        @endphp
+        <div class="absolute inset-0" style="background-color: {{ $bgColor }}; opacity: {{ $bgOpacity }};"></div>
+    </div>
+    @endif
+    <div class="w-full relative z-10 mx-auto px-4 md:px-8 lg:px-12 xl:px-24 2xl:px-32">
+        @php
+            $potensiContrast = $bg ? $getContrastColor($bgColor) : null;
+            $potensiShadow = $potensiContrast === '#ffffff' ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.5)';
+            $potensiStyle = $bg ? "color: {$potensiContrast}; text-shadow: 0 1px 8px {$potensiShadow};" : "";
+        @endphp
+        <div class="mb-12 flex flex-col md:flex-row md:items-center gap-6 text-left md:justify-between" style="{{ $potensiStyle }}">
             <div class="max-w-2xl">
-                <p class="text-teal font-semibold tracking-wider text-[10px] sm:text-xs md:text-sm uppercase mb-2 md:mb-3">Potensi Unggulan</p>
-                <h2 class="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold mb-3 md:mb-4 font-display">
+                <p class="font-bold tracking-wider text-[10px] sm:text-xs md:text-sm uppercase mb-2 md:mb-3 {{ $bg ? 'opacity-90' : 'text-teal' }}">Potensi Unggulan</p>
+                <h2 class="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold mb-3 md:mb-4 font-display {{ $bg ? '' : 'text-navy' }}">
                     {{ \App\Services\SettingsService::get('potensi_title', 'Kekayaan Alam dan Karya Masyarakat') }}
                 </h2>
-                <p class="text-gray-500 text-sm sm:text-base md:text-lg">
+                <p class="text-sm sm:text-base md:text-lg leading-relaxed {{ $bg ? 'opacity-90' : 'text-gray-700' }}">
                     {{ \App\Services\SettingsService::get('potensi_description', 'Mengenali lebih dekat sumber daya alam dan kreativitas warga yang menjadi motor penggerak kesejahteraan desa.') }}
                 </p>
             </div>
             <div class="shrink-0">
                 @if($linkPotensi = $resolveLink('potensi_all'))
-                <a href="{{ $linkPotensi }}" class="inline-flex items-center justify-center rounded-full font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-2 border-2 border-navy text-navy hover:bg-navy hover:text-white px-4 py-2 sm:px-5 sm:py-2.5 lg:px-6 lg:py-3 text-xs sm:text-sm lg:text-base">
+                <a href="{{ $linkPotensi }}" class="inline-flex items-center justify-center rounded-full font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-2 border-2 {{ $bg && $potensiContrast === '#ffffff' ? 'border-white text-navy bg-white hover:bg-transparent hover:text-white' : 'border-navy bg-navy text-white hover:bg-transparent hover:text-navy' }} px-5 py-2.5 sm:px-6 sm:py-3 lg:px-8 lg:py-4 text-xs sm:text-sm lg:text-base" style="text-shadow: none;">
                     {{ \App\Services\SettingsService::get('potensi_all_text', 'Lihat Semua Potensi') }}
                 </a>
                 @endif
@@ -266,36 +308,53 @@
     </div>
 </section>
         <!-- Statistik Section -->
-<section class="bg-navy text-white responsive-section">
-    <div class="w-full mx-auto px-4 md:px-8 lg:px-12 xl:px-24 2xl:px-32">
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-8 md:gap-12">
-            <div class="flex flex-col items-center text-center md:items-start md:text-left border-l-0 md:border-l border-white/20 pl-0 md:pl-6">
-                <div class="w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/10 flex items-center justify-center text-lime mb-3 md:mb-4">
+<section class="relative bg-navy text-white responsive-section overflow-hidden">
+    @if($bg = \App\Services\SettingsService::get('stat_bg_image'))
+    <div class="absolute inset-0 z-0">
+        <img src="{{ $getMediaUrl($bg, 'large') }}" class="w-full h-full object-cover" alt="" />
+        @php
+            $bgColor = \App\Services\SettingsService::get('stat_bg_color', '#0B2136');
+            $bgOpacity = floatval(\App\Services\SettingsService::get('stat_bg_opacity', '90')) / 100;
+        @endphp
+        <div class="absolute inset-0" style="background-color: {{ $bgColor }}; opacity: {{ $bgOpacity }};"></div>
+    </div>
+    @endif
+    <div class="w-full relative z-10 mx-auto px-4 md:px-8 lg:px-12 xl:px-24 2xl:px-32">
+        @php
+            $statContrast = $bg ? $getContrastColor($bgColor) : '#ffffff';
+            $statStyle = "color: {$statContrast};";
+            $borderStyle = "border-color: " . ($statContrast === '#ffffff' ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)') . ";";
+            $iconBgStyle = "background-color: " . ($statContrast === '#ffffff' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)') . ";";
+            $iconColorStyle = "color: " . ($statContrast === '#ffffff' ? '#a3e635' : '#0f172a') . ";"; // lime or dark
+        @endphp
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-8 md:gap-12" style="{{ $statStyle }}">
+            <div class="flex flex-col items-center text-center md:items-start md:text-left border-l-0 md:border-l pl-0 md:pl-6" style="{{ $borderStyle }}">
+                <div class="w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center mb-3 md:mb-4" style="{{ $iconBgStyle }} {{ $iconColorStyle }}">
                     <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
                 </div>
-                <div class="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold text-white mb-1 md:mb-2 font-display">{{ \App\Services\SettingsService::get('stat_population', '3.450') }}</div>
-                <div class="text-[10px] sm:text-xs md:text-sm text-white/70 font-medium">Jumlah Penduduk</div>
+                <div class="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold mb-1 md:mb-2 font-display">{{ \App\Services\SettingsService::get('stat_population', '3.450') }}</div>
+                <div class="text-[10px] sm:text-xs md:text-sm opacity-80 font-medium">Jumlah Penduduk</div>
             </div>
-            <div class="flex flex-col items-center text-center md:items-start md:text-left border-l-0 md:border-l border-white/20 pl-0 md:pl-6">
-                <div class="w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/10 flex items-center justify-center text-lime mb-3 md:mb-4">
+            <div class="flex flex-col items-center text-center md:items-start md:text-left border-l-0 md:border-l pl-0 md:pl-6" style="{{ $borderStyle }}">
+                <div class="w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center mb-3 md:mb-4" style="{{ $iconBgStyle }} {{ $iconColorStyle }}">
                     <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
                 </div>
-                <div class="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold text-white mb-1 md:mb-2 font-display">{{ \App\Services\SettingsService::get('stat_families', '850') }}</div>
-                <div class="text-[10px] sm:text-xs md:text-sm text-white/70 font-medium">Kepala Keluarga</div>
+                <div class="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold mb-1 md:mb-2 font-display">{{ \App\Services\SettingsService::get('stat_families', '850') }}</div>
+                <div class="text-[10px] sm:text-xs md:text-sm opacity-80 font-medium">Kepala Keluarga</div>
             </div>
-            <div class="flex flex-col items-center text-center md:items-start md:text-left border-l-0 md:border-l border-white/20 pl-0 md:pl-6">
-                <div class="w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/10 flex items-center justify-center text-lime mb-3 md:mb-4">
+            <div class="flex flex-col items-center text-center md:items-start md:text-left border-l-0 md:border-l pl-0 md:pl-6" style="{{ $borderStyle }}">
+                <div class="w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center mb-3 md:mb-4" style="{{ $iconBgStyle }} {{ $iconColorStyle }}">
                     <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
                 </div>
-                <div class="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold text-white mb-1 md:mb-2 font-display">{{ \App\Services\SettingsService::get('stat_area', '1.250') }}</div>
-                <div class="text-[10px] sm:text-xs md:text-sm text-white/70 font-medium">Luas Wilayah (Ha)</div>
+                <div class="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold mb-1 md:mb-2 font-display">{{ \App\Services\SettingsService::get('stat_area', '1.250') }}</div>
+                <div class="text-[10px] sm:text-xs md:text-sm opacity-80 font-medium">Luas Wilayah (Ha)</div>
             </div>
-            <div class="flex flex-col items-center text-center md:items-start md:text-left border-l-0 md:border-l border-white/20 pl-0 md:pl-6">
-                <div class="w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/10 flex items-center justify-center text-lime mb-3 md:mb-4">
+            <div class="flex flex-col items-center text-center md:items-start md:text-left border-l-0 md:border-l pl-0 md:pl-6" style="{{ $borderStyle }}">
+                <div class="w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center mb-3 md:mb-4" style="{{ $iconBgStyle }} {{ $iconColorStyle }}">
                     <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path></svg>
                 </div>
-                <div class="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold text-white mb-1 md:mb-2 font-display">{{ \App\Services\SettingsService::get('stat_hamlets', '4') }}</div>
-                <div class="text-[10px] sm:text-xs md:text-sm text-white/70 font-medium">Jumlah Dusun</div>
+                <div class="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold mb-1 md:mb-2 font-display">{{ \App\Services\SettingsService::get('stat_hamlets', '4') }}</div>
+                <div class="text-[10px] sm:text-xs md:text-sm opacity-80 font-medium">Jumlah Dusun</div>
             </div>
         </div>
     </div>
@@ -500,21 +559,38 @@
 @endif
         <!-- FinalCTA Section -->
 <section class="relative overflow-hidden text-center bg-teal text-white flex-grow flex flex-col justify-center responsive-cta">
-    <div class="absolute top-0 left-0 w-full h-full overflow-hidden opacity-10 pointer-events-none">
+    @if($bg = \App\Services\SettingsService::get('cta_bg_image'))
+    <div class="absolute inset-0 z-0">
+        <img src="{{ $getMediaUrl($bg, 'large') }}" class="w-full h-full object-cover" alt="" />
+        @php
+            $bgColor = \App\Services\SettingsService::get('cta_bg_color', '#005B5C');
+            $bgOpacity = floatval(\App\Services\SettingsService::get('cta_bg_opacity', '85')) / 100;
+        @endphp
+        <div class="absolute inset-0" style="background-color: {{ $bgColor }}; opacity: {{ $bgOpacity }};"></div>
+    </div>
+    @else
+    <div class="absolute top-0 left-0 w-full h-full overflow-hidden opacity-10 pointer-events-none z-0">
         <div class="absolute -top-[20%] -left-[10%] w-[50%] h-[150%] bg-white rounded-full blur-[100px] transform rotate-12"></div>
         <div class="absolute top-[30%] -right-[10%] w-[40%] h-[120%] bg-lime rounded-full blur-[120px] transform -rotate-12"></div>
     </div>
+    @endif
 
     <div class="relative z-10 max-w-3xl mx-auto px-4">
-        <h2 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-white mb-4 md:mb-6 font-display">
-            Punya pertanyaan atau membutuhkan informasi?
-        </h2>
-        <p class="text-xl text-white/80 mb-10 max-w-2xl mx-auto">
-            Hubungi pemerintah {{ \App\Services\SettingsService::get('village_name', 'Desa Kertajaya') }} untuk mendapatkan pelayanan publik, informasi data, atau bantuan yang Anda perlukan.
-        </p>
-        <a href="{{ route('public.contact.show') }}" class="inline-flex items-center justify-center rounded-full font-medium transition-colors bg-yellow text-navy hover:bg-yellow/90 shadow-sm px-5 py-2.5 sm:px-6 sm:py-3 lg:px-8 lg:py-4 text-sm sm:text-base lg:text-lg">
-            Lihat Informasi Kontak
-        </a>
+        @php
+            $ctaContrast = $bg ? $getContrastColor($bgColor) : '#ffffff';
+            $ctaStyle = "color: {$ctaContrast};";
+        @endphp
+        <div style="{{ $ctaStyle }}">
+            <h2 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold mb-4 md:mb-6 font-display">
+                Punya pertanyaan atau membutuhkan informasi?
+            </h2>
+            <p class="text-xl opacity-80 mb-10 max-w-2xl mx-auto">
+                Hubungi pemerintah {{ \App\Services\SettingsService::get('village_name', 'Desa Kertajaya') }} untuk mendapatkan pelayanan publik, informasi data, atau bantuan yang Anda perlukan.
+            </p>
+            <a href="{{ route('public.contact.show') }}" class="inline-flex items-center justify-center rounded-full font-medium transition-colors bg-yellow text-navy hover:bg-yellow/90 shadow-sm px-5 py-2.5 sm:px-6 sm:py-3 lg:px-8 lg:py-4 text-sm sm:text-base lg:text-lg">
+                Lihat Informasi Kontak
+            </a>
+        </div>
     </div>
 </section>
 

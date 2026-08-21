@@ -6,41 +6,28 @@
 @section('content')
 <div class="bg-white">
     <!-- Page Header -->
-    <div class="relative bg-emerald-700 pb-16 pt-12 text-white">
-        @php
-            $bgUrl = null;
-            if ($page->featured_media_id) {
-                try {
-                    $media = \App\Models\Media::find($page->featured_media_id);
-                    if ($media && $media->invisible_watermark_status?->value === 'verified') {
-                        $deriv = $media->getPublicDerivative('large');
-                        if ($deriv) $bgUrl = Storage::disk('public')->url($deriv->filename);
-                    }
-                } catch (\Exception $e) {}
-            }
-        @endphp
-        
-        @if($bgUrl)
-            <div class="absolute inset-0">
-                <img src="{{ $bgUrl }}" alt="{{ $page->title }}" class="w-full h-full object-cover mix-blend-multiply filter brightness-50">
-            </div>
-        @else
-            <div class="absolute inset-0">
-                <div class="absolute inset-0 bg-gradient-to-r from-emerald-800 to-emerald-600"></div>
-                <div class="absolute inset-0 bg-black/30"></div>
-            </div>
-        @endif
-        <div class="relative w-full mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-24 2xl:px-32 text-center mt-8 mb-8">
-            <h1 class="text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl drop-shadow-md font-display">
-                {{ $page->title }}
-            </h1>
-            @if($page->excerpt)
-                <p class="mt-4 max-w-2xl mx-auto text-xl text-emerald-50 drop-shadow">
-                    {{ $page->excerpt }}
-                </p>
-            @endif
-        </div>
-    </div>
+    @php
+        $bgUrl = null;
+        if ($page->featured_media_id) {
+            try {
+                $media = \App\Models\Media::find($page->featured_media_id);
+                if ($media && $media->invisible_watermark_status?->value === 'verified') {
+                    $deriv = $media->getPublicDerivative('large');
+                    if ($deriv) $bgUrl = Storage::disk('public')->url($deriv->filename);
+                }
+            } catch (\Exception $e) {}
+        }
+    @endphp
+    
+    @include('partials.page-header', [
+        'title' => $page->title,
+        'description' => $page->excerpt,
+        'breadcrumbs' => [
+            ['label' => 'Beranda', 'url' => route('home')],
+            ['label' => $page->title, 'url' => null]
+        ],
+        'bgImage' => $bgUrl
+    ])
 
     <!-- Page Content -->
     <div class="w-full mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-24 2xl:px-32 py-12">

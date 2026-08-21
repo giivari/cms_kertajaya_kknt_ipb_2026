@@ -3,8 +3,16 @@
 @section('title', 'Berita Desa')
 
 @section('content')
-<div class="container mx-auto px-4 py-4">
-    <h1 class="text-3xl font-bold mb-6">Berita Desa</h1>
+@include('partials.page-header', [
+    'title' => 'Berita Desa',
+    'description' => 'Kumpulan berita dan informasi terbaru dari pemerintah desa',
+    'breadcrumbs' => [
+        ['label' => 'Beranda', 'url' => route('home')],
+        ['label' => 'Berita', 'url' => null]
+    ]
+])
+
+<div class="w-full mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-24 2xl:px-32 py-12">
 
     @if($news->isEmpty())
         <p class="text-gray-500">Belum ada berita yang dipublikasikan.</p>

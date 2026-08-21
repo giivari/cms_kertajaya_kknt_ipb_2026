@@ -30,7 +30,9 @@ class EditMenu extends EditRecord
 
     protected function getHeaderActions(): array
     {
-        return [];
+        return [
+            DeleteAction::make(),
+        ];
     }
 
     protected function getFormActions(): array

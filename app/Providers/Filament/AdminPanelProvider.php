@@ -52,9 +52,7 @@ class AdminPanelProvider extends PanelProvider
                 isRequired: true
             )
             ->brandLogo(fn () => view('filament.brand.sidebar-logo'))
-            ->brandLogoHeight('2.5rem')
             ->defaultAvatarProvider(LocalInitialsAvatarProvider::class)
-            ->sidebarWidth('16rem')
             ->favicon(fn () => (function() {
                 $faviconId = \App\Services\SettingsService::get('favicon');
                 if ($faviconId) {
@@ -102,6 +100,8 @@ class AdminPanelProvider extends PanelProvider
                 \Filament\Navigation\NavigationGroup::make('Lainnya')->collapsible(false),
             ])
             ->sidebarCollapsibleOnDesktop()
+            ->sidebarWidth('15rem')
+            ->collapsedSidebarWidth('3.5rem')
             ->spa()
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')

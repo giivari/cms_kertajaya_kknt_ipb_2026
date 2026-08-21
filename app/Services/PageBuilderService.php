@@ -139,10 +139,11 @@ class PageBuilderService
 
             foreach ($section->components as $component) {
                 $data = $component->content_data ?? [];
-                $data['id'] = $component->id;
-                $data['column_position'] = $component->column_position;
-                $data['component_settings'] = $component->component_settings;
-                $data['is_visible'] = $component->is_visible;
+                
+                // Do not inject id, column_position, component_settings, and is_visible into data
+                // as Filament Builder blocks will strip them or reject the block if undeclared.
+                // Filament Builder uses the UUID key to identify the block, and we can just recreate
+                // the components on save (since PageBuilderService deletes missing ones).
 
                 // Filament Builder format uses a UUID for the array key usually,
                 // but sequential array works for setting state.

@@ -111,11 +111,14 @@ class MenuResource extends Resource
                                     ->regex('/^https?:\/\//i')
                                     ->visible(fn (Get $get) => $get('link_type') === LinkType::CUSTOM->value)
                                     ->required(fn (Get $get) => $get('link_type') === LinkType::CUSTOM->value),
-                                Toggle::make('target')
+                                Toggle::make('is_blank')
                                     ->label('Buka di Tab Baru')
-                                    ->formatStateUsing(fn ($state): bool => $state === '_blank' || $state === true)
-                                    ->dehydrateStateUsing(fn ($state): string => ($state === true || $state === '1' || $state === '_blank') ? '_blank' : '_self')
+                                    ->formatStateUsing(fn ($state, ?\App\Models\MenuItem $record): bool => $record ? $record->target === '_blank' : false)
+                                    ->dehydrated(false)
                                     ->default(false),
+                                \Filament\Forms\Components\Hidden::make('target')
+                                    ->default('_self')
+                                    ->dehydrateStateUsing(fn ($state, $get): string => $get('is_blank') ? '_blank' : '_self'),
                                 Toggle::make('is_visible')->label('Tampilkan')->default(true),
 
                                 Repeater::make('children')
@@ -151,11 +154,14 @@ class MenuResource extends Resource
                                             ->regex('/^https?:\/\//i')
                                             ->visible(fn (Get $get) => $get('link_type') === LinkType::CUSTOM->value)
                                             ->required(fn (Get $get) => $get('link_type') === LinkType::CUSTOM->value),
-                                        Toggle::make('target')
+                                        Toggle::make('is_blank')
                                             ->label('Buka di Tab Baru')
-                                            ->formatStateUsing(fn ($state): bool => $state === '_blank' || $state === true)
-                                            ->dehydrateStateUsing(fn ($state): string => ($state === true || $state === '1' || $state === '_blank') ? '_blank' : '_self')
+                                            ->formatStateUsing(fn ($state, ?\App\Models\MenuItem $record): bool => $record ? $record->target === '_blank' : false)
+                                            ->dehydrated(false)
                                             ->default(false),
+                                        \Filament\Forms\Components\Hidden::make('target')
+                                            ->default('_self')
+                                            ->dehydrateStateUsing(fn ($state, $get): string => $get('is_blank') ? '_blank' : '_self'),
                                         Toggle::make('is_visible')->label('Tampilkan')->default(true),
                                     ])
                                     ->orderColumn('position')
