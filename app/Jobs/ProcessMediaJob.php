@@ -54,7 +54,7 @@ class ProcessMediaJob implements ShouldQueue
                 exec("heif-convert -q 90 " . escapeshellarg($stagingPath) . " " . escapeshellarg($newStagingPath) . " 2>/dev/null", $output, $returnCode);
                 
                 if ($returnCode === 0 && file_exists($newStagingPath)) {
-                    $this->fixOrientation($newStagingPath);
+                    $this->fixOrientation($newStagingPath, $originalPath);
                     
                     unlink($stagingPath);
                     $stagingPath = $newStagingPath;
@@ -162,31 +162,38 @@ class ProcessMediaJob implements ShouldQueue
         }
     }
 
-    protected function fixOrientation(string $path): void
+    protected function fixOrientation(string $jpgPath, string $originalHeicPath): void
     {
-        if (!function_exists('exif_read_data')) {
-            return;
+        // heif-convert strips EXIF, so we must read orientation from the original HEIC
+        $output = [];
+        $returnCode = 0;
+        exec("exiftool -Orientation -n -S " . escapeshellarg($originalHeicPath) . " 2>/dev/null", $output, $returnCode);
+        
+        $orientation = 0;
+        if ($returnCode === 0 && isset($output[0])) {
+            if (preg_match('/^Orientation:\s*(\d+)/i', $output[0], $matches)) {
+                $orientation = (int)$matches[1];
+            }
         }
 
-        $exif = @exif_read_data($path);
-        if (!empty($exif['Orientation'])) {
-            $image = @imagecreatefromjpeg($path);
+        if ($orientation > 1) {
+            $image = @imagecreatefromjpeg($jpgPath);
             if ($image) {
-                $orientation = $exif['Orientation'];
                 $rotated = null;
                 switch ($orientation) {
                     case 3:
                         $rotated = imagerotate($image, 180, 0);
                         break;
-                    case 6:
+                    case 6: // Rotate 90 CW
                         $rotated = imagerotate($image, -90, 0);
                         break;
-                    case 8:
+                    case 8: // Rotate 90 CCW
                         $rotated = imagerotate($image, 90, 0);
                         break;
                 }
+                
                 if ($rotated) {
-                    imagejpeg($rotated, $path, 95);
+                    imagejpeg($rotated, $jpgPath, 95);
                     imagedestroy($rotated);
                 }
                 imagedestroy($image);
