@@ -54,6 +54,8 @@ class ProcessMediaJob implements ShouldQueue
                 exec("heif-convert -q 90 " . escapeshellarg($stagingPath) . " " . escapeshellarg($newStagingPath) . " 2>/dev/null", $output, $returnCode);
                 
                 if ($returnCode === 0 && file_exists($newStagingPath)) {
+                    $this->fixOrientation($newStagingPath);
+                    
                     unlink($stagingPath);
                     $stagingPath = $newStagingPath;
                     $stagingFilename = preg_replace('/\.heic$/i', '.jpg', $stagingFilename);
@@ -157,6 +159,38 @@ class ProcessMediaJob implements ShouldQueue
         } catch (Exception $e) {
             $this->media->update(['processing_status' => MediaProcessingStatus::FAILED]);
             throw $e;
+        }
+    }
+
+    protected function fixOrientation(string $path): void
+    {
+        if (!function_exists('exif_read_data')) {
+            return;
+        }
+
+        $exif = @exif_read_data($path);
+        if (!empty($exif['Orientation'])) {
+            $image = @imagecreatefromjpeg($path);
+            if ($image) {
+                $orientation = $exif['Orientation'];
+                $rotated = null;
+                switch ($orientation) {
+                    case 3:
+                        $rotated = imagerotate($image, 180, 0);
+                        break;
+                    case 6:
+                        $rotated = imagerotate($image, -90, 0);
+                        break;
+                    case 8:
+                        $rotated = imagerotate($image, 90, 0);
+                        break;
+                }
+                if ($rotated) {
+                    imagejpeg($rotated, $path, 95);
+                    imagedestroy($rotated);
+                }
+                imagedestroy($image);
+            }
         }
     }
 }
