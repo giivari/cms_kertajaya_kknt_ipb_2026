@@ -24,6 +24,14 @@ class MediaForm
                                 FileUpload::make('file')
                                     ->label('Pilih Berkas')
                                     ->imageEditor()
+                                    ->imageEditorAspectRatios([
+                                        null,
+                                        '16:9',
+                                        '4:3',
+                                        '1:1',
+                                        '3:4',
+                                        '9:16',
+                                    ])
                                     ->helperText('Format yang diterima: JPEG, PNG, WebP, HEIC, Word, atau PDF. Ukuran maksimal 10 MB.')
                                     ->required()
                                     ->acceptedFileTypes([
