@@ -79,7 +79,15 @@ class LocationForm
                                 ->searchable()
                                 ->preload()
                                 ->placeholder('Pilih kategori lokasi')
-                                ->helperText('Buat Kategori Lokasi terlebih dahulu jika belum tersedia.'),
+                                ->createOptionForm([
+                                    \Filament\Forms\Components\TextInput::make('name')
+                                        ->label('Nama')
+                                        ->required()
+                                        ->maxLength(150),
+                                    \Filament\Forms\Components\Textarea::make('description')->label('Deskripsi')->columnSpanFull(),
+                                    \Filament\Forms\Components\TextInput::make('sort_order')->label('Urutan')->numeric()->default(0)->required(),
+                                ])
+                                ->helperText('Anda bisa menambahkan kategori baru langsung dari sini.'),
                             TextInput::make('sort_order')
                                 ->label('Urutan Tampil')
                                 ->numeric()
