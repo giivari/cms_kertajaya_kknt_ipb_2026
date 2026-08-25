@@ -23,6 +23,7 @@ class ContactMessageResource extends Resource
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-inbox';
     protected static ?string $navigationLabel = 'Pesan Masuk';
     protected static ?int $navigationSort = 1;
+    protected static ?string $recordTitleAttribute = 'name';
     protected static ?string $modelLabel = 'Pesan Kontak';
     protected static ?string $pluralModelLabel = 'Pesan Kontak';
 
