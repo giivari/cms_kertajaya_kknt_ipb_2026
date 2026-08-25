@@ -102,7 +102,7 @@ class AdminPanelProvider extends PanelProvider
             ->sidebarCollapsibleOnDesktop()
             ->sidebarWidth('15rem')
             ->collapsedSidebarWidth('3.5rem')
-            ->globalSearchProvider(\App\Filament\Providers\GlobalSearchProvider::class)
+            ->globalSearch(\App\Filament\Providers\GlobalSearchProvider::class)
             ->spa()
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
