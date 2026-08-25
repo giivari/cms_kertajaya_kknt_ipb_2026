@@ -3,7 +3,7 @@
 namespace App\Filament\Providers;
 
 use Filament\Facades\Filament;
-use Filament\GlobalSearch\DefaultGlobalSearchProvider;
+use Filament\GlobalSearch\Providers\DefaultGlobalSearchProvider;
 use Filament\GlobalSearch\GlobalSearchResult;
 use Filament\GlobalSearch\GlobalSearchResults;
 use Illuminate\Support\Str;
