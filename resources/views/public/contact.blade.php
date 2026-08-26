@@ -3,7 +3,7 @@
 @section('title', 'Hubungi Kami')
 
 @section('content')
-<div class="bg-warm-white min-h-screen py-12 lg:py-20">
+<div class="bg-warm-white min-h-screen pt-6 pb-12 lg:pt-10 lg:pb-20">
     <div class="w-full mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-24 2xl:px-32">
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20">
             <!-- Left Column: Info -->
