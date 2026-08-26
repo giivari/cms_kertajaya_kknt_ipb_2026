@@ -13,6 +13,7 @@ use App\Filament\Resources\Pages\Pages\EditPage;
 use App\Filament\Resources\Pages\Pages\ListPages;
 use App\Filament\Resources\Pages\Pages\ViewPage;
 use App\Filament\Resources\Pages\Schemas\PageInfolist;
+use App\Models\Media;
 use App\Models\Page;
 use App\Services\PageTemplateService;
 use Filament\Actions\ActionGroup;
@@ -163,7 +164,13 @@ class PageResource extends Resource
                                                     ->schema([
                                                         Select::make('media_id')
                                                             ->label('Pilih Gambar')
-                                                            ->relationship('featuredMedia', 'original_filename', fn (EloquentBuilder $query) => static::validMediaQuery($query, 'image/'))
+                                                            ->options(fn () => Media::query()
+                                                                ->where('processing_status', MediaProcessingStatus::COMPLETED->value)
+                                                                ->where('invisible_watermark_status', InvisibleWatermarkStatus::VERIFIED->value)
+                                                                ->where('mime_type', 'like', 'image/%')
+                                                                ->whereHas('derivatives', fn ($q) => $q->whereIn('derivative_type', [DerivativeType::PUBLIC->value, DerivativeType::PUBLIC_VISIBLE_WATERMARK->value]))
+                                                                ->pluck('original_filename', 'id')
+                                                            )
                                                             ->searchable()
                                                             ->required(),
                                                         TextInput::make('caption')->label('Keterangan')->placeholder('Contoh: Foto Balai Desa Kertajaya saat pagi hari.'),
@@ -175,7 +182,13 @@ class PageResource extends Resource
                                                         Select::make('images')
                                                             ->label('Pilih Gambar')
                                                             ->multiple()
-                                                            ->relationship('featuredMedia', 'original_filename', fn (EloquentBuilder $query) => static::validMediaQuery($query, 'image/'))
+                                                            ->options(fn () => Media::query()
+                                                                ->where('processing_status', MediaProcessingStatus::COMPLETED->value)
+                                                                ->where('invisible_watermark_status', InvisibleWatermarkStatus::VERIFIED->value)
+                                                                ->where('mime_type', 'like', 'image/%')
+                                                                ->whereHas('derivatives', fn ($q) => $q->whereIn('derivative_type', [DerivativeType::PUBLIC->value, DerivativeType::PUBLIC_VISIBLE_WATERMARK->value]))
+                                                                ->pluck('original_filename', 'id')
+                                                            )
                                                             ->searchable(),
                                                     ]),
                                                 Block::make('statistics')
@@ -186,7 +199,30 @@ class PageResource extends Resource
                                                             ->schema([
                                                                 TextInput::make('label')->label('Nama')->required()->placeholder('Contoh: Jumlah Penduduk'),
                                                                 TextInput::make('value')->label('Nilai')->required()->placeholder('Contoh: 3500'),
-                                                                TextInput::make('icon')->label('Ikon')->placeholder('Contoh: heroicon-o-users'),
+                                                                Select::make('icon')
+                                                                    ->label('Ikon')
+                                                                    ->options([
+                                                                        'users' => '👥 Penduduk / Orang',
+                                                                        'home' => '🏠 Rumah / Keluarga',
+                                                                        'building' => '🏢 Gedung / Kantor',
+                                                                        'map' => '🗺️ Wilayah / Peta',
+                                                                        'tree' => '🌳 Pertanian / Alam',
+                                                                        'briefcase' => '💼 Pekerjaan / Usaha',
+                                                                        'academic' => '🎓 Pendidikan',
+                                                                        'heart' => '❤️ Kesehatan',
+                                                                        'currency' => '💰 Keuangan / Anggaran',
+                                                                        'chart' => '📊 Grafik / Data',
+                                                                        'shield' => '🛡️ Keamanan',
+                                                                        'truck' => '🚛 Transportasi / Jalan',
+                                                                        'water' => '💧 Air / Irigasi',
+                                                                        'lightning' => '⚡ Listrik / Energi',
+                                                                        'mosque' => '🕌 Tempat Ibadah',
+                                                                        'flag' => '🚩 RT / RW',
+                                                                        'child' => '👶 Anak / Balita',
+                                                                        'elderly' => '👴 Lansia',
+                                                                    ])
+                                                                    ->placeholder('Pilih ikon (opsional)')
+                                                                    ->searchable(),
                                                             ]),
                                                     ]),
                                                 Block::make('video')
@@ -208,7 +244,13 @@ class PageResource extends Resource
                                                         Select::make('documents')
                                                             ->label('Pilih Dokumen')
                                                             ->multiple()
-                                                            ->relationship('featuredMedia', 'original_filename', fn (EloquentBuilder $query) => static::validMediaQuery($query)->where('mime_type', 'application/pdf'))
+                                                            ->options(fn () => Media::query()
+                                                                ->where('processing_status', MediaProcessingStatus::COMPLETED->value)
+                                                                ->where('invisible_watermark_status', InvisibleWatermarkStatus::VERIFIED->value)
+                                                                ->where('mime_type', 'application/pdf')
+                                                                ->whereHas('derivatives', fn ($q) => $q->whereIn('derivative_type', [DerivativeType::PUBLIC->value, DerivativeType::PUBLIC_VISIBLE_WATERMARK->value]))
+                                                                ->pluck('original_filename', 'id')
+                                                            )
                                                             ->searchable(),
                                                     ]),
                                                 Block::make('cta_button')

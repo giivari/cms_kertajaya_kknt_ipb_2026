@@ -1,6 +1,6 @@
 @php
     $documentIds = $data['documents'] ?? [];
-    $mediaItems = !empty($documentIds) ? \App\Models\Media::whereIn('id', $documentIds)->get() : [];
+    $mediaItems = !empty($documentIds) ? \App\Models\Media::whereIn('id', $documentIds)->get() : collect();
 @endphp
 
 @if($mediaItems->count() > 0)
@@ -12,7 +12,7 @@
                     <span class="text-sm font-medium text-gray-900">{{ $media->original_filename }}</span>
                 </div>
                 <div class="ml-4 flex-shrink-0">
-                    <a href="{{ Storage::url($media->filename) }}" target="_blank" class="font-medium text-emerald-600 hover:text-emerald-500 text-sm">Download</a>
+                    <a href="{{ \Illuminate\Support\Facades\Storage::url($media->filename) }}" target="_blank" class="font-medium text-emerald-600 hover:text-emerald-500 text-sm">Download</a>
                 </div>
             </li>
         @endforeach

@@ -13,7 +13,7 @@
                 $media = \App\Models\Media::find($page->featured_media_id);
                 if ($media && $media->invisible_watermark_status?->value === 'verified') {
                     $deriv = $media->getPublicDerivative('large');
-                    if ($deriv) $bgUrl = Storage::disk('public')->url($deriv->filename);
+                    if ($deriv) $bgUrl = \Illuminate\Support\Facades\Storage::disk('public')->url($deriv->filename);
                 }
             } catch (\Exception $e) {}
         }

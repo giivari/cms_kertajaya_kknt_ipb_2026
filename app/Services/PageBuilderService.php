@@ -16,54 +16,35 @@ class PageBuilderService
     public function saveSectionsAndComponents(Page $page, array $sectionsData): void
     {
         DB::transaction(function () use ($page, $sectionsData) {
-            // Get existing section IDs to determine which ones to delete
-            $existingSectionIds = $page->sections()->pluck('id')->toArray();
-            $keptSectionIds = [];
+            // Delete all existing sections (and their components via cascade or manual delete)
+            // to avoid unique constraint violations on position indexes.
+            foreach ($page->sections as $section) {
+                $section->components()->delete();
+            }
+            $page->sections()->delete();
 
-            foreach ($sectionsData as $sectionIndex => $sectionData) {
-                $sectionModel = null;
-
-                // Check if this section already exists (usually Filament passes an ID if editing a repeater item,
-                // but we might just use the array key or handle it differently.
-                // Filament repeaters use UUIDs as keys, so we can store that or just recreate.
-                // The cleanest way is to recreate or update based on a hidden ID field.
-
-                $sectionId = $sectionData['id'] ?? null;
-
-                if ($sectionId && in_array($sectionId, $existingSectionIds)) {
-                    $sectionModel = PageSection::find($sectionId);
-                    $keptSectionIds[] = $sectionId;
-                } else {
-                    $sectionModel = new PageSection;
-                    $sectionModel->page_id = $page->id;
-                }
-
+            $sectionPosition = 0;
+            foreach ($sectionsData as $sectionUuid => $sectionData) {
+                $sectionModel = new PageSection;
+                $sectionModel->page_id = $page->id;
                 $sectionModel->name = $sectionData['name'] ?? null;
                 $sectionModel->layout_type = $sectionData['layout_type'] ?? 'single_column';
-                $sectionModel->position = $sectionIndex;
+                $sectionModel->position = $sectionPosition++;
                 $sectionModel->section_settings = $sectionData['section_settings'] ?? [];
                 $sectionModel->is_visible = $sectionData['is_visible'] ?? true;
                 $sectionModel->save();
 
-                if (! $sectionId) {
-                    $keptSectionIds[] = $sectionModel->id;
-                }
-
                 $this->saveComponents($sectionModel, $sectionData['components'] ?? []);
-            }
-
-            // Delete sections that were removed
-            $sectionsToDelete = array_diff($existingSectionIds, $keptSectionIds);
-            if (! empty($sectionsToDelete)) {
-                PageSection::whereIn('id', $sectionsToDelete)->delete();
             }
         });
     }
 
     protected function saveComponents(PageSection $section, array $componentsData): void
     {
-        $existingComponentIds = $section->components()->pluck('id')->toArray();
-        $keptComponentIds = [];
+        // Delete all existing components first to avoid unique constraint violations
+        // on the (section_id, column_position, position) unique index.
+        // Components will be fully recreated from the builder state.
+        $section->components()->delete();
 
         $position = 0;
         foreach ($componentsData as $componentUuid => $componentData) {
@@ -71,23 +52,12 @@ class PageBuilderService
             $type = $componentData['type'];
             $data = $componentData['data'];
 
-            $componentId = $data['id'] ?? null;
-
-            if ($componentId && in_array($componentId, $existingComponentIds)) {
-                $componentModel = PageComponent::find($componentId);
-                $keptComponentIds[] = $componentId;
-            } else {
-                $componentModel = new PageComponent;
-                $componentModel->section_id = $section->id;
-            }
+            $componentModel = new PageComponent;
+            $componentModel->section_id = $section->id;
 
             $componentModel->component_type = $type;
             $componentModel->column_position = isset($data['column_position']) ? (int) $data['column_position'] : 1;
             $componentModel->position = $position++;
-
-            if ($type === 'rich_text' && isset($data['content'])) {
-                $data['content'] = clean($data['content']);
-            }
 
             if ($type === 'cta_button' && isset($data['url'])) {
                 $data['url'] = $this->sanitizeUrl($data['url']);
@@ -108,15 +78,6 @@ class PageBuilderService
             $componentModel->component_settings = $settings;
             $componentModel->is_visible = $data['is_visible'] ?? true;
             $componentModel->save();
-
-            if (! $componentId) {
-                $keptComponentIds[] = $componentModel->id;
-            }
-        }
-
-        $componentsToDelete = array_diff($existingComponentIds, $keptComponentIds);
-        if (! empty($componentsToDelete)) {
-            PageComponent::whereIn('id', $componentsToDelete)->delete();
         }
     }
 
