@@ -4,7 +4,7 @@
 @section('seo_description', 'Direktori lokasi dan fasilitas Desa Kertajaya.')
 
 @section('content')
-<div class="min-h-screen bg-warm-white py-12 lg:py-20">
+<div class="min-h-screen bg-warm-white py-12 lg:py-12">
     <div class="mx-auto w-full px-4 sm:px-6 md:px-8 lg:px-12 xl:px-24 2xl:px-32">
         <div class="mb-8 max-w-3xl">
             <p class="mb-2 text-sm font-semibold uppercase tracking-wider text-teal">Direktori Desa</p>
