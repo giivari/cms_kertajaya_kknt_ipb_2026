@@ -15,8 +15,10 @@ use Filament\Resources\Pages\EditRecord;
 
 class EditPage extends EditRecord
 {
+    protected ?bool $hasDatabaseTransactions = true;
+
     use \App\Filament\Support\Concerns\HasStatusActions;
-    use HasEditPreview;
+    use HasEditPreview { afterSave as clearPreviewDraftAfterSave; }
 
     protected static string $resource = PageResource::class;
 
@@ -68,6 +70,8 @@ class EditPage extends EditRecord
     {
         $service = app(PageBuilderService::class);
         $service->saveSectionsAndComponents($this->record, $this->builderSections ?? []);
+        \App\Services\AuditLogService::log('page_updated', $this->record);
+        $this->clearPreviewDraftAfterSave();
     }
 
     protected function getSavedNotificationTitle(): ?string

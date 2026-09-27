@@ -7,6 +7,8 @@ use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Facades\Validator;
 use App\Services\Preview\PreviewTokenStore;
 use Filament\Facades\Filament;
+use App\Services\Preview\PreviewDraftStore;
+use App\Services\Preview\PreviewTemporaryAssets;
 
 class PreviewAction
 {
@@ -33,38 +35,45 @@ class PreviewAction
             ->action(function ($livewire) use ($type, $editing, $rules) {
                 $state = $livewire->form->getRawState();
                 $state = $state instanceof Arrayable ? $state->toArray() : $state;
+                $admin = Filament::auth()->user();
+                $sessionId = session()->getId();
+                abort_unless($admin && is_string($sessionId) && $sessionId !== '', 403);
+                $recordId = $editing ? ($livewire->record->id ?? null) : null;
+                if ($type === 'menu' && $editing && ! array_key_exists('location', $state)) {
+                    $state['location'] = $livewire->record->location ?? null;
+                }
+                app(PreviewDraftStore::class)->remember(get_class($livewire), $recordId, $state);
 
                 Validator::make($state, $rules, [
                     'required' => 'Lengkapi field ini untuk membuka pratinjau.',
                 ])->validate();
 
-                $normalizedState = PreviewStateNormalizer::normalize($type, $state);
+                $assets = new PreviewTemporaryAssets();
+                try {
+                    $normalizedState = PreviewStateNormalizer::normalize($type, $assets->capture($state));
 
-                $admin = Filament::auth()->user();
-                $sessionId = request()->hasSession() ? request()->session()->getId() : 'test-session';
+                    $recordSnapshot = null;
+                    if ($editing && isset($livewire->record)) {
+                        $recordSnapshot = $livewire->record->getAttributes();
+                    }
 
-                $recordSnapshot = null;
-                if ($editing && isset($livewire->record)) {
-                    $recordSnapshot = $livewire->record->getAttributes();
+                    $payload = [
+                        'version' => 1,
+                        'type' => $type,
+                        'mode' => $editing ? 'edit' : 'create',
+                        'record_id' => $recordId,
+                        'state' => $normalizedState,
+                        'snapshot' => $recordSnapshot,
+                        'temporary_assets_map' => $assets->map(),
+                    ];
+
+                    $store = app(PreviewTokenStore::class);
+                    $token = $store->create($admin->id, $sessionId, $type, $payload);
+                } catch (\Throwable $exception) {
+                    $assets->discard();
+                    throw $exception;
                 }
-
-                $payload = [
-                    'version' => 1,
-                    'type' => $type,
-                    'mode' => $editing ? 'edit' : 'create',
-                    'record_id' => $editing ? ($livewire->record->id ?? null) : null,
-                    'state' => $normalizedState,
-                    'snapshot' => $recordSnapshot,
-                ];
-
-                $store = app(\App\Services\Preview\PreviewTokenStore::class);
-                $token = $store->create($admin->id, $sessionId, $type, $payload);
                 $url = route('admin.preview.shell', ['token' => $token]);
-
-                if (request()->hasSession()) {
-                    $cacheKey = 'preview_draft_' . get_class($livewire) . '_' . ($editing ? ($livewire->record->id ?? 'new') : 'new');
-                    request()->session()->put($cacheKey, $state);
-                }
 
                 if (app()->environment('testing')) {
                     return redirect($url);
@@ -74,9 +83,6 @@ class PreviewAction
             });
     }
 }
-
-
-
 
 
 

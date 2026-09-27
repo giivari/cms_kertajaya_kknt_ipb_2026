@@ -132,6 +132,7 @@ foreach ($categories as $type => $config) {
         $response->assertSee('Item A 3');
         $response->assertDontSee('Item A 2');
         $response->assertDontSee('Item A 0');
+        $response->assertSee('category='.$cat1->slug.'&amp;page=2', false);
 
         for ($i = 0; $i < 5; $i++) {
             $response->assertDontSee("Item B {$i}");

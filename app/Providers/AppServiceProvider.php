@@ -4,13 +4,13 @@ namespace App\Providers;
 
 use App\Models\Admin;
 use App\Models\Menu;
-use App\Models\MenuItem;
 use App\Services\DocumentMediaUsageResolver;
 use App\Services\GalleryMediaUsageResolver;
 use App\Services\MediaUsageService;
 use App\Services\NewsMediaUsageResolver;
 use App\Services\PageMediaUsageResolver;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Http\Request;
@@ -24,6 +24,10 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(Authenticatable::class, Admin::class);
+        $this->app->bind(\Filament\Actions\Exports\Jobs\ExportCompletion::class, \App\Jobs\Exports\CompleteAdminExport::class);
+        $this->app->bind(\Filament\Actions\Exports\Jobs\CreateXlsxFile::class, \App\Jobs\Exports\CreateAdminXlsxFile::class);
+        $this->app->bind(\Filament\Actions\Exports\Downloaders\CsvDownloader::class, \App\Support\Exports\ControlledCsvDownloader::class);
+        $this->app->bind(\Filament\Actions\Exports\Downloaders\XlsxDownloader::class, \App\Support\Exports\ControlledXlsxDownloader::class);
 
         $this->app->singleton(MediaUsageService::class, function ($app) {
             return new MediaUsageService;
@@ -35,6 +39,24 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Event::listen(\Illuminate\Auth\Events\Login::class, function (\Illuminate\Auth\Events\Login $event): void {
+            if ($event->guard === 'web' && $event->user instanceof Admin) {
+                \App\Services\AuditLogService::log('admin_login', $event->user);
+            }
+        });
+        Event::listen(\Illuminate\Auth\Events\Logout::class, function (\Illuminate\Auth\Events\Logout $event): void {
+            if ($event->guard === 'web' && $event->user instanceof Admin) {
+                \App\Services\AuditLogService::log('admin_logout', $event->user);
+            }
+        });
+        Event::listen(\Illuminate\Auth\Events\Failed::class, function (\Illuminate\Auth\Events\Failed $event): void {
+            if ($event->guard === 'web') {
+                // The Failed event also carries submitted credentials. Never
+                // copy them, or a guessed account name, into the audit row.
+                \App\Services\AuditLogService::log('admin_login_failed');
+            }
+        });
+
         // Memaksa sistem menggunakan HTTPS untuk Cloudflare saat production
         if ($this->app->environment('production')) {
             \Illuminate\Support\Facades\URL::forceScheme('https');
@@ -45,105 +67,34 @@ class AppServiceProvider extends ServiceProvider
         });
         
         $this->app->booted(function () {
+            // Extend vendor routes while preserving their controller owner checks.
+            $this->app['router']->pushMiddlewareToGroup('filament.actions', 'admin.security');
             $mediaUsageService = $this->app->make(MediaUsageService::class);
             $mediaUsageService->registerResolver(new PageMediaUsageResolver);
             $mediaUsageService->registerResolver(new NewsMediaUsageResolver);
             $mediaUsageService->registerResolver(new GalleryMediaUsageResolver);
             $mediaUsageService->registerResolver(new DocumentMediaUsageResolver);
+            $mediaUsageService->registerResolver(new \App\Services\SettingsAndLocationMediaUsageResolver);
         });
 
         View::composer('partials.header', function ($view) {
-            $menu = null;
-            if (app()->has(\App\Support\Preview\PreviewContext::class)) {
-                $context = app(\App\Support\Preview\PreviewContext::class);
-                if ($context->previewType === 'menu' && isset($context->normalizedState['location']) && $context->normalizedState['location'] === Menu::HEADER) {
-                    $attributes = array_merge($context->recordSnapshot ?? [], $context->normalizedState);
-                    $itemsArray = $attributes['items'] ?? [];
-                    unset($attributes['items']);
-
-                    $menu = new Menu();
-                    $menu->forceFill($attributes);
-                    
-                    $items = collect($itemsArray)->filter(function($item) {
-                        return $item['is_visible'] ?? false;
-                    })->map(function($item, $index) {
-                        $childrenArray = $item['children'] ?? [];
-                        unset($item['children']);
-                        
-                        $menuItem = new MenuItem();
-                        $menuItem->forceFill($item);
-                        $menuItem->position = $index;
-                        
-                        $children = collect($childrenArray)->filter(function($child) {
-                            return $child['is_visible'] ?? false;
-                        })->map(function($child, $childIndex) {
-                            $childItem = new MenuItem();
-                            $childItem->forceFill($child);
-                            $childItem->position = $childIndex;
-                            return $childItem;
-                        });
-                        $menuItem->setRelation('children', $children);
-                        return $menuItem;
-                    });
-
-                    $menu->setRelation('items', $items);
-                }
-            }
-
-            if (!$menu) {
-                $menu = Menu::where('location', Menu::HEADER)->with(['items' => function ($query) {
-                    $query->where('is_visible', true)->whereNull('parent_id')->orderBy('position');
-                }, 'items.children' => function ($query) {
-                    $query->where('is_visible', true)->orderBy('position');
-                }, 'items.page', 'items.children.page'])->first();
-            }
-            $view->with('headerMenu', $menu);
+            $context = app()->bound(\App\Support\Preview\PreviewContext::class)
+                ? app(\App\Support\Preview\PreviewContext::class) : null;
+            $view->with('headerMenu', app(\App\Services\NavigationResolver::class)->forLocation(
+                Menu::HEADER,
+                $context?->previewType === 'menu' ? $context->normalizedState : null,
+                $context?->recordSnapshot,
+            ));
         });
 
         View::composer('partials.footer', function ($view) {
-            $menu = null;
-            if (app()->has(\App\Support\Preview\PreviewContext::class)) {
-                $context = app(\App\Support\Preview\PreviewContext::class);
-                if ($context->previewType === 'menu' && isset($context->normalizedState['location']) && $context->normalizedState['location'] === Menu::HEADER) {
-                    $attributes = array_merge($context->recordSnapshot ?? [], $context->normalizedState);
-                    $itemsArray = $attributes['items'] ?? [];
-                    unset($attributes['items']);
-
-                    $menu = new Menu();
-                    $menu->forceFill($attributes);
-                    
-                    $items = collect($itemsArray)->filter(function($item) {
-                        return $item['is_visible'] ?? false;
-                    })->map(function($item, $index) {
-                        $childrenArray = $item['children'] ?? [];
-                        unset($item['children']);
-                        
-                        $menuItem = new MenuItem();
-                        $menuItem->forceFill($item);
-                        $menuItem->position = $index;
-                        
-                        $children = collect($childrenArray)->filter(function($child) {
-                            return $child['is_visible'] ?? false;
-                        })->map(function($child, $childIndex) {
-                            $childItem = new MenuItem();
-                            $childItem->forceFill($child);
-                            $childItem->position = $childIndex;
-                            return $childItem;
-                        });
-                        $menuItem->setRelation('children', $children);
-                        return $menuItem;
-                    });
-
-                    $menu->setRelation('items', $items);
-                }
-            }
-
-            if (!$menu) {
-                $menu = Menu::where('location', Menu::HEADER)->with(['items' => function ($query) {
-                    $query->where('is_visible', true)->whereNull('parent_id')->orderBy('position');
-                }, 'items.page'])->first();
-            }
-            $view->with('footerMenu', $menu);
+            $context = app()->bound(\App\Support\Preview\PreviewContext::class)
+                ? app(\App\Support\Preview\PreviewContext::class) : null;
+            $view->with('footerMenu', app(\App\Services\NavigationResolver::class)->forLocation(
+                Menu::FOOTER,
+                $context?->previewType === 'menu' ? $context->normalizedState : null,
+                $context?->recordSnapshot,
+            ));
         });
     }
 }

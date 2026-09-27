@@ -2,175 +2,80 @@
 
 namespace Tests\Feature;
 
-use App\Http\Middleware\ForcePasswordChange;
+use App\Filament\Pages\Auth\EditProfile;
+use App\Filament\Pages\WebsiteSettings;
 use App\Models\Admin;
+use App\Models\WebsiteSetting;
+use Filament\Auth\MultiFactor\App\AppAuthentication;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\RedirectResponse;
+use Illuminate\Support\Facades\Auth;
+use Livewire\Mechanisms\HandleRequests\HandleRequests;
 use Tests\TestCase;
 
 class ForcePasswordChangeLivewireTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_crafted_livewire_page_mutation_is_rejected_by_middleware()
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->withoutVite();
+        Filament::setCurrentPanel(Filament::getPanel('admin'));
+    }
+
+    private function signedSnapshot(string $url, string $component): string
+    {
+        $response = $this->get($url)->assertOk();
+        preg_match_all('/wire:snapshot="([^"]+)"/', $response->getContent(), $matches);
+
+        foreach ($matches[1] as $encoded) {
+            $snapshot = html_entity_decode($encoded, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+            if ((json_decode($snapshot, true)['memo']['name'] ?? null) === $component) {
+                return $snapshot;
+            }
+        }
+
+        $this->fail('The real page did not contain the expected signed Livewire snapshot.');
+    }
+
+    private function update(string $snapshot, array $updates = [], array $calls = [])
+    {
+        return $this->withHeader('X-Livewire', 'true')->postJson(
+            app(HandleRequests::class)->getUpdateUri(),
+            ['components' => [['snapshot' => $snapshot, 'updates' => $updates, 'calls' => $calls]]],
+        );
+    }
+
+    public function test_open_settings_page_cannot_save_after_force_password_change_is_enabled(): void
     {
         $admin = Admin::factory()->create([
-            'force_password_change' => true,
+            'app_authentication_secret' => AppAuthentication::make()->generateSecret(),
         ]);
         $this->actingAs($admin);
-        Filament::setCurrentPanel(Filament::getPanel('admin'));
+        $snapshot = $this->signedSnapshot(WebsiteSettings::getUrl(), 'app.filament.pages.website-settings');
 
-        $request = Request::create('/livewire/update', 'POST');
-        // Fake the Livewire update payload
-        $request->merge([
-            'components' => [
-                [
-                    'snapshot' => json_encode(['memo' => ['name' => 'app.filament.resources.pages.pages.create-page']]),
-                ],
-            ],
-        ]);
-        // Tell Laravel it's a Livewire request
-        $request->headers->set('X-Livewire', 'true');
-        app()->instance('request', $request);
+        $admin->update(['force_password_change' => true]);
+        Auth::guard('web')->setUser($admin->fresh());
 
-        $middleware = new ForcePasswordChange;
-        $response = $middleware->handle($request, function () {
-            return response('OK');
-        });
-
-        $this->assertInstanceOf(RedirectResponse::class, $response);
-        $this->assertEquals(filament()->getProfileUrl(), $response->getTargetUrl());
+        $this->update($snapshot, ['data.village_name' => 'FORBIDDEN_UPDATE'], [
+            ['method' => 'save', 'params' => []],
+        ])->assertRedirect(EditProfile::getUrl());
+        $this->assertNotSame('FORBIDDEN_UPDATE', WebsiteSetting::find('village_name')?->value);
     }
 
-    public function test_crafted_livewire_settings_mutation_is_rejected_by_middleware()
+    public function test_profile_remains_available_during_force_password_change_transition(): void
     {
-        $admin = Admin::factory()->create(['force_password_change' => true]);
-        $this->actingAs($admin);
-        Filament::setCurrentPanel(Filament::getPanel('admin'));
-
-        $request = Request::create('/livewire/update', 'POST');
-        $request->merge([
-            'components' => [
-                [
-                    'snapshot' => json_encode(['memo' => ['name' => 'app.filament.pages.website-settings']]),
-                ],
-            ],
+        $admin = Admin::factory()->create([
+            'app_authentication_secret' => AppAuthentication::make()->generateSecret(),
         ]);
-        $request->headers->set('X-Livewire', 'true');
-        app()->instance('request', $request);
-
-        $middleware = new ForcePasswordChange;
-        $response = $middleware->handle($request, function () {
-            return response('OK');
-        });
-
-        $this->assertInstanceOf(RedirectResponse::class, $response);
-        $this->assertEquals(filament()->getProfileUrl(), $response->getTargetUrl());
-    }
-
-    public function test_crafted_livewire_media_action_is_rejected_by_middleware()
-    {
-        $admin = Admin::factory()->create(['force_password_change' => true]);
         $this->actingAs($admin);
-        Filament::setCurrentPanel(Filament::getPanel('admin'));
+        $snapshot = $this->signedSnapshot(EditProfile::getUrl(), 'app.filament.pages.auth.edit-profile');
 
-        $request = Request::create('/livewire/update', 'POST');
-        $request->merge([
-            'components' => [
-                [
-                    'snapshot' => json_encode(['memo' => ['name' => 'app.filament.resources.media.pages.list-media']]),
-                ],
-            ],
-        ]);
-        $request->headers->set('X-Livewire', 'true');
-        app()->instance('request', $request);
+        $admin->update(['force_password_change' => true]);
+        Auth::guard('web')->setUser($admin->fresh());
 
-        $middleware = new ForcePasswordChange;
-        $response = $middleware->handle($request, function () {
-            return response('OK');
-        });
-
-        $this->assertInstanceOf(RedirectResponse::class, $response);
-        $this->assertEquals(filament()->getProfileUrl(), $response->getTargetUrl());
-    }
-
-    public function test_crafted_livewire_core_payload_is_rejected_by_middleware()
-    {
-        $admin = Admin::factory()->create(['force_password_change' => true]);
-        $this->actingAs($admin);
-        Filament::setCurrentPanel(Filament::getPanel('admin'));
-
-        $request = Request::create('/livewire/update', 'POST');
-        $request->merge([
-            'components' => [
-                [
-                    'snapshot' => json_encode(['memo' => ['name' => 'filament.core.notifications']]),
-                ],
-            ],
-        ]);
-        $request->headers->set('X-Livewire', 'true');
-        app()->instance('request', $request);
-
-        $middleware = new ForcePasswordChange;
-        $response = $middleware->handle($request, function () {
-            return response('OK');
-        });
-
-        $this->assertInstanceOf(RedirectResponse::class, $response);
-        $this->assertEquals(filament()->getProfileUrl(), $response->getTargetUrl());
-    }
-
-    public function test_crafted_livewire_unrelated_auth_payload_is_rejected_by_middleware()
-    {
-        $admin = Admin::factory()->create(['force_password_change' => true]);
-        $this->actingAs($admin);
-        Filament::setCurrentPanel(Filament::getPanel('admin'));
-
-        $request = Request::create('/livewire/update', 'POST');
-        $request->merge([
-            'components' => [
-                [
-                    'snapshot' => json_encode(['memo' => ['name' => 'app.filament.pages.auth.login']]),
-                ],
-            ],
-        ]);
-        $request->headers->set('X-Livewire', 'true');
-        app()->instance('request', $request);
-
-        $middleware = new ForcePasswordChange;
-        $response = $middleware->handle($request, function () {
-            return response('OK');
-        });
-
-        $this->assertInstanceOf(RedirectResponse::class, $response);
-        $this->assertEquals(filament()->getProfileUrl(), $response->getTargetUrl());
-    }
-
-    public function test_approved_password_change_component_is_allowed_by_middleware()
-    {
-        $admin = Admin::factory()->create(['force_password_change' => true]);
-        $this->actingAs($admin);
-        Filament::setCurrentPanel(Filament::getPanel('admin'));
-
-        $request = Request::create('/livewire/update', 'POST');
-        $request->merge([
-            'components' => [
-                [
-                    'snapshot' => json_encode(['memo' => ['name' => 'app.filament.pages.auth.edit-profile']]),
-                ],
-            ],
-        ]);
-        $request->headers->set('X-Livewire', 'true');
-        app()->instance('request', $request);
-
-        $middleware = new ForcePasswordChange;
-        $response = $middleware->handle($request, function () {
-            return response('OK');
-        });
-
-        // It should NOT redirect, it should pass through to the next closure
-        $this->assertEquals('OK', $response->getContent());
+        $this->update($snapshot)->assertOk();
+        $this->get(EditProfile::getUrl())->assertOk();
     }
 }

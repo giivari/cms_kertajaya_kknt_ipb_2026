@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Traits\GeneratesUniqueSlug;
 
@@ -42,6 +43,22 @@ class Page extends Model
         return $this->belongsTo(Media::class, 'featured_media_id');
     }
 
+    public function scopePublished(Builder $query): Builder
+    {
+        return $query
+            ->where('status', PageStatus::PUBLISHED->value)
+            ->whereNotNull('published_at')
+            ->where('published_at', '<=', now());
+    }
+
+    public function isPublished(): bool
+    {
+        return $this->status === PageStatus::PUBLISHED
+            && $this->published_at !== null
+            && $this->published_at->lte(now())
+            && ! $this->trashed();
+    }
+
     protected static function boot()
     {
         parent::boot();
@@ -51,11 +68,16 @@ class Page extends Model
                 $page->slug = static::generateUniqueSlug($page->title, $page->getKey());
             }
 
-            if ($page->status === PageStatus::PUBLISHED && (
+            if ($page->status === PageStatus::PUBLISHED && $page->published_at === null && (
                 ! $page->exists || $page->isDirty('status')
             )) {
                 $page->published_at = now();
             }
         });
+
+        static::deleted(fn (Page $page) => \App\Services\AuditLogService::log(
+            $page->isForceDeleting() ? 'page_permanently_deleted' : 'page_archived', $page,
+        ));
+        static::restored(fn (Page $page) => \App\Services\AuditLogService::log('page_restored', $page));
     }
 }

@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Admin;
+use App\Models\Menu;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -32,7 +33,15 @@ class AdminScreenVerificationTest extends TestCase
 
         foreach ($routes as $route) {
             $response = $this->get(route($route));
-            $response->assertSuccessful();
+            if ($route === 'filament.admin.resources.menus.index') {
+                $response->assertRedirect(route('filament.admin.resources.menus.create', ['location' => Menu::HEADER]));
+                $this->assertSame(0, Menu::count());
+                continue;
+            }
+            $this->assertTrue(
+                $response->isSuccessful(),
+                $route.' returned '.$response->status().' to '.$response->headers->get('Location'),
+            );
         }
     }
 }

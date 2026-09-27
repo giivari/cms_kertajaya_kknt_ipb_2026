@@ -7,7 +7,7 @@
             $media = \App\Models\Media::find($logoId);
             if ($media && $media->invisible_watermark_status?->value === 'verified') {
                 $deriv = $media->getPublicDerivative('thumbnail');
-                if ($deriv) $logoUrl = Storage::disk('public')->url($deriv->filename);
+                if ($deriv) $logoUrl = $media->url;
             }
         } catch (\Exception $e) {}
     }

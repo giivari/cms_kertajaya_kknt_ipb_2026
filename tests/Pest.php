@@ -4,4 +4,4 @@ use Tests\TestCase;
 
 uses(
     TestCase::class
-)->in('Feature', 'Spike');
+)->in('Feature');

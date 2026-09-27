@@ -1,234 +1,60 @@
-# Master Playbook Deployment: Dewabiz, Cloudflare, VPS & DBeaver
+# Deployment Village CMS — prosedur terpisah
 
-Panduan ini dibuat khusus untuk memandu Anda langkah demi langkah. Setiap tahap memiliki penjelasan **"Fungsi"** dan **"Troubleshooting (Kalau ada error)"**. Ikuti tahap ini secara berurutan dan **laporkan ke saya (AI) setiap kali Anda selesai satu tahap** agar kita bisa evaluasi sebelum lanjut.
+Ini menggantikan playbook lama yang mencampur instalasi dan redeploy. **Belum ada deployment produksi yang diverifikasi oleh remediasi ini.** Isi placeholder lingkungan harus disetujui operator; jangan menyalin nilai mesin pengembang. Baca [prasyarat runtime](operations/RUNTIME_PREREQUISITES.md), [recovery](operations/RECOVERY.md), dan [status](PROJECT_STATE.md) dahulu.
 
----
+## Praoperasi untuk setiap perubahan
 
-## TAHAP 1: Dewabiz (Pembelian & Pengaturan Awal Domain)
+1. Identifikasi release, branch/commit, pemilik perubahan, database tujuan, root file, worker/scheduler, dan origin/TLS. Pastikan web root adalah `<release>/public` dan PostgreSQL tidak dibuka ke internet untuk kenyamanan alat desktop.
+2. Siapkan checkpoint **database + file + identitas konfigurasi/kunci** pada titik yang cukup konsisten menurut [RECOVERY](operations/RECOVERY.md). D09 kini menetapkan RPO maksimum 24 jam, RTO target 4 jam, backup terenkripsi off-host setiap hari, retensi 30 titik harian dan 12 bulanan, serta rehearsal sedikitnya triwulanan. Jangan menganggap checkpoint lokal ini membuktikan kebijakan target sudah berjalan; verifikasi backup dan restore pada infrastruktur target tetap wajib.
+3. Pastikan paket rilis tidak membawa `.env`, kunci, `public/hot`, `storage/testing`, cluster PostgreSQL lokal, log/sesi, ekspor privat, aset preview sementara, `.guardrails.local.json`, atau `bootstrap/cache` dari workstation. Buat cache target di target, bukan menyalin cache lama.
+4. Verifikasi extension PHP, PostgreSQL, izin `storage`/`bootstrap/cache`, `public/build/manifest.json`, queue, scheduler, dan jalur layanan media/dokumen. Cek [cutover media legacy](operations/MEDIA_LEGACY_CUTOVER.md); source deployment saja **tidak** menutup bypass URL statis.
 
-**Fungsi:** Membeli "alamat rumah" (domain) untuk website Anda agar orang bisa mengaksesnya tanpa harus mengetik deretan angka IP VPS.
+Pada paket baru, buat direktori runtime yang kosong sebelum menjalankan Composer/Artisan: `storage/app/private`, `storage/app/public`, `storage/framework/cache/data`, `storage/framework/sessions`, `storage/framework/views`, `storage/logs`, dan `bootstrap/cache`. Manifest file tidak membawa direktori kosong; tanpa `storage/framework/views`, `composer install` dapat gagal saat `package:discover`. Berikan izin tulis hanya kepada proses yang memerlukannya. Build Vite saat ini juga memerlukan HTTPS egress terkontrol untuk font yang dikonfigurasi melalui plugin Bunny.
 
-1. Buka [Dewabiz](https://dewabiz.com) dan beli domain yang Anda inginkan (misal: `desakertajaya.web.id`).
-2. Setelah aktif, masuk ke **Client Area Dewabiz**.
-3. Cari menu **Domains** -> klik domain Anda -> cari bagian **Nameservers**.
-4. Biarkan tab ini terbuka, kita akan mengubah Nameserver ini dengan milik Cloudflare di Tahap 2.
+## Fresh install — hanya instalasi kosong
 
-> **Kalau gagal/bingung:** Biasanya status domain "Pending". Tunggu 1-2 jam sampai statusnya "Active". Jika tidak ada menu Nameserver, lapor ke saya.
+Prasyarat: database baru benar-benar kosong, tidak ada identitas/berkas yang perlu dipertahankan, dan operator telah menyetujui domain/TLS serta penempatan rahasia. Perintah berikut adalah **contoh pada target kosong**, bukan skrip otomatis yang boleh dijalankan pada update.
 
----
+```bash
+mkdir -p storage/app/private storage/app/public storage/framework/cache/data storage/framework/sessions storage/framework/views storage/logs bootstrap/cache
+composer install --no-dev --prefer-dist --optimize-autoloader
+npm ci
+npm run build
+cp .env.example .env
+# Isi APP_ENV=production, APP_DEBUG=false, APP_URL, PostgreSQL, session/cache/queue,
+# Turnstile, WATERMARK_SIGNING_KEY, dan konfigurasi lain melalui kanal rahasia.
+php artisan key:generate
+php artisan village:install-id
+php artisan migrate --force
+php artisan admin:provision
+```
 
-## TAHAP 2: Cloudflare (Manajemen DNS, Keamanan, & SSL Gratis)
+`admin:provision` hanya untuk Admin pertama dan dapat menampilkan password acak sekali di terminal; tangani output melalui prosedur custody yang sah. `village:install-id` **mengubah `.env`** dan hanya boleh dipakai saat identitas instalasi baru ditetapkan. Sediakan `WATERMARK_SIGNING_KEY` secara aman; `.env.example` sengaja kosong untuk kunci itu. `storage:link` hanya bila dibutuhkan aset publik yang memang diizinkan, dengan deny origin untuk namespace media legacy sebelum rilis. Jangan menganggap symlink sebagai pengganti route media terkontrol.
 
-**Fungsi:** Cloudflare bertindak sebagai "satpam" dan "pengatur lalu lintas" antara domain Anda (Dewabiz) dan rumah Anda (VPS). Ini memberikan gembok hijau (HTTPS/SSL) secara gratis dan melindungi dari serangan *hacker*.
+Setelah izin file, origin HTTPS, worker, dan scheduler disiapkan, bangun cache **di lingkungan target** sesuai bagian Cache di bawah. Verifikasi login/MFA, halaman publik, route media/dokumen, ekspor, log, serta deny URL legacy sebelum membuka trafik. Kesiapan rilis tetap menunggu gate pada `PROJECT_STATE.md`.
 
-1. Buat akun / Login ke [Cloudflare](https://dash.cloudflare.com).
-2. Klik **Add a Site**, masukkan domain Anda (contoh: `desakertajaya.web.id`), pilih paket **Free**.
-3. Cloudflare akan melakukan *scanning* DNS. Lanjutkan saja sampai Anda diberikan **2 buah Nameservers** (misal: `ns1.cloudflare.com` dan `ns2.cloudflare.com`).
-4. Kembali ke tab **Dewabiz** (Tahap 1), ganti Nameserver lama dengan 2 Nameserver dari Cloudflare ini. Klik Save.
-5. Kembali ke Cloudflare, klik **Done, check nameservers**.
-6. Masuk ke menu **DNS** di Cloudflare:
-   - Hapus semua *Record* bawaan yang ada (jika ada).
-   - Klik **Add Record**:
-     - Type: `A`
-     - Name: `@`
-     - IPv4 address: `[IP_VPS_ANDA]` (Masukkan IP VPS Anda)
-     - Proxy status: **Proxied (Awan Oranye)**
-   - Tambah satu lagi untuk www:
-     - Type: `CNAME`
-     - Name: `www`
-     - Target: `desakertajaya.web.id`
-     - Proxy status: **Proxied (Awan Oranye)**
-7. Masuk ke menu **SSL/TLS**:
-   - Pilih mode **Full (Strict)**.
+## Update — instalasi berisi data
 
-> **Kalau gagal/bingung:** Propagasi DNS (perubahan nameserver) dari Dewabiz ke Cloudflare memakan waktu 5 menit hingga 24 jam. Jika setelah 1 jam awan belum oranye/aktif, lapor ke saya!
+Pertahankan database, `storage/app/private`, file legacy yang masih diperlukan, akun Admin, `.env`, `APP_KEY`, `WATERMARK_SIGNING_KEY` beserta material historis yang diperlukan, `INSTALLATION_ID`, dan rahasia lain. Domain boleh berubah tanpa membuat identitas instalasi baru. Jangan menjalankan Composer `setup`, `post-create-project-cmd`, `key:generate`, `village:install-id`, seeder, atau `migrate:fresh` sebagai langkah rutin update.
 
----
+1. Ambil checkpoint konsisten dan uji keterbacaan artefaknya. Bandingkan kebutuhan migrasi dengan release lama dan pastikan aplikasi lama/baru kompatibel atau rencanakan maintenance mode (`php artisan down` / `php artisan up`) pada target yang disetujui.
+2. Pasang kode/dependensi dari lockfile dan bangun aset pada lingkungan build yang sesuai. Jangan menimpa `.env` atau root data. Tinjau migrasi aditif, lalu pada **database target yang sudah dipastikan identitasnya** jalankan `php artisan migrate --force` sekali dengan pencatatan hasil.
+3. Regenerasi cache route/config/view dari release dan konfigurasi target. **Cache route normal lama masih tercatat mengandung `ListMenus`**, sehingga jangan mengirim atau memakai artefak workstation itu. Jangan mengedit file cache secara manual.
+4. Restart worker dengan `php artisan queue:restart` setelah proses baru tersedia; pengelola proses harus menaikkan worker kembali. Pastikan scheduler tetap berjalan dan check health/log/failed jobs.
+5. Uji route/menu, download terkontrol, preview, ekspor, serta deny origin media legacy. Jangan membuka kembali `/storage/media/**` atau `/storage/originals/**` pada update maupun rollback.
 
-## TAHAP 3: Persiapan VPS & Pembersihan (Dari Nol)
+## Rollback kode berbeda dari recovery data
 
-**Fungsi:** Mengosongkan VPS agar benar-benar bersih dan menginstal semua mesin yang dibutuhkan (PHP, Nginx, PostgreSQL) untuk menjalankan Laravel.
+Rollback kode hanya aman bila release lama dapat membaca schema, status, dan generasi file terbaru **serta** mempertahankan route akses terkontrol. Jangan otomatis menjalankan `migrate:rollback`, menghapus generasi media baru, atau memulihkan aturan origin yang mengekspos URL legacy. Bila tidak kompatibel, pertahankan release terkontrol dalam maintenance response sambil memakai checkpoint release/data yang cocok menurut [RECOVERY](operations/RECOVERY.md). Data recovery adalah operasi terpisah yang mengganti satu unit pemulihan, bukan efek samping pergantian kode.
 
-1. Buka PowerShell di laptop Anda, masuk ke VPS:
-   ```bash
-   ssh root@IP_VPS_ANDA
-   ```
-2. **Pembersihan Total:** (Menghapus folder web dan drop database lama jika ada).
-   ```bash
-   rm -rf /var/www/village-cms
-   sudo -u postgres psql -c "DROP DATABASE IF EXISTS kertajaya_cms_db;"
-   ```
-3. **Instalasi Mesin (Web Server, Database, PHP):**
-   ```bash
-   apt update && apt upgrade -y
-   apt install -y software-properties-common
-   add-apt-repository ppa:ondrej/php -y
-   apt update
-   apt install -y php8.3 php8.3-fpm php8.3-pgsql php8.3-mbstring php8.3-xml php8.3-curl php8.3-zip php8.3-gd php8.3-intl php8.3-bcmath php8.3-tokenizer php8.3-fileinfo php8.3-cli postgresql postgresql-contrib nginx unzip
-   curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-   ```
-4. **Buat Database Baru:**
-   ```bash
-   sudo -u postgres psql <<'EOF'
-   DROP USER IF EXISTS admin_kj;
-   CREATE USER admin_kj WITH PASSWORD 'MASUKKAN_PASSWORD_RAHASIA_ANDA_DISINI';
-   CREATE DATABASE kertajaya_cms_db OWNER admin_kj;
-   GRANT ALL PRIVILEGES ON DATABASE kertajaya_cms_db TO admin_kj;
-   EOF
-   ```
+## Recovery / disaster restore
 
-> **Kalau gagal/bingung:** Jika saat `ssh` ada error "Connection refused", cek apakah IP VPS sudah benar. Jika instalasi error, lapor ke saya!
+Gunakan hanya [RECOVERY.md](operations/RECOVERY.md). Pemulihan PostgreSQL saja tidak mengembalikan original, derivative, dokumen, `APP_KEY`, kunci watermark, atau identitas instalasi.
 
----
+## Build, cache, jaringan, dan keamanan
 
-## TAHAP 4: Upload Kode & Setup Laravel
-
-**Fungsi:** Memasukkan source code (aplikasi buatan kita) dari laptop ke dalam VPS agar bisa diakses online.
-
-1. **Di Laptop Anda (Terminal lokal):**
-   Pastikan Anda berada di folder proyek, buat ZIP tanpa folder `node_modules` dan `.git`, lalu kirim ke VPS.
-   ```powershell
-   composer install --optimize-autoloader --no-dev
-   npm install
-   npm run build
-   # Buat ZIP secara manual seperti biasa (nama: village-cms.zip)
-   scp village-cms.zip root@IP_VPS_ANDA:/root/
-   ```
-2. **Di VPS Anda:**
-   ```bash
-   mkdir -p /var/www/village-cms
-   mv /root/village-cms.zip /var/www/village-cms/
-   cd /var/www/village-cms
-   unzip village-cms.zip
-   chown -R www-data:www-data /var/www/village-cms
-   chmod -R 775 /var/www/village-cms/storage
-   chmod -R 775 /var/www/village-cms/bootstrap/cache
-   ```
-3. **Konfigurasi Lingkungan (.env):**
-   ```bash
-   cp .env.example .env
-   nano .env
-   ```
-   Ubah bagian ini:
-   ```env
-   APP_ENV=production
-   APP_DEBUG=false
-   APP_URL=https://desakertajaya.web.id
-
-   DB_CONNECTION=pgsql
-   DB_HOST=127.0.0.1
-   DB_PORT=5432
-   DB_DATABASE=kertajaya_cms_db
-   DB_USERNAME=admin_kj
-   DB_PASSWORD=MASUKKAN_PASSWORD_RAHASIA_ANDA_DISINI
-   ```
-4. **Jalankan Aplikasi:**
-   ```bash
-   php artisan key:generate
-   php artisan migrate --force
-   php artisan storage:link
-   php artisan optimize:clear
-   php artisan config:cache
-   php artisan route:cache
-   php artisan view:cache
-   php artisan filament:cache-components
-   ```
-
-> **Kalau gagal/bingung:** Jika `unzip` command not found, pastikan Tahap 3 sukses. Jika `migrate` gagal, password database di `.env` mungkin salah.
-
----
-
-## TAHAP 5: Menghubungkan Nginx
-
-**Fungsi:** Nginx adalah satpam pintu masuk di dalam VPS yang memberitahu bahwa "Jika ada yang mencari domain desakertajaya.web.id, arahkan ke folder /var/www/village-cms/public".
-
-1. **Di VPS Anda:**
-   ```bash
-   nano /etc/nginx/sites-available/village-cms
-   ```
-2. **Paste Konfigurasi Berikut:**
-   ```nginx
-   server {
-       listen 80;
-       server_name desakertajaya.web.id www.desakertajaya.web.id;
-       root /var/www/village-cms/public;
-
-       add_header X-Frame-Options "SAMEORIGIN";
-       add_header X-Content-Type-Options "nosniff";
-
-       index index.php;
-       charset utf-8;
-
-       location / {
-           try_files $uri $uri/ /index.php?$query_string;
-       }
-
-       location = /favicon.ico { access_log off; log_not_found off; }
-       location = /robots.txt  { access_log off; log_not_found off; }
-
-       error_page 404 /index.php;
-
-       location ~ \.php$ {
-           fastcgi_pass unix:/var/run/php/php8.3-fpm.sock;
-           fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
-           include fastcgi_params;
-       }
-
-       location ~ /\.(?!well-known).* {
-           deny all;
-       }
-   }
-   ```
-3. **Aktifkan Nginx:**
-   ```bash
-   ln -s /etc/nginx/sites-available/village-cms /etc/nginx/sites-enabled/
-   rm /etc/nginx/sites-enabled/default
-   systemctl reload nginx
-   ```
-
-> **Kalau gagal/bingung:** Jika `systemctl reload nginx` error, berarti ada salah copy-paste kurung kurawal `{}` di konfigurasi Nginx. Lapor ke saya!
-
----
-
-## TAHAP 6: DBeaver (Akses Database Visual dari Laptop)
-
-**Fungsi:** Mengatur VPS agar mengizinkan laptop Anda meremote database PostgreSQL, sehingga Anda bisa melihat tabel dan isi database langsung dari aplikasi DBeaver di Windows (tanpa pusing melihat command line).
-
-1. **Di VPS Anda, izinkan PostgreSQL menerima koneksi dari luar:**
-   ```bash
-   nano /etc/postgresql/16/main/postgresql.conf
-   ```
-   *(Catatan: Angka 16 menyesuaikan versi PostgreSQL yang terinstall, mungkin 15 atau 14). Cari baris `#listen_addresses = 'localhost'` lalu ubah menjadi (hapus tanda pagarnya):*
-   ```conf
-   listen_addresses = '*'
-   ```
-   Save (Ctrl+X -> Y -> Enter).
-
-2. **Izinkan autentikasi password:**
-   ```bash
-   nano /etc/postgresql/16/main/pg_hba.conf
-   ```
-   *Scroll paling bawah, tambahkan baris ini:*
-   ```conf
-   host    all             all             0.0.0.0/0               md5
-   ```
-   Save (Ctrl+X -> Y -> Enter).
-
-3. **Buka Port di Firewall VPS & Restart Database:**
-   ```bash
-   ufw allow 5432/tcp
-   systemctl restart postgresql
-   ```
-
-4. **Di Laptop Anda (DBeaver):**
-   - Buka aplikasi DBeaver.
-   - Klik logo "Colokan / New Database Connection".
-   - Pilih **PostgreSQL**.
-   - Isi form koneksi:
-     - **Host:** `IP_VPS_ANDA`
-     - **Database:** `kertajaya_cms_db`
-     - **Username:** `admin_kj`
-     - **Password:** `MASUKKAN_PASSWORD_RAHASIA_ANDA_DISINI`
-   - Klik **Test Connection**. Jika sukses, klik Finish.
-
-> **Kalau gagal/bingung:** Jika DBeaver error "Connection timed out", berarti firewall VPS belum terbuka untuk port 5432, atau Provider VPS memblokir port tersebut dari panel mereka. Lapor ke saya!
+- Vite 8 pada dependency terpasang meminta Node `^20.19.0 || >=22.12.0`; `npm ci` memakai lockfile. Periksa `public/build/manifest.json` dari release target. `public/hot` adalah artefak dev dan harus absen pada rilis.
+- Setelah source dan `.env` target siap, operator dapat memakai `php artisan optimize:clear`, `php artisan config:cache`, `php artisan route:cache`, dan `php artisan view:cache` **di target**, lalu menguji route terdaftar. Perintah ini tidak dijalankan pada repository kerja dalam P8. Jika route cache gagal, hentikan deploy; jangan hidupkan kembali `ListMenus` lama.
+- Origin harus melayani HTTPS end-to-end; mode proxy seperti Cloudflare Full (Strict) memerlukan sertifikat origin yang valid. `APP_URL`, host Turnstile, secure cookie, deteksi scheme di balik proxy, dan header HSTS harus diverifikasi pada request HTTPS nyata. CSP umum masih report-only; response tertentu punya CSP enforcement sendiri. Jangan mengklaim TLS/proxy produksi telah diperiksa dari dokumen ini.
+- `public/storage` tidak boleh membuka original/derivative terkelola melalui jalur statis. Terapkan dan verifikasi aturan deny di [MEDIA_LEGACY_CUTOVER](operations/MEDIA_LEGACY_CUTOVER.md) tanpa memblokir aset publik lain. File yang telah di-cache pihak ketiga memerlukan kebijakan purge di penyedia bila dibutuhkan.
+- Pantau exception aplikasi, kegagalan auth, pemrosesan media, export/queue, scheduler, disk penuh dan permission. Jalankan kebijakan backup D09 sesuai [RECOVERY](operations/RECOVERY.md); retensi manual enam bulan khusus audit log tidak menjadi izin purge otomatis media, kontak, atau data CMS lain.

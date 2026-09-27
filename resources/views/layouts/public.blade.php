@@ -16,7 +16,7 @@
                 if ($faviconMedia && $faviconMedia->invisible_watermark_status?->value === 'verified') {
                     $faviconDerivative = $faviconMedia->getPublicDerivative('thumbnail');
                     if ($faviconDerivative) {
-                        $faviconUrl = Storage::disk('public')->url($faviconDerivative->filename);
+                        $faviconUrl = $faviconMedia->url;
                     }
                 }
             } catch (\Exception $e) {}

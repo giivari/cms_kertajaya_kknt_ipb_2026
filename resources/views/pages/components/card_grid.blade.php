@@ -10,7 +10,7 @@
                 </div>
                 @if(!empty($card['link_url']))
                     <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 mt-auto">
-                        <a href="{{ $card['link_url'] }}" class="text-emerald-600 font-medium hover:text-emerald-700 text-sm flex items-center">
+                        <a href="{{ \App\Support\ContentSecurity::url($card['link_url']) }}" class="text-emerald-600 font-medium hover:text-emerald-700 text-sm flex items-center">
                             Selengkapnya 
                             <svg class="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
                         </a>

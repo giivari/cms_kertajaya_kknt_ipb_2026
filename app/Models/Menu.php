@@ -42,6 +42,8 @@ class Menu extends Model
 
             $menu->name = $locations[$menu->location];
         });
+
+        static::deleted(fn (Menu $menu) => \App\Services\AuditLogService::log('menu_deleted', $menu));
     }
 
     public function items(): HasMany

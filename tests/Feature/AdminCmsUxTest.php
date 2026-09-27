@@ -36,7 +36,7 @@ test('authenticated admin can render create menu page', function () {
         ->assertDontSee('ui-avatars.com', false);
 });
 
-test('main admin resources use Indonesian labels and hide technical fields', function () {
+test('main admin resources use Indonesian labels and expose approved publication scheduling', function () {
     $sources = collect([
         app_path('Filament/Resources/Locations/Schemas/LocationForm.php'),
         app_path('Filament/Resources/News/Schemas/NewsForm.php'),
@@ -48,7 +48,8 @@ test('main admin resources use Indonesian labels and hide technical fields', fun
     foreach ($sources as $source) {
         expect($source)
             ->not->toContain("make('slug')")
-            ->not->toContain("DateTimePicker::make('published_at')");
+            ->toContain("::make('published_at')")
+            ->toContain("->label('Jadwal Publikasi')");
     }
 
     $combined = $sources->implode("\n");
@@ -68,16 +69,15 @@ test('main admin resources use Indonesian labels and hide technical fields', fun
     }
 
     expect($sources[app_path('Filament/Resources/Documents/Schemas/DocumentForm.php')])
-        ->toContain("TextInput::make('download_count')")
-        ->toContain('->disabled()');
+        ->not->toContain("TextInput::make('download_count')");
 
     expect($sources[app_path('Filament/Resources/Locations/Schemas/LocationForm.php')])
         ->toContain('Garis Lintang')
         ->toContain('Garis Bujur')
-        ->toContain('Buat Kategori Lokasi terlebih dahulu');
+        ->toContain('Anda bisa menambahkan kategori baru langsung dari sini.');
 });
 
-test('published at is automatic and stable while record remains published', function () {
+test('published at defaults automatically and remains stable across edits and republishing', function () {
     $news = News::create([
         'title' => 'Berita Otomatis',
         'content' => 'Isi berita',
@@ -101,7 +101,7 @@ test('published at is automatic and stable while record remains published', func
         );
         $news->update(['status' => 'published']);
         $news->refresh();
-        expect($news->published_at->greaterThan($publishedAt))->toBeTrue();
+        expect($news->published_at->equalTo($publishedAt))->toBeTrue();
     } finally {
         Carbon::setTestNow();
     }

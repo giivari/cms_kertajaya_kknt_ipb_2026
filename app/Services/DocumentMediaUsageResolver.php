@@ -10,7 +10,7 @@ class DocumentMediaUsageResolver implements MediaUsageResolver
 {
     public function isInUse(Media $media): bool
     {
-        return Document::where('file_media_id', $media->id)
+        return Document::withTrashed()->where('file_media_id', $media->id)
             ->orWhere('thumbnail_media_id', $media->id)
             ->exists();
     }
@@ -19,7 +19,7 @@ class DocumentMediaUsageResolver implements MediaUsageResolver
     {
         $usages = [];
 
-        $documents = Document::where('file_media_id', $media->id)
+        $documents = Document::withTrashed()->where('file_media_id', $media->id)
             ->orWhere('thumbnail_media_id', $media->id)
             ->get();
 

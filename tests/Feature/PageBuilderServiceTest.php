@@ -111,28 +111,24 @@ class PageBuilderServiceTest extends TestCase
         $page = Page::create(['title' => 'Test Page 3', 'slug' => 'test-page-3']);
         $service = new PageBuilderService;
 
-        $builderState = [
-            [
-                'name' => 'Hero',
-                'layout_type' => 'full_width',
-                'is_visible' => true,
-                'components' => [
-                    [
-                        'type' => 'invalid_type_causes_db_error_or_we_can_mock',
-                        'data' => [],
-                    ],
-                ],
+        $builderState = [[
+            'name' => 'Hero',
+            'layout_type' => 'full_width',
+            'is_visible' => true,
+            'components' => [
+                ['type' => 'heading', 'data' => ['text' => 'Valid child']],
+                ['type' => 'rich_text', 'data' => 'invalid child payload'],
             ],
-        ];
+        ]];
 
         try {
-            // we will simulate an exception
-            DB::beginTransaction();
-            throw new \Exception('Simulated failure');
-        } catch (\Exception $e) {
-            DB::rollBack();
+            $service->saveSectionsAndComponents($page, $builderState);
+            $this->fail('The real builder persistence path must reject the invalid child.');
+        } catch (\InvalidArgumentException $exception) {
+            $this->assertSame('Invalid page builder component payload.', $exception->getMessage());
         }
 
         $this->assertDatabaseMissing('page_sections', ['page_id' => $page->id]);
+        $this->assertSame(0, PageComponent::query()->count());
     }
 }

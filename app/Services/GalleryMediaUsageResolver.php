@@ -11,7 +11,7 @@ class GalleryMediaUsageResolver implements MediaUsageResolver
 {
     public function isInUse(Media $media): bool
     {
-        return GalleryAlbum::where('cover_media_id', $media->id)->exists()
+        return GalleryAlbum::withTrashed()->where('cover_media_id', $media->id)->exists()
             || GalleryAlbumItem::where('media_id', $media->id)->exists();
     }
 
@@ -19,7 +19,7 @@ class GalleryMediaUsageResolver implements MediaUsageResolver
     {
         $usages = [];
 
-        $albums = GalleryAlbum::where('cover_media_id', $media->id)->get();
+        $albums = GalleryAlbum::withTrashed()->where('cover_media_id', $media->id)->get();
         foreach ($albums as $album) {
             $usages[] = "Gallery Cover: {$album->title}";
         }

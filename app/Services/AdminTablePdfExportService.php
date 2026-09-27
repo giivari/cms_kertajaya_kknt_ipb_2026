@@ -12,6 +12,7 @@ use Filament\Actions\Exports\ExportColumn;
 use Filament\Actions\Exports\Models\Export;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;
@@ -43,27 +44,50 @@ final class AdminTablePdfExportService
     {
         $rendered = $this->render($query, $exporterClass);
         $export = Export::create([
-            'file_disk' => 'local',
+            'file_disk' => 'admin_exports',
             'file_name' => Str::random(48),
             'exporter' => $exporterClass,
-            'processed_rows' => $rendered['totalRows'],
+            'processed_rows' => 0,
             'total_rows' => $rendered['totalRows'],
-            'successful_rows' => $rendered['totalRows'],
+            'successful_rows' => 0,
             'user_id' => $owner->getKey(),
-            'completed_at' => now(),
+            'requested_format' => 'pdf',
+            'lifecycle_state' => 'pending',
         ]);
-        $path = $this->storedPdfPath($export);
+        $artifacts = app(ExportArtifactService::class);
+        $path = $artifacts->path($export, 'pdf');
+        $candidate = $path.'.pending';
 
         try {
-            if (! $export->getFileDisk()->put($path, $rendered['content'])) {
+            if (! $export->getFileDisk()->put($candidate, $rendered['content'])
+                || ! $export->getFileDisk()->move($candidate, $path)) {
                 throw new RuntimeException('PDF sementara tidak dapat disimpan.');
             }
+            $metadata = $artifacts->verify($export, 'pdf');
+            DB::transaction(function () use ($export, $metadata, $rendered): void {
+                $locked = Export::query()->whereKey($export->getKey())->lockForUpdate()->firstOrFail();
+                if ($locked->lifecycle_state !== 'pending') {
+                    throw new RuntimeException('Status ekspor PDF berubah saat finalisasi.');
+                }
+                $locked->forceFill([
+                    'processed_rows' => $rendered['totalRows'],
+                    'successful_rows' => $rendered['totalRows'],
+                    'artifact_path' => $metadata['path'],
+                    'artifact_size' => $metadata['size'],
+                    'artifact_sha256' => $metadata['sha256'],
+                    'verified_at' => now(),
+                    'completed_at' => now(),
+                    'lifecycle_state' => 'completed',
+                ])->save();
+            });
         } catch (Throwable $exception) {
-            $export->deleteFileDirectory();
-            $export->delete();
+            $artifacts->fail($export, 'pdf_generation_failed');
 
             throw $exception;
         }
+
+        $export->refresh();
+        app(ExportAuditService::class)->record($export, 'export_completed');
 
         return $export;
     }

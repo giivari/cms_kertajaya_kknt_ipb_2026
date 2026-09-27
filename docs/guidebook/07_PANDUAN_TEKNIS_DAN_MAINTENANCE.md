@@ -1,94 +1,19 @@
-# 7. Panduan Teknis & Pemeliharaan (Khusus Administrator/IT Desa)
+# 7. Panduan teknis dan pemeliharaan untuk IT desa
 
-Buku panduan ini **SANGAT PENTING** dan ditujukan khusus bagi perangkat desa yang ditunjuk sebagai Administrator IT. Panduan ini dirancang sangat mendetail agar Anda (Pihak Desa) **dapat mandiri 100% menyelesaikan masalah teknis tanpa perlu memanggil tim pengembang (developer)**. 
+Gunakan akun operator yang berwenang dan catat tindakan. Panduan ini adalah ringkasan; langkah teknis yang menyentuh data/kunci ada di [deployment](../DEPLOYMENT_GUIDE.md), [recovery](../operations/RECOVERY.md), [worker/scheduler](../operations/QUEUE_AND_SCHEDULER.md), dan [status proyek](../PROJECT_STATE.md). Jangan menjalankan perintah reset berdasarkan contoh lama dari buku panduan ini.
 
-Mohon simpan dokumen ini dengan aman karena berisi perintah-perintah sensitif!
+## Akses Admin dan MFA
 
----
+Model akun aktif adalah `Admin`, bukan `User`. `admin:provision` hanya untuk database kosong dan bukan reset sandi akun yang sudah ada. Perubahan sandi/email/username melalui profil meminta sandi saat ini dan TOTP aktif. Bila authenticator hilang tetapi sandi masih diketahui, operator berwenang dapat memakai `admin:recover-mfa` setelah verifikasi identitas, otorisasi, tiket, dan checkpoint. Command ini mereset **MFA saja**, mencabut sesi, lalu Admin masuk kembali dengan sandi lama dan wajib mendaftar MFA baru. Ikuti [prosedur lengkap](../operations/RECOVERY.md); jangan mengedit kolom produksi secara bebas atau memakai `--force` tanpa persetujuan operasi yang tercatat.
 
-## A. Skenario Kritis: Lupa Kata Sandi Admin (Reset Password Mandiri)
+## Gangguan aplikasi
 
-Jika admin lupa kata sandi dan tidak bisa masuk ke dalam sistem sama sekali, Anda tidak perlu memanggil *developer*. Ikuti langkah pasti berikut untuk mereset kata sandi langsung dari "Jantung" server (Terminal VPS):
+Catat waktu, URL, pesan error tanpa rahasia, release, status worker/scheduler, ruang disk, dan log aplikasi sebelum tindakan. Kegagalan dokumen/media dapat berasal dari file hilang, checksum/format, status publikasi, atau job; jangan mengubah status menjadi verified secara manual. Kegagalan ekspor dapat meninggalkan state pending/generating/failed/cleanup_failed; lihat [operasi ekspor](../operations/EXPORTS.md). Cache route lama yang menyebut `ListMenus` harus diregenerasi pada target yang benar saat deploy; jangan mengedit file cache generated.
 
-1. **Buka Aplikasi Terminal/SSH** (misalnya menggunakan *Command Prompt* di Windows atau *Terminal* di Mac/Linux).
-2. **Login ke Server VPS Desa** dengan mengetikkan perintah berikut (pastikan Anda memiliki *file* kunci rahasia `kunci-desa.pem`):
-   ```bash
-   ssh -i /path/menuju/kunci-desa.pem kertajaya@103.93.160.112
-   ```
-   *(Ganti `/path/menuju/` dengan lokasi asli tempat Anda menyimpan kunci pem).*
-3. Setelah berhasil masuk ke VPS, **Masuk ke dalam folder website**:
-   ```bash
-   cd /var/www/village-cms
-   ```
-4. **Buka Konsol Interaktif Laravel (Tinker)**:
-   ```bash
-   php artisan tinker
-   ```
-5. **Ganti Kata Sandi (Ketik kode ini di dalam Tinker)**:
-   ```php
-   $admin = App\Models\User::where('email', 'admin@kertajaya.desa.id')->first();
-   $admin->password = Hash::make('SandiBaruSangatKuat123!');
-   $admin->save();
-   exit;
-   ```
-   *(Ganti `admin@kertajaya.desa.id` dengan email admin yang asli, dan `SandiBaruSangatKuat123!` dengan kata sandi baru yang Anda inginkan).*
-6. Selesai! Silakan *login* kembali ke web menggunakan kata sandi baru tersebut.
+## Backup dan restore
 
----
+Backup PostgreSQL saja **tidak cukup**. Database, original/derivative/dokumen, `APP_KEY`, kunci watermark dan histori yang dibutuhkan, `INSTALLATION_ID`, konfigurasi, release/lockfile, TLS/origin, serta definisi worker/scheduler harus cocok pada satu titik pemulihan. Lihat [RECOVERY](../operations/RECOVERY.md). D09 menetapkan RPO maksimum 24 jam, RTO target 4 jam, backup terenkripsi off-host harian, 30 titik harian dan 12 bulanan, serta rehearsal triwulanan. Pelaksanaan target masih perlu bukti. D08 enam bulan hanya berlaku bagi audit log.
 
-## B. Skenario Kritis: Tampilan Website Nyangkut / Error (Clear Cache)
+## Operasi berkala
 
-Terkadang, setelah Anda mengubah pengaturan yang sangat banyak, atau server mengalami kepenuhan memori, website bisa menampilkan halaman *Error 500* atau tampilannya berantakan karena "ingatan" (*Cache*) server tersumbat.
-
-**Cara Membersihkan Ingatan Server Secara Mandiri:**
-1. Login ke VPS via SSH (Seperti langkah A.1 dan A.2).
-2. Masuk ke folder website:
-   ```bash
-   cd /var/www/village-cms
-   ```
-3. **Jalankan Perintah "Sapu Bersih" (Clear Cache) Ini Satu Per Satu:**
-   ```bash
-   php artisan optimize:clear
-   php artisan config:clear
-   php artisan view:clear
-   php artisan route:clear
-   php artisan cache:clear
-   ```
-4. **Jalankan Perintah "Optimasi Ulang" (Wajib dilakukan di server publik):**
-   ```bash
-   php artisan optimize
-   php artisan view:cache
-   ```
-5. Website Anda akan kembali segar dan memuat (*loading*) dengan sangat cepat kembali.
-
----
-
-## C. Skenario Kritis: Gambar Tidak Mau Diproses (Watermark Macet)
-
-Sistem CMS ini menggunakan fitur "Antrean Sinkron" (*Synchronous Queue*) untuk memproses tanda air (*watermark*) dan memperkecil ukuran foto. Ini berarti, saat admin mengklik "Simpan", server akan langsung bekerja keras mengolah foto di detik itu juga.
-
-**Jika foto selalu gagal (Error/Timeout) saat di-upload:**
-1. **Sebab 1 (Ukuran File Raksasa):** Pastikan foto yang diunggah dari HP/Kamera tidak berukuran lebih dari 10 MB per foto. Minta admin untuk mengompres foto (misal kirim via WhatsApp dulu lalu diunduh) sebelum di-*upload*.
-2. **Sebab 2 (Server Kelelahan):** Masuk ke Panel Admin > **Tampilan & Identitas** > Tab **Pengaturan Lanjutan**.
-   - Naikkan angka pada **Batas Waktu Pemrosesan (detik)** dari `120` menjadi `300`.
-   - Turunkan **Maksimal Lebar Gambar (px)** jika diatur terlalu tinggi (standar yang baik adalah `1920` atau `2560`).
-   - Matikan sementara fitur *Watermark* Terlihat (*Visible Watermark*) di tab **Tampilan**, lalu coba *upload* kembali. Jika berhasil, berarti server butuh RAM lebih besar untuk memproses *watermark*.
-
----
-
-## D. Cara Melakukan Pencadangan (Backup) Database Berkala
-
-Sangat disarankan bagi IT Desa untuk mencadangkan (*backup*) data secara rutin (misal sebulan sekali) agar data artikel dan keluhan warga tidak hilang jika terjadi musibah pada server.
-
-1. Login ke VPS via SSH.
-2. Buat cadangan *database* PostgreSQL menggunakan perintah `pg_dump`:
-   ```bash
-   pg_dump -U nama_user_db -W -F t nama_database_desa > backup_desa_tanggal_sekarang.tar
-   ```
-   *(Sistem akan meminta kata sandi database. Masukkan kata sandi database yang ada di dalam file `.env`).*
-3. Unduh file `backup_desa_tanggal_sekarang.tar` tersebut ke komputer lokal kantor desa Anda menggunakan aplikasi FTP (seperti FileZilla) atau perintah `scp`.
-4. Simpan *file* cadangan tersebut di *Flashdisk* atau Google Drive resmi desa.
-
----
-
-**Dengan panduan teknis ini, Desa Kertajaya telah memiliki kendali penuh atas sistem informasinya. Semua masalah operasional, kendala lupa sandi, hingga perbaikan performa dapat ditangani secara mandiri oleh tim IT Desa tanpa perlu ketergantungan kepada pihak pembuat sistem.**
+Pantau exception, auth/security failures yang tersedia, job gagal/tertahan, cleanup ekspor/preview, pemrosesan media, permission dan kapasitas disk. Scheduler source hanya menjalankan prune ekspor dan token preview tiap jam; tidak melakukan backup atau purge umum. Cutover URL legacy `/storage/media/**` dan `/storage/originals/**` masih wajib di origin sebelum rilis dapat disebut aman; lihat [MEDIA_LEGACY_CUTOVER](../operations/MEDIA_LEGACY_CUTOVER.md). Jangan membuka kembali aturan deny itu saat rollback.

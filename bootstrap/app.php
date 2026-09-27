@@ -16,8 +16,18 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->append(SecurityHeaders::class);
         $middleware->append(AddExportDownloadSecurityHeaders::class);
+        $middleware->group('admin.security', [
+            'panel:admin',
+            \Filament\Http\Middleware\Authenticate::class,
+            \Filament\Http\Middleware\AuthenticateSession::class,
+            \App\Http\Middleware\EnsureAdminMfaRecoveryVersion::class,
+            \App\Http\Middleware\ForcePasswordChange::class,
+            \App\Http\Middleware\AbsoluteSessionTimeout::class,
+            \Filament\Auth\MultiFactor\Http\Middleware\EnsureMultiFactorAuthenticationIsEnabled::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+        $exceptions->respond(fn ($response) => app(SecurityHeaders::class)->apply(request(), $response));
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*'),
         );

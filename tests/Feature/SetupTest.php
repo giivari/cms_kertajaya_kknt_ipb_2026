@@ -7,18 +7,16 @@ test('admin path configuration is loaded', function () {
 });
 
 test('generate installation id command works', function () {
-    $envPath = base_path('.env');
-    $envOriginallyExisted = file_exists($envPath);
-
-    $originalEnv = $envOriginallyExisted
-        ? file_get_contents($envPath)
-        : null;
-
-    if ($envOriginallyExisted && $originalEnv === false) {
-        throw new RuntimeException('Unable to read the original .env file.');
+    $originalBasePath = base_path();
+    $sandbox = storage_path('framework/testing/install-id-'.bin2hex(random_bytes(8)));
+    if (! mkdir($sandbox, 0700, true) && ! is_dir($sandbox)) {
+        throw new RuntimeException('Unable to create isolated installation-ID fixture.');
     }
+    $envPath = $sandbox.DIRECTORY_SEPARATOR.'.env';
+    file_put_contents($envPath, "APP_ENV=testing\nINSTALLATION_ID=fixture\n");
 
     try {
+        app()->setBasePath($sandbox);
         $this->artisan('village:install-id')
             ->assertExitCode(0);
 
@@ -26,22 +24,11 @@ test('generate installation id command works', function () {
 
         expect($generatedEnv)
             ->not->toBeFalse()
-            ->toContain('INSTALLATION_ID=VWCM-');
+            ->toMatch('/INSTALLATION_ID=VWCM-[A-Z0-9]+-[0-9]{3}/');
     } finally {
-        if ($envOriginallyExisted) {
-            $restored = file_put_contents(
-                $envPath,
-                (string) $originalEnv
-            );
-
-            if ($restored === false) {
-                throw new RuntimeException(
-                    'Unable to restore the original .env file.'
-                );
-            }
-        } elseif (file_exists($envPath)) {
-            @unlink($envPath);
-        }
+        app()->setBasePath($originalBasePath);
+        unlink($envPath);
+        rmdir($sandbox);
     }
 });
 

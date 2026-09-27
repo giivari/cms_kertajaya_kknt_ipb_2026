@@ -13,6 +13,11 @@ class News extends Model
 
     protected $guarded = [];
 
+    public function setContentAttribute($value): void
+    {
+        $this->attributes['content'] = \App\Support\ContentSecurity::richText($value);
+    }
+
     protected $casts = [
         'is_featured' => 'boolean',
         'published_at' => 'datetime',

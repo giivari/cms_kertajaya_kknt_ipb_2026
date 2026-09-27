@@ -94,7 +94,7 @@ class DocumentsTable
                 \Filament\Actions\ActionGroup::make([
                     ViewAction::make()->label('Lihat')->icon('heroicon-o-eye'),
                     EditAction::make()->label('Ubah')->icon('heroicon-o-pencil-square'),
-                    \Filament\Tables\Actions\Action::make('archive')
+                    \Filament\Actions\Action::make('archive')
                         ->label('Arsipkan')
                         ->icon('heroicon-o-archive-box')
                         ->color('warning')

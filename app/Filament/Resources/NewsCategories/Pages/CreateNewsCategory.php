@@ -11,6 +11,7 @@ class CreateNewsCategory extends CreateRecord
     protected static bool $canCreateAnother = false;
 
     use HasCreatePreview;
+    use \App\Filament\Support\Concerns\HasCategoryPreviewActions;
 
     protected static string $resource = NewsCategoryResource::class;
 

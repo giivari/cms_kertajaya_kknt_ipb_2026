@@ -5,7 +5,7 @@ Bagian ini bukan ditujukan untuk mengubah isi sistem, melainkan menjelaskan baga
 ## A. Navigasi Atas (Header) & Kaki (Footer)
 - Di halaman publik, **Menu Navigasi** yang Anda atur lewat admin akan muncul memanjang di bagian paling atas (*Header*).
 - Ikon logo kecil dan nama yang di-klik akan selalu membawa pengguna kembali ke Beranda (Halaman Utama).
-- Bagian **Kaki Halaman (Footer)** (paling bawah layar) otomatis memuat Alamat Kantor Desa, Jam Operasional/Email, Tautan Sosial Media, serta Hak Cipta yang ditarik dari "Tampilan & Identitas". Pastikan ejaan Anda benar di Panel Admin, karena akan terekspos di semua halaman.
+- Bagian **Kaki Halaman (Footer)** memakai menu Footer tersendiri dan pengaturan tampilan/kontak yang memiliki consumer aktif. Periksa pratinjau dan hasil publik setelah menyimpan; jangan menganggap setiap kontrol lama telah memiliki efek publik.
 
 ## B. Halaman Beranda (Home)
 Kesan pertama pengunjung ada di sini! Terdiri dari beberapa blok (*section*):
@@ -16,12 +16,13 @@ Kesan pertama pengunjung ada di sini! Terdiri dari beberapa blok (*section*):
 
 ## C. Kumpulan Daftar Konten
 - **Portal Berita:** Jika pengunjung mengeklik menu Berita, mereka akan disuguhkan daftar artikel yang disusun otomatis berdasarkan urutan *Terbaru*. Berita yang ditandai "Jadikan Berita Unggulan" akan ditaruh di slot paling atas dengan ukuran paling besar.
-- **Galeri Foto:** Disajikan dalam format album. Saat album ditekan, foto-foto di dalamnya akan mengembang membesar jika diklik, lengkap dengan perlindungan ganda (Tanda Air dan pemblokiran klik-kanan supaya tak bisa disimpan otomatis oleh orang usil).
+- **Halaman Unggulan:** Halaman terbit pilihan tampil dalam bagian kecil di beranda; halaman draf/arsip/berjadwal mendatang tidak muncul.
+- **Galeri Foto:** Album bertanda unggulan diprioritaskan dalam kisi beranda, diikuti album terbit terbaru. Gambar memakai jalur derivative terkontrol. Watermark bukan perlindungan terhadap penyalinan, crop, resize, atau kompresi ulang.
 - **Arsip Dokumen:** Menampilkan tabel sederhana nama berkas dan tombol aksi "Unduh". Semua berkas aman di *server* lokal desa.
-- **Peta Interaktif:** Lokasi-lokasi yang ditambahkan di menu "Peta & Lokasi" digabungkan secara otomatis menjadi satu kanvas peta besar (*Google Maps* atau setara), menampilkan sebaran warna-warni yang memudahkan wisatawan atau investor.
+- **Peta Interaktif:** Lokasi yang memenuhi syarat publikasi ditampilkan dengan Leaflet dan tile OpenStreetMap; perilaku keyboard/responsif masih menunggu verifikasi browser P7.
 
 ## D. Pengamanan (Anti-Spam)
-Ketika warga hendak mengirim keluhan melalui fitur *Contact Form*, mereka **wajib** mencentang kotak pengaman (*Turnstile/Captcha*) untuk memastikan mereka adalah manusia sungguhan, bukan robot *Hacker* yang mau mengirim pesan sampah (*spam*) ke *database* balai desa.
+Saat warga mengirim pesan kontak, aplikasi memerlukan verifikasi Turnstile yang berhasil. Bentuk challenge bergantung pada penyedia dan tidak selalu berupa kotak centang. D10 menyetujui inbox Admin saja; notifikasi email otomatis ditunda.
 
 ---
 **Pesan Penutup:** Segala kemudahan CMS ini dibangun agar Perangkat Desa bisa berfokus pada "Mutu Konten", bukan lagi direpotkan oleh persoalan "Coding". Gunakan instrumen ini sebaik-baiknya untuk mengabarkan kemajuan Desa Kertajaya kepada dunia luar!

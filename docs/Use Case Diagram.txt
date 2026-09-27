@@ -1,5 +1,7 @@
 # SOFTWARE USE CASE SPECIFICATION
 
+> STATUS P8: Use case historis. Notifikasi email kontak merupakan keputusan D10 yang belum disetujui; source saat ini menyimpan ke inbox Admin. Lihat `PROJECT_STATE.md`.
+
 ## Village Website CMS (Single Village Installation)
 
 ### Versi Dokumen

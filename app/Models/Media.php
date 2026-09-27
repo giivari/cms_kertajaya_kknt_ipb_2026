@@ -3,13 +3,13 @@
 namespace App\Models;
 
 use App\Enums\InvisibleWatermarkStatus;
+use App\Enums\DerivativeType;
 use App\Enums\MediaProcessingStatus;
 use App\Services\MediaDeletionService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Facades\Storage;
 
 class Media extends Model
 {
@@ -20,6 +20,8 @@ class Media extends Model
         'mime_type', 'extension', 'size', 'width', 'height',
         'alt_text', 'caption', 'metadata', 'checksum', 'uploaded_at',
         'processing_status', 'invisible_watermark_status',
+        'processing_token', 'last_processing_status', 'last_processing_error',
+        'cleanup_status', 'cleanup_error', 'cleanup_started_at',
     ];
 
     protected $casts = [
@@ -27,6 +29,7 @@ class Media extends Model
         'uploaded_at' => 'datetime',
         'processing_status' => MediaProcessingStatus::class,
         'invisible_watermark_status' => InvisibleWatermarkStatus::class,
+        'cleanup_started_at' => 'datetime',
     ];
 
     public function derivatives()
@@ -41,13 +44,19 @@ class Media extends Model
 
     protected static function booted(): void
     {
-        static::deleting(function (Media $media) {
-            if ($media->isForceDeleting()) {
-                return;
+        static::updating(function (Media $media): void {
+            if ($media->isDirty(['disk', 'directory', 'filename'])) {
+                // Invalidate any processing job that captured the previous source.
+                $media->processing_token = (string) \Illuminate\Support\Str::uuid();
             }
+        });
 
+        static::deleting(function (Media $media) {
             $deletionService = app(MediaDeletionService::class);
             $deletionService->validateDeletion($media);
+            if ($media->isForceDeleting() && $media->cleanup_status !== 'completed') {
+                throw new \RuntimeException('Permanent deletion must complete tracked-file cleanup first.');
+            }
         });
     }
 
@@ -62,25 +71,42 @@ class Media extends Model
 
     public function scopeApprovedImages(Builder $query): void
     {
-        $query->approved()->where('mime_type', 'like', 'image/%');
+        $query->approved()->whereHas('derivatives', fn (Builder $derivative) => $derivative
+            ->where('derivative_type', 'public')->where('mime_type', 'like', 'image/%'));
     }
 
     public function scopeApprovedPdfs(Builder $query): void
     {
-        $query->approved()->where('mime_type', 'application/pdf');
+        $query->approved()->whereHas('derivatives', fn (Builder $derivative) => $derivative
+            ->where('derivative_type', 'public')->where('mime_type', 'application/pdf'));
     }
 
     public function getUrlAttribute(): string
     {
-        $path = \App\Filament\Support\MediaThumbnail::path($this);
-        if ($path) {
-            return Storage::disk(\App\Filament\Support\MediaThumbnail::disk($this))->url($path);
+        $url = app(\App\Services\MediaDeliveryService::class)->url($this);
+        if ($url) {
+            return $url;
         }
-        return Storage::disk($this->disk)->url($this->directory.'/'.$this->filename);
+        // An unavailable derivative must never fall back to an original URL.
+        return \App\Filament\Support\MediaThumbnail::placeholderUrl($this->mime_type);
     }
 
     public function getPublicDerivative(string $size = 'public')
     {
-        return $this->derivatives()->where('derivative_type', \App\Enums\DerivativeType::PUBLIC)->first();
+        $type = $size === 'thumbnail' ? DerivativeType::THUMBNAIL : DerivativeType::PUBLIC;
+        if ($this->relationLoaded('derivatives')) {
+            return $this->derivatives->first(fn (MediaDerivative $derivative): bool =>
+                $derivative->derivative_type === $type)
+                ?? ($type === DerivativeType::THUMBNAIL ? $this->derivatives->first(fn (MediaDerivative $derivative): bool =>
+                    $derivative->derivative_type === DerivativeType::PUBLIC) : null);
+        }
+
+        return $this->derivatives()->where('derivative_type', $type)->first()
+            ?? ($type === DerivativeType::THUMBNAIL ? $this->derivatives()->where('derivative_type', DerivativeType::PUBLIC)->first() : null);
+    }
+
+    public function getThumbnailUrlAttribute(): string
+    {
+        return app(\App\Services\MediaDeliveryService::class)->url($this, DerivativeType::THUMBNAIL) ?? $this->url;
     }
 }

@@ -7,22 +7,18 @@ use Illuminate\Support\Facades\Log;
 
 class TurnstileVerifier
 {
-    public function verify(?string $token, ?string $ip = null): bool
+    public function verify(#[\SensitiveParameter] ?string $token, ?string $ip = null): bool
     {
-        if (app()->environment('local', 'testing')) {
-            return true;
+        $secret = config('services.turnstile.secret');
+
+        if (! is_string($secret) || trim($secret) === '' || preg_match('/\s/', $secret)) {
+            Log::error('Turnstile configuration failure: missing or malformed secret');
+            abort(503, 'Verifikasi keamanan belum dikonfigurasi dengan benar. Hubungi pengelola.');
         }
 
         if (empty($token)) {
             Log::warning('Turnstile token empty');
             return false;
-        }
-
-        $secret = config('services.turnstile.secret');
-
-        if (empty($secret)) {
-            Log::warning('Turnstile secret empty, bypassing to prevent lockout');
-            return true;
         }
 
         try {
@@ -32,15 +28,18 @@ class TurnstileVerifier
                 'remoteip' => $ip,
             ]);
 
-            Log::info('Turnstile response', ['status' => $response->status(), 'body' => $response->json()]);
-
             if ($response->successful() && is_array($response->json()) && $response->json('success') === true) {
                 return true;
             }
 
+            if (! $response->successful() || ! is_bool($response->json('success'))) {
+                Log::warning('Turnstile verification service failure', ['status' => $response->status()]);
+            }
+
             return false;
         } catch (\Throwable $e) {
-            Log::error('Turnstile exception', ['message' => $e->getMessage()]);
+            // HTTP exception messages can include request data; never log them.
+            Log::error('Turnstile verification transport failure', ['exception_type' => $e::class]);
             return false;
         }
     }

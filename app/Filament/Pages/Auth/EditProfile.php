@@ -3,6 +3,7 @@
 namespace App\Filament\Pages\Auth;
 
 use App\Services\AuditLogService;
+use App\Support\AdminPasswordPolicy;
 use Closure;
 use Filament\Auth\MultiFactor\App\AppAuthentication;
 use Filament\Auth\Pages\EditProfile as BaseEditProfile;
@@ -12,9 +13,18 @@ use Filament\Schemas\Components\Component;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use SensitiveParameter;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\DB;
 
 class EditProfile extends BaseEditProfile
 {
+    protected function mutateFormDataBeforeFill(array $data): array
+    {
+        // Enrollment uses the MFA provider's dedicated state, never this form.
+        return Arr::only($data, ['name', 'username', 'email']);
+    }
+
     public function form(Schema $schema): Schema
     {
         $isForced = Filament::auth()->check() ? Filament::auth()->user()->force_password_change : false;
@@ -48,9 +58,10 @@ class EditProfile extends BaseEditProfile
     {
         return TextInput::make('totp')
             ->label('Kode TOTP')
-            ->requiredWith('password')
+            ->required(fn (Get $get): bool => $this->isSensitiveChange($get)
+                && filled($this->getUser()->getAttributeValue('app_authentication_secret')))
             ->validationMessages([
-                'required_with' => 'Kode TOTP wajib diisi.',
+                'required' => 'Kode TOTP wajib diisi.',
             ])
             ->dehydrated(false)
             ->rule(function () {
@@ -65,7 +76,8 @@ class EditProfile extends BaseEditProfile
                     }
                 };
             })
-            ->visible(fn (Get $get): bool => (filled($get('password')) || ($get('email') !== $this->getUser()->getAttributeValue('email'))) && filled($this->getUser()->getAttributeValue('app_authentication_secret')));
+            ->visible(fn (Get $get): bool => $this->isSensitiveChange($get)
+                && filled($this->getUser()->getAttributeValue('app_authentication_secret')));
     }
 
     protected function getPasswordConfirmationFormComponent(): Component
@@ -91,12 +103,24 @@ class EditProfile extends BaseEditProfile
             ->password()
             ->revealable(filament()->arePasswordsRevealable())
             ->currentPassword(guard: Filament::getAuthGuard())
-            ->requiredWith('password')
+            ->required(fn (Get $get): bool => $this->isSensitiveChange($get))
             ->validationMessages([
-                'required_with' => 'Kata sandi saat ini wajib diisi.',
+                'required' => 'Kata sandi saat ini wajib diisi.',
                 'current_password' => 'Kata sandi saat ini tidak sesuai.',
             ])
             ->dehydrated(false);
+    }
+
+    protected function getPasswordFormComponent(): Component
+    {
+        return parent::getPasswordFormComponent()->rule(AdminPasswordPolicy::rule());
+    }
+
+    private function isSensitiveChange(Get $get): bool
+    {
+        return filled($get('password'))
+            || $get('email') !== $this->getUser()->getAttributeValue('email')
+            || $get('username') !== $this->getUser()->getAttributeValue('username');
     }
 
     protected function mutateFormDataBeforeSave(array $data): array
@@ -104,10 +128,21 @@ class EditProfile extends BaseEditProfile
         if (isset($data['password'])) {
             $data['force_password_change'] = false;
             $data['password_changed_at'] = now();
-            AuditLogService::log('password_changed', $this->getUser(), null, null);
         }
 
         return parent::mutateFormDataBeforeSave($data);
+    }
+
+    protected function handleRecordUpdate(Model $record, #[SensitiveParameter] array $data): Model
+    {
+        return DB::transaction(function () use ($record, $data): Model {
+            $record = parent::handleRecordUpdate($record, $data);
+            if ($record->wasChanged('password')) {
+                AuditLogService::log('password_changed', $record, null, null);
+            }
+
+            return $record;
+        });
     }
 
     protected function afterSave(): void

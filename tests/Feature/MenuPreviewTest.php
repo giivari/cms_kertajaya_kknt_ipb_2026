@@ -15,7 +15,9 @@ uses(RefreshDatabase::class);
 beforeEach(fn () => config(['preview.ui_enabled' => true]));
 
 test('menu create and edit preview render visible navigation without persistence', function () {
-    $admin = Admin::factory()->create();
+    $admin = Admin::factory()->create([
+        'app_authentication_secret' => \Filament\Auth\MultiFactor\App\AppAuthentication::make()->generateSecret(),
+    ]);
     $before = [Menu::count(), MenuItem::count()];
     $preview = \Filament\Actions\Testing\TestAction::make('preview')->schemaComponent('form-actions', schema: 'content');
     $items = [
@@ -79,21 +81,22 @@ test('menu create and edit preview render visible navigation without persistence
     expect($menu->fresh()->items)->toHaveCount(0);
 });
 
-test('menu form uses full width sections and no repeated repeater heading', function () {
+test('menu form retains placement, destination, hierarchy, visibility, and preview controls', function () {
     $source = file_get_contents(app_path('Filament/Resources/Menus/MenuResource.php'));
-    $sections = ['Tentang Menu', 'Lokasi Tampilan', 'Tautan yang Ditampilkan', 'Pratinjau Navigasi'];
+    $sections = ['Tentang Menu', 'Tautan yang Ditampilkan', 'Pratinjau Navigasi'];
 
     expect(substr_count($source, "Section::make('Tautan yang Ditampilkan')"))->toBe(1)
         ->and($source)->not->toContain("->label('Tautan yang Ditampilkan')")
-        ->and($source)->toContain("->columns(['default' => 1, 'md' => 2])")
         ->and($source)->toContain('->hiddenLabel()')
+        ->and($source)->toContain("Select::make('location')")
+        ->and($source)->toContain("Repeater::make('children')")
+        ->and($source)->toContain("Select::make('link_type')")
+        ->and($source)->toContain("Select::make('page_id')")
+        ->and($source)->toContain("TextInput::make('custom_url')")
+        ->and($source)->toContain("Toggle::make('is_visible')")
         ->and($source)->toContain("'Nama yang Tampil'");
 
     foreach ($sections as $section) {
         expect($source)->toContain("Section::make('{$section}')");
-        expect((bool) preg_match(
-            "/Section::make\\('".preg_quote($section, '/')."'\\).*?->columnSpanFull\\(\\)/s",
-            $source,
-        ))->toBeTrue();
     }
 });

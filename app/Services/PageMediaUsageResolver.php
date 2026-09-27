@@ -19,7 +19,7 @@ class PageMediaUsageResolver implements MediaUsageResolver
         $usages = [];
 
         // Check featured media on pages
-        $pages = Page::where('featured_media_id', $media->id)->get();
+        $pages = Page::withTrashed()->where('featured_media_id', $media->id)->get();
         foreach ($pages as $page) {
             $usages[] = "Page Featured Media: {$page->title}";
         }
@@ -44,7 +44,7 @@ class PageMediaUsageResolver implements MediaUsageResolver
 
     protected function getUsageCount(Media $media): int
     {
-        $pageCount = Page::where('featured_media_id', $media->id)->count();
+        $pageCount = Page::withTrashed()->where('featured_media_id', $media->id)->count();
         if ($pageCount > 0) {
             return $pageCount;
         }

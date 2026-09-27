@@ -96,6 +96,9 @@ return [
             'prefix' => '',
             'prefix_indexes' => true,
             'search_path' => 'public',
+            // Eloquent serializes date casts without an offset. Keep PostgreSQL
+            // interpretation aligned with the application's UTC clock.
+            'timezone' => 'UTC',
             'sslmode' => env('DB_SSLMODE', 'prefer'),
         ],
 

@@ -4,6 +4,8 @@
   "protectedPathPatterns": ["^\\.env(?!\\.example$).*", "^vendor/", "^node_modules/", "^village-cms-backups/"],
   "testDatabasePatterns": ["^example_test_"],
   "protectedDatabaseNames": ["example_production_db", "example_development_db", "example_recovery_db"],
+  "testDatabaseHost": "127.0.0.1",
+  "testDatabasePort": 5432,
   "pgHbaPath": "",
   "pgHbaSha256": ""
 }

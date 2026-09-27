@@ -4,8 +4,9 @@ namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\Controller;
 use App\Models\Document;
+use App\Services\DocumentDeliveryService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 
 class DocumentController extends Controller
@@ -20,66 +21,43 @@ class DocumentController extends Controller
             });
         }
 
-        $documents = $query->latest('published_at')->paginate(12);
+        $documents = $query->latest('published_at')->paginate(12)->withQueryString();
 
         return view('public.documents.index', compact('documents'));
     }
 
-    public function download($slug)
+    public function download(string $slug, DocumentDeliveryService $delivery)
     {
-        $document = Document::published()->with('fileMedia.derivatives')->where('slug', $slug)->firstOrFail();
-
-        $media = $document->fileMedia;
-        if (! $media || $media->processing_status->value !== 'completed' || $media->invisible_watermark_status->value !== 'verified') {
-            abort(404, 'Dokumen tidak tersedia atau belum disetujui.');
-        }
-
-        $derivative = $media->derivatives()->where('derivative_type', 'public')->first();
-        if (! $derivative) {
-            abort(404, 'File publik tidak ditemukan.');
-        }
-
-        $disk = Storage::disk($derivative->disk);
-        $path = $derivative->directory ? $derivative->directory.'/'.$derivative->filename : $derivative->filename;
-        if (! $disk->exists($path)) {
-            abort(404, 'File hilang.');
-        }
+        $document = Document::published()->with('fileMedia')->where('slug', $slug)->firstOrFail();
+        $file = $delivery->resolve($document);
+        abort_unless($file, 404, 'Dokumen tidak tersedia.');
 
         $document->increment('download_count');
 
-        return response()->streamDownload(function () use ($disk, $path) {
-            echo $disk->get($path);
-        }, Str::slug($document->title).'.pdf', [
-            'Content-Type' => 'application/pdf',
-            'X-Content-Type-Options' => 'nosniff',
-        ]);
+        return $this->fileResponse($document, $file);
     }
 
-    public function preview($slug)
+    public function preview(string $slug, DocumentDeliveryService $delivery)
     {
-        $document = Document::with('fileMedia.derivatives')->where('slug', $slug)->firstOrFail();
+        $document = Document::with('fileMedia')->where('slug', $slug)->firstOrFail();
+        Gate::authorize('view', $document);
+        $file = $delivery->resolve($document, public: false);
+        abort_unless($file, 404, 'Dokumen tidak tersedia.');
 
-        $media = $document->fileMedia;
-        if (! $media || $media->processing_status->value !== 'completed' || $media->invisible_watermark_status->value !== 'verified') {
-            abort(404, 'Dokumen tidak tersedia atau belum disetujui.');
-        }
+        return $this->fileResponse($document, $file);
+    }
 
-        $derivative = $media->derivatives()->where('derivative_type', 'public')->first();
-        if (! $derivative) {
-            abort(404, 'File publik tidak ditemukan.');
-        }
-
-        $disk = Storage::disk($derivative->disk);
-        $path = $derivative->directory ? $derivative->directory.'/'.$derivative->filename : $derivative->filename;
-        if (! $disk->exists($path)) {
-            abort(404, 'File hilang.');
-        }
-
-        return response()->streamDownload(function () use ($disk, $path) {
-            echo $disk->get($path);
-        }, Str::slug($document->title).'.pdf', [
-            'Content-Type' => 'application/pdf',
+    private function fileResponse(Document $document, array $file): \Symfony\Component\HttpFoundation\BinaryFileResponse
+    {
+        $filename = (Str::slug($document->title) ?: 'dokumen').'.'.$file['extension'];
+        $response = response()->download($file['path'], $filename, [
+            'Content-Type' => $file['mime'],
+            'Cache-Control' => 'private, no-store, max-age=0',
             'X-Content-Type-Options' => 'nosniff',
+            'Content-Security-Policy' => "default-src 'none'; sandbox",
         ]);
+
+        // Symfony BinaryFileResponse can add `public` during preparation.
+        return $response->setPrivate();
     }
 }

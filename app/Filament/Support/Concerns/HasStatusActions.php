@@ -79,14 +79,19 @@ trait HasStatusActions
         }
 
         if (method_exists($this, 'previewType')) {
-            $cacheKey = 'preview_draft_' . static::class . '_' . ($this->record->id ?? 'new');
-            if (session()->has($cacheKey)) {
+            $drafts = app(\App\Services\Preview\PreviewDraftStore::class);
+            $recordId = $isCreate ? null : ($this->record->id ?? null);
+            if ($drafts->restore(static::class, $recordId) !== null) {
                 $actions[] = Action::make('restore_draft')
                     ->label('Pulihkan Draf Pratinjau')
                     ->color('warning')
                     ->icon('heroicon-o-arrow-path')
-                    ->action(function () use ($cacheKey) {
-                        $this->form->fill(session()->get($cacheKey));
+                    ->action(function () use ($recordId) {
+                        $state = app(\App\Services\Preview\PreviewDraftStore::class)->restore(static::class, $recordId);
+                        if ($state === null) {
+                            return;
+                        }
+                        $this->form->fill($state);
                         \Filament\Notifications\Notification::make()->title('Draf dipulihkan!')->success()->send();
                     });
             }

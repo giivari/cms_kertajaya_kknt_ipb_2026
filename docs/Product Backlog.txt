@@ -1,5 +1,7 @@
 # PRODUCT BACKLOG & SPRINT PLANNING DOCUMENT
 
+> STATUS P8: Dokumen ini menyimpan riwayat keputusan dan catatan fase pada waktunya; angka/status lama bukan status repository kini. Gunakan `PROJECT_STATE.md` dan runbook `operations/` untuk perilaku, verifikasi, dan gate aktual. Audit historis tidak diubah.
+
 ## Village Website CMS
 
 **Versi Dokumen:** 1.0
@@ -656,3 +658,224 @@ Strategi ini memastikan:
 * Fitur penting tidak tertinggal.
 * Scope tetap terkendali.
 * Sistem siap digunakan dan diserahkan kepada desa setelah program KKN berakhir.
+
+---
+
+# 11. P0 Remediation Execution Register — 2026-09-17
+
+Dokumen ini tetap merupakan backlog produk historis. Bagian ini adalah register eksekusi remediasi yang terbatas untuk P0; ia tidak mengubah baseline audit atau memutuskan requirement bisnis yang masih konflik.
+
+## 11.1 Baseline snapshot
+
+| FIELD | EVIDENCE |
+|---|---|
+| Repository | C:\Users\givar\KULIAH\WEB_KKN\village-cms |
+| Branch / HEAD | main / 52022ec6b1e6c24fd1662300ee41a97b24e639e4 |
+| Working tree sebelum P0 | app/Filament/Resources/Documents/Pages/ViewDocument.php dan app/Filament/Resources/Documents/Schemas/DocumentForm.php sudah berubah; keduanya berada di luar scope P0 dan tidak diubah |
+| Dokumen baseline | C:\Users\givar\KULIAH\WEB_KKN\FULL_REPOSITORY_AUDIT_2026-09-17.md dan C:\Users\givar\KULIAH\WEB_KKN\MASTER_REMEDIATION_PLAN_2026-09-17.md |
+| P0 scope | F33 test discovery/struktur; F37 guardrail contract; register keputusan D01–D15; baseline safety |
+| P0 status | **IMPLEMENTED — VERIFICATION PENDING** |
+| Tidak dilakukan | Test suite, build, Vite, queue worker, scheduler, browser automation, migration, deployment, akses database, atau perubahan .env |
+
+## 11.2 Test discovery evidence
+
+Pemeriksaan ini bersifat statis. “Parseable candidate” bukan bukti bahwa test terdaftar oleh Pest/PHPUnit atau memverifikasi boundary produksi.
+
+| CLASSIFICATION | FILES / EVIDENCE | STATUS |
+|---|---|---|
+| Test source inventory | 56 file PHP di bawah tests/: 53 Feature, 1 Unit, Pest.php, dan TestCase.php | Inventaris lengkap secara path; discovery runtime belum dijalankan |
+| Test-support files | tests/Pest.php, tests/TestCase.php | Bukan test case mandiri |
+| Static PHP parse check setelah normalisasi | 50 dari 56 file parseable; 6 parse error hanya pada enam preview test | Tidak menjalankan test atau bootstrap aplikasi; parse error dicatat untuk rekonstruksi P4/P6 |
+| Encoding-invalid sebelum P0 | PagePreviewTest.php, NewsPreviewTest.php, MediaPreviewTest.php, GalleryPreviewTest.php, DocumentPreviewTest.php, CategoryPreviewTest.php memiliki BOM UTF-16LE dan NUL bytes | Dinormalisasi mekanis ke UTF-8 pada P0; tidak ada assertion atau variabel yang dirancang ulang |
+| Remaining syntax corruption | Enam file preview di atas masih memiliki assignment seperti slash-equals-ellipsis, variabel/payload yang kehilangan identifier, dan expression rusak | **DEFERRED TO P4/P6**; tidak disembunyikan dengan replacement assertion |
+| Stale reference | tests/Feature/AdminTableExportTest.php:23,56 memakai ListMenus, class tidak tersedia pada jalur menu aktif | **DEFERRED TO P4/P6**; test tidak diubah agar sekadar hijau |
+| Placeholder assertions | tests/Feature/SecurityExtendedTest.php:35,40,123,135,191,219 memakai assertTrue(true) | **DEFERRED TO P1/P6** |
+| Synthetic boundary | tests/Feature/LifecycleTest.php:19 mendaftarkan route login test; tests/Feature/MediaUploadSecurityTest.php:25 mendaftarkan route upload test | **DEFERRED TO P1/P6**; bukan bukti boundary produksi |
+| Potentially obsolete / stale semantics | Enam preview test rusak dan test export menu tidak boleh dianggap coverage aktif sampai architecture P4 ditetapkan | **INVESTIGATION COMPLETE — IMPLEMENTATION DEFERRED** |
+
+## 11.3 Test environment safety discovery
+
+| AREA | EVIDENCE | STATUS |
+|---|---|---|
+| .env.testing | Tidak ditemukan | Tidak ada konfigurasi test database lokal yang dapat divalidasi |
+| .guardrails.local.json | Tidak ditemukan | Tidak ada host/port/database test aktual yang tersedia untuk pemeriksaan |
+| phpunit.xml | Tidak menetapkan DB_CONNECTION, DB_HOST, DB_PORT, atau DB_DATABASE; menetapkan QUEUE_CONNECTION=sync, SESSION_DRIVER=array, CACHE_STORE=array, MAIL_MAILER=array | Cepat dan terisolasi pada beberapa service, tetapi tidak merepresentasikan database queue/session/cache produksi |
+| Default database | config/database.php fallback SQLite jika env hilang; .env.example mengarah PostgreSQL | Jangan menjalankan test sampai .env.testing dan guardrail lokal menunjuk database test terisolasi yang cocok |
+| Guardrail validator | scripts/guardrails/validate-test-database.ps1:54–69 mewajibkan APP_ENV testing, DB connection/host/port/database, pattern database test, protected database list, host dan port config | F37 diperbaiki tanpa melemahkan validator |
+
+## 11.4 Finding register
+
+| FINDING | P0 DISPOSITION | STATUS | NEXT OWNER / PHASE |
+|---|---|---|---|
+| F33 | Encoding enam preview test dinormalisasi; corruption sintaks dan stale export reference dicatat | **IMPLEMENTED — VERIFICATION PENDING** | P4/P6 |
+| F37 | Example dan self-test diselaraskan dengan field host/port wajib validator | **IMPLEMENTED — VERIFICATION PENDING** | P0 manual validation |
+| F25 / D10 | Email contact versus inbox-only dicatat tanpa perubahan controller/notifikasi | **BLOCKED — OWNER DECISION** | Owner, P2/P8 |
+| F35 | Runbook deployment lama tetap baseline historis; tidak boleh dipakai untuk redeploy/recovery sampai P8 menghasilkan prosedur aman | **INVESTIGATION COMPLETE — IMPLEMENTATION DEFERRED** | P8 |
+| F38 | Model recovery/admin dan unit recovery DB–media–key belum ditetapkan/dibuktikan | **BLOCKED — OWNER DECISION** | Owner, P8 |
+
+## 11.5 Owner decision register
+
+| ID | CURRENT EVIDENCE | WHY IT MATTERS | AFFECTED PHASES | OWNER DECISION REQUIRED | IMPLEMENTATION BLOCKED |
+|---|---|---|---|---|---|
+| D01 — Draft behavior | Revisi melarang draft; enum, forms, dan tests memakai draft | Mengubah draft dapat mengubah workflow editorial dan data lama | P2, P4, P8 | Yes | Yes |
+| D02 — Recovery codes | Revisi menghapus recovery codes; ERD/Data Dictionary masih memuatnya; code tidak memiliki flow recovery code | Menentukan pemulihan MFA dan schema/guidebook | P1, P8 | Yes | Yes |
+| D03 — PDF watermark scope | Revisi menunda PDF watermark; service mencoba memproses PDF | Menentukan apakah pipeline PDF dipertahankan atau dibatasi | P3, P8 | Yes | Yes |
+| D04 — Document format scope | Guidebook menyebut PDF/Excel/Word; UI/download aktual memaksa PDF | Menentukan validasi, selector, MIME, dan download | P3, P8 | Yes | Yes |
+| D05 — Watermark resilience | Requirement menyebut ketahanan transformasi; code metadata HMAC/checksum belum membuktikannya | Menentukan klaim keamanan dan scope teknis watermark | P3, P8 | Yes | Yes |
+| D06 — Original media access | Original private, tetapi editor dapat memperoleh akses privat | Menentukan batas editor tanpa menghapus workflow sah | P1, P3 | Yes | Yes |
+| D07 — Media URL revocation | File publik dapat tetap dapat diakses dari URL statis setelah archive/delete | Menentukan semantics archive/delete dan serving policy | P3, P8 | Yes | Yes |
+| D08 — Retention | Security Spec dan ERD memiliki durasi retensi berbeda; scheduler tidak menjalankannya | Menentukan purge, restore window, dan data retention | P3, P5, P8 | Yes | Yes |
+| D09 — Backup RPO/RTO/retention | Dokumen menyebut jadwal backup harian, mingguan, dan bulanan; restore belum dibuktikan | Menentukan operasi backup/recovery dan kepemilikan | P8 | Yes | Yes |
+| D10 — Contact email notification | PROJECT_STATE/diagram mengklaim email; controller hanya menyimpan inbox | Email merupakan behavior baru bila dipilih | P2, P8 | Yes | Yes |
+| D11 — Publication scope/timestamp | Detail/search memakai syarat publication berbeda; timestamp null/future ada dalam model desain | Menentukan kapan konten benar-benar publik tanpa mengubah data diam-diam | P2, P4, P8 | Yes | Yes |
+| D12 — Export consistency | Export async dapat membaca data berubah antar-chunk | Menentukan kontrak hasil export dan biaya snapshot | P5, P8 | Yes | Yes |
+| D13 — Document block Media vs Document | Page builder memakai Media sementara modul dokumen memakai Document | Menentukan compatibility mapping yang benar | P3, P4, P8 | Yes | Yes |
+| D14 — Featured/settings consumers | Field featured/settings ada tetapi sebagian tidak memiliki consumer publik terkonfirmasi | Menentukan fitur yang perlu diimplementasikan atau klaim yang perlu dipersempit | P2, P7, P8 | Yes | Yes |
+| D15 — Password/rate-limit policy | Security Spec meminta policy berbeda dari limiter/password rule aktual | Menentukan friction, recovery, dan parameter keamanan | P1, P8 | Yes | Yes |
+
+Tidak ada keputusan di atas yang diambil dalam P0. Tidak ada perubahan application behavior, schema, data, credential, atau infrastructure.
+
+## 12. P1A - Security Foundation (2026-09-18)
+
+STATUS: IMPLEMENTED — VERIFICATION PENDING.
+
+Scope otorisasi: F04/F05/F06/F07/F09/F10/F11/F12 dan bagian security boundary F30 saja.
+Audit dan master plan di root WEB_KKN tetap menjadi dokumen historis/otoritatif; tidak ditulis ulang.
+Baseline branch main, HEAD 52022ec6b1e6c24fd1662300ee41a97b24e639e4. Perubahan P0 dan dua perubahan
+Documents yang telah ada sebelum P1A dipertahankan. Tidak ada finding yang dinyatakan fully closed.
+
+### 12.1 Finding, perubahan, dan preservation
+
+| Finding | Current evidence / corrective implementation | Business-flow preservation | Status |
+|---|---|---|---|
+| F05 | Vendor InteractsWithAppAuthentication::initializeInteractsWithAppAuthentication saat ini sudah mergeHidden secret; klaim audit bahwa secret pasti terpapar tidak dapat ditegaskan untuk dependency terpasang ini. EditProfile::mutateFormDataBeforeFill sekarang allowlist name/username/email sebagai boundary aplikasi eksplisit. | Enrollment memakai state action Filament tersendiri dan getAppAuthenticationSecret tetap tersedia; tidak mengubah atau menghilangkan MFA. | IMPLEMENTED — VERIFICATION PENDING; vendor evidence updated, audit historis tetap utuh |
+| F06 | AdminPanelProvider mendaftarkan AuthenticateSession, ForcePasswordChange, AbsoluteSessionTimeout, dan middleware enrollment ke persistent middleware Filament. ForcePasswordChange membaca route yang sudah di-resolve dari verified snapshot, bukan nama komponen dari payload mentah. | Login tetap Filament; profile, logout, dan required-MFA setup tetap dikecualikan dari redirect force-password. Batas timeout/password tidak diubah. | IMPLEMENTED — VERIFICATION PENDING |
+| F07 | Grup admin.security memuat panel/auth/session/force-password/timeout/MFA. Semua legacy preview, token preview, asset preview, PDF memakai grup tersebut; grup vendor filament.actions diperluas melalui router extension point. | URL/slug tetap; owner check export, signature PDF, owner/session/hash/TTL token tidak diubah. Mekanisme signed original editor D06 tidak diubah. | IMPLEMENTED — VERIFICATION PENDING |
+| F04 | ContentSecurity menggunakan Purifier terpasang untuk rich text, plus kebijakan URL terpisah. Save berita/builder, normalizer preview, dan render menggunakan kebijakan yang sama. Settings URL divalidasi sebelum write dan dinetralkan saat read; href kartu potensi memakai escaped Blade attributes. | Heading/list/table/emphasis/tautan HTTP(S)/path lokal/anchor tetap didukung. Data lama dilindungi saat render, tanpa backfill. Bahasa visual/editor tetap. | IMPLEMENTED — VERIFICATION PENDING |
+| F09 | Secret kosong, bertipe salah, atau mengandung whitespace menghasilkan configuration failure 503; bypass environment dihapus. Respons success harus boolean true. Transport/service failure fail-closed dan dicatat tanpa body/token/secret/exception message. | Adapter TurnstileVerifier tetap dapat diganti/fake; HTTP fake tetap tersedia. Local/testing harus memakai konfigurasi/fake eksplisit, tidak otomatis menerima CAPTCHA. | IMPLEMENTED — VERIFICATION PENDING |
+| F10 | SecurityHeaders menggunakan Symfony header bag pada response biasa/file/stream. Exception response callback memakai fungsi yang sama. | SAMEORIGIN mempertahankan preview iframe satu origin. Enforcing CSP khusus preview tidak ditimpa; kebijakan umum tetap Report-Only. HSTS tetap bergantung production + request HTTPS. | IMPLEMENTED — VERIFICATION PENDING |
+| F11/F12 | MediaInputPolicy + SafeMediaUpload dipasang pada FileUpload yang aktif dan sebelum file disimpan. Create/replace/restore-crop, temp preview, dan ProcessMediaJob melakukan pemeriksaan bytes. Branch processing mengikuti MIME aktual; hanya output supported, readable, dan watermark-verified boleh ditulis publik. | Format input yang sudah ada dipertahankan. Word tersimpan privat dengan status pemrosesan gagal/unsupported; HEIC hanya bisa publik setelah konversi valid. Akses original admin dan lifecycle replacement tidak didesain ulang. | IMPLEMENTED — VERIFICATION PENDING; bagian lifecycle tetap P3 |
+| F30 terbatas | Event password_changed dipindah setelah successful record update, di transaksi yang sama. Validasi/save gagal tidak mencatat event sukses. Payload event tetap null tanpa credential. Feedback create/restore media tidak mengklaim processing sukses ketika gate menolak. | Proses ubah password tetap sama; bukan perubahan policy atau rekonstruksi seluruh audit. | IMPLEMENTED — VERIFICATION PENDING |
+
+### 12.2 Manifest file P1A
+
+Semua path relatif terhadap village-cms. NEW berarti file ditambahkan pada P1A.
+
+| Area | Files |
+|---|---|
+| Auth/session/audit | app/Filament/Pages/Auth/EditProfile.php; app/Providers/Filament/AdminPanelProvider.php; app/Http/Middleware/ForcePasswordChange.php |
+| Route/response boundary | bootstrap/app.php; routes/web.php; app/Providers/AppServiceProvider.php; app/Http/Middleware/SecurityHeaders.php; app/Http/Controllers/Admin/PreviewAssetController.php |
+| CAPTCHA | app/Services/TurnstileVerifier.php |
+| HTML/URL | app/Support/ContentSecurity.php (NEW); app/Models/News.php; app/Services/PageBuilderService.php; app/Services/SettingsService.php; app/Filament/Pages/WebsiteSettings.php; app/Filament/Support/PreviewStateNormalizer.php |
+| Public views | resources/views/home.blade.php; resources/views/public/news/show.blade.php; resources/views/pages/components/rich_text.blade.php; resources/views/pages/components/cta_button.blade.php; resources/views/pages/components/card_grid.blade.php |
+| Media input/publication | app/Services/MediaInputPolicy.php (NEW); app/Rules/SafeMediaUpload.php (NEW); app/Http/Requests/StoreMediaRequest.php; app/Filament/Resources/Media/Schemas/MediaForm.php; app/Filament/Resources/Media/Pages/CreateMedia.php; app/Filament/Resources/Media/Pages/EditMedia.php; app/Jobs/ProcessMediaJob.php |
+| Focused regression tests | tests/Feature/P1ASecurityBoundaryTest.php (NEW); tests/Feature/P1AMediaBoundaryTest.php (NEW); tests/Unit/ContentSecurityTest.php (NEW); tests/Unit/TurnstileVerifierTest.php |
+| Status record | docs/Product Backlog.txt, section 12 only; section 11 P0 preserved |
+
+### 12.3 Verification evidence and limitations
+
+- Static PHP syntax inspection covers the 26 PHP files touched/added by P1A. Blade files are reviewed as source, not claimed compiled or browser-verified.
+- Diff reviewed for finding mapping, unsafe credentials, vendor edits, schema/environment/infrastructure changes. None intentionally introduced. Test credentials are isolated test-only placeholders/generated test fixtures.
+- P1A-scoped git diff --check passes. An earlier broader check reported pre-existing trailing whitespace in DocumentForm.php; that user change is intentionally untouched.
+- No test execution, application bootstrap command, build, browser task, queue worker, scheduler, migration, deployment, stage, commit, or real service/DB connection was performed.
+- Added tests cover actual HTTP Livewire updates after revocation/force-password/timeout/MFA removal; ordinary profile secret absence; legacy/custom/export authorization; password audit outcomes; actual Filament create/replace validation; positive image/PDF acceptance; failed/unsupported/corrupt-output publication gates; HTML/URL and response headers.
+- Media watermark services are mocked in publication-boundary tests. Those tests do NOT prove watermark cryptography, real PDF watermark output validity, HEIC conversion, or P3 crash/concurrency safety.
+- .env.testing and .guardrails.local.json remain absent. Human verification must provision a dedicated test environment under the existing guardrail contract before running tests; do not target user/development/recovery DB.
+- The existing route cache has not been edited or cleared. Custom route changes require normal cache invalidation in the authorized local verification environment. Never treat tests against stale routes as proof of the new route contract.
+- Six malformed preview tests from F33, stale ListMenus references, and existing synthetic/placeholder tests remain deferred to P4/P6. Full suite readiness is not claimed.
+
+### 12.4 Exact manual verification commands
+
+These are instructions only; the agent did not execute them. Run one at a time, stop on nonzero exit.
+First provide the dedicated test configuration required by P0. In PowerShell:
+
+```powershell
+Set-Location 'C:\Users\givar\KULIAH\WEB_KKN\village-cms'
+& .\scripts\guardrails\safe-test.ps1 -ProjectRoot . -ValidateOnly
+```
+
+After validation succeeds, in the authorized local/test checkout only, invalidate the stale route cache
+(this command changes a generated cache file; it is not a database migration or deployment):
+
+```powershell
+php artisan route:clear --env=testing
+```
+
+Then run focused files individually through the guardrail wrapper:
+
+```powershell
+& .\scripts\guardrails\safe-test.ps1 -ProjectRoot . -TestPaths @('tests/Unit/ContentSecurityTest.php')
+& .\scripts\guardrails\safe-test.ps1 -ProjectRoot . -TestPaths @('tests/Unit/TurnstileVerifierTest.php')
+& .\scripts\guardrails\safe-test.ps1 -ProjectRoot . -TestPaths @('tests/Feature/P1ASecurityBoundaryTest.php')
+& .\scripts\guardrails\safe-test.ps1 -ProjectRoot . -TestPaths @('tests/Feature/P1AMediaBoundaryTest.php')
+```
+
+Additional manual acceptance: enroll a new test admin and confirm QR/new-secret display; forced password
+change, login/challenge/logout; stale tabs and bundled Livewire requests; owner/non-owner and expired
+preview/export access; rich-text save/preview/public parity; settings anchors/local links; actual crop and
+HEIC/PDF corpus; streamed download headers; same-origin preview iframe; HTTPS through the intended proxy.
+Use isolated fixtures. These manual results remain pending, not implied by syntax validation.
+
+### 12.5 Explicit deferrals and residual risk
+
+- D15 BLOCKED — OWNER DECISION: no new password length/complexity, progressive limiter, reauthentication parameters, or additional TOTP rules.
+- D06 BLOCKED — OWNER DECISION: signed/private original-media editor access semantics and mechanism unchanged.
+- D02 BLOCKED — OWNER DECISION: no recovery-code generation/storage/revocation or recovery semantics changes.
+- D01–D15 decisions remain as recorded in section 11; P1A does not resolve any of them.
+- P3 remains responsible for destructive derivative replacement, active generations/pointer swap, cleanup/reconciliation, checksum semantics, PDF watermark algorithm, and immutable originals. Existing unsafe public files are not removed or reprocessed by this change.
+- PDF inspection rejects active elements/encrypted/unreadable PDFs; it is not an antivirus or a guarantee against every parser differential/polyglot. Large compressed PDF structures and HEIC decoder resource usage still need a corpus/resource-limit review in P3. The existing watermark injector may produce output rejected by the new publication gate.
+- Rich-text/URL allowlists may remove unsupported markup and blob/data URLs; legitimate editor formatting and temporary-asset preview must be verified manually. No stored data is mass-rewritten.
+- Missing Turnstile configuration now blocks affected requests with 503, including local/testing unless using an explicit fake. Deployment prerequisite remains an operator responsibility; no secret was created/changed.
+- CSP remains Report-Only globally, and proxy trust/HSTS deployment behavior has not been verified or changed.
+- Export completion/cleanup and preview normalization/quota remain P5/P4 respectively. Full audit reconstruction remains outside P1A.
+- Next independent execution unit: P2 after P1A verification/review, restricted to resolved requirements. P1B requires D15; P1C requires D06. No next phase started.
+
+## 13. P2 - Runtime, Admin Reliability, and Data Invariants (2026-09-23)
+
+STATUS: IMPLEMENTED — VERIFICATION PENDING.
+
+This is a bounded implementation record, not a rewrite of the historical audit or deployment documentation.
+No migration, data backfill, queue/worker/scheduler, build, test-suite execution, external-service call, or production connection was performed.
+
+| Finding | Corrective implementation | Preservation / remaining boundary | Status |
+|---|---|---|---|
+| F01 | All active `Filament\\Tables\\Actions\\*` action references in Page, Gallery Album, Document, and Location tables now use installed `Filament\\Actions\\*` classes. | Existing actions, confirmation text, visibility, and table structure are retained. Runtime panel rendering remains unverified. | IMPLEMENTED — VERIFICATION PENDING |
+| F02 | Active MenuResource source continues to resolve its index to `EditMenu`; no `ListMenus` source reference exists. `bootstrap/cache/routes-v7.php` remains an ignored generated artifact and was not edited manually. | A human must clear and rebuild route cache in an authorized environment before treating menu routing as verified. The stale export test remains P4/P6. | IMPLEMENTED — VERIFICATION PENDING |
+| F03 | Removed the stale ignored `public/hot` marker that pointed production asset resolution to a local Vite server. `.gitignore` continues to exclude regenerated hot markers. | Local Vite development recreates `public/hot` only while explicitly running. Production build/deploy verification remains P8. | IMPLEMENTED — VERIFICATION PENDING |
+| F20 | News and Document category modals now carry an open-time ID/version snapshot and apply explicit create/update/delete deltas in a transaction. Policy checks and model relationship guards run per record. | Categories created after the modal opens are not included in delete candidates; changed/deleted snapshot rows require reload. No category IDs/names/data were mass-modified. | IMPLEMENTED — VERIFICATION PENDING |
+| F21 | Page gained the same status + non-null/non-future publication predicate used by other content lifecycle models; public page detail, search, and dashboard availability count consume it. | Existing timestamps and publish-transition semantics are untouched. D11 normalization/scheduling decisions remain blocked. | IMPLEMENTED — VERIFICATION PENDING |
+| F22 | Page builder now locks and updates existing sections/components by their explicit hidden IDs, reserves positions before reorder, and deletes only IDs omitted by the submitted editor state. | Filament's outer create/edit transaction still provides parent + relationship atomicity; this code makes the service atomic for other callers. Filesystem behavior is not claimed atomic. | IMPLEMENTED — VERIFICATION PENDING |
+| F24 | Settings reads cache an existence/value envelope rather than a caller-specific default; save is a single transaction with cache invalidation after commit; `potensi_3_custom_url` round-trips. | Stored-but-unused settings are retained. `max_upload_size` UI now matches P1A's effective 10 MB boundary; preview remains non-mutating. D14 consumer decisions remain open. | IMPLEMENTED — VERIFICATION PENDING |
+| F31/F32 | Search accepts only valid UTF-8 scalar strings, escapes PostgreSQL literal wildcard/backslash input in safe order, and keeps existing targets/10-per-type limit. Category pagination retains its query string; search summary now says it displays top results. | No search UI redesign or additional full-result count queries were added. | IMPLEMENTED — VERIFICATION PENDING |
+| F44 | The only active admin-creation command now detects anomalous rows and serializes PostgreSQL initial provisioning with a transaction-scoped advisory lock. | No admin rows were changed. No schema constraint or migration was added; direct out-of-band SQL remains outside application enforcement. | IMPLEMENTED — VERIFICATION PENDING |
+| F46 | Gallery, menu, and builder reorder paths reserve persisted positions under row locks before Filament writes final relationship positions. | Final visual order and unique scopes are unchanged. Concurrent reorder must be checked against PostgreSQL manually. | IMPLEMENTED — VERIFICATION PENDING |
+
+### 13.1 P1A compatibility review
+
+P2 inspected the P1A panel middleware/routes, ContentSecurity URL handling, MediaInputPolicy/SafeMediaUpload boundary,
+and P1A tests before editing overlapping settings, builder, and document-form code. P2 retains the P1A URL validation
+before the transactional settings save and aligns the visible upload limit with the P1A 10 MB effective gate. No P1A
+middleware, authorization boundary, sanitizer, media input rule, or test was removed or weakened.
+
+### 13.2 Data and migration assessment
+
+- No migration was created or run. The current unique-position constraints are handled through transaction-scoped temporary positions.
+- No data backfill, timestamp normalization, slug rewrite, category cleanup, or media reprocessing was performed.
+- The PostgreSQL advisory lock protects the active `admin:provision` path. A durable database-wide singleton constraint would require a separately reviewed migration and is not introduced here.
+- D11 remains BLOCKED for publication timestamp/data normalization. D14 remains BLOCKED for settings consumers. D10/F25 contact email behavior is unchanged.
+
+### 13.3 Manual verification prerequisites
+
+Do not execute from a production checkout. First establish the P0 isolated test configuration and validate it, then use the
+guardrail wrapper for focused tests. Route cache removal/rebuild must be done only in the authorized local/test environment:
+
+```powershell
+Set-Location 'C:\Users\givar\KULIAH\WEB_KNN\village-cms'
+& .\scripts\guardrails\safe-test.ps1 -ProjectRoot . -ValidateOnly
+php artisan route:clear --env=testing
+php artisan route:cache --env=testing
+```
+
+Manual acceptance remains required for Filament tables; menu routing after cache rebuild; category stale-tab/delete/reference
+scenarios; page-builder failure rollback and identity retention; settings save/reload/preview; PostgreSQL wildcard search;
+filtered pagination; concurrent provisioning; and gallery/menu/component reorder under PostgreSQL.

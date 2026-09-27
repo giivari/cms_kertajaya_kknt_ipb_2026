@@ -1,5 +1,7 @@
 # DEPLOYMENT SPECIFICATION DOCUMENT
 
+> STATUS P8: Spesifikasi historis yang telah digantikan untuk operasi oleh `DEPLOYMENT_GUIDE.md` dan `operations/RECOVERY.md`. Angka backup/RPO/RTO/jadwal di bawah BELUM disahkan (D09). Jangan menjalankan instruksi deployment dari dokumen ini atau membuka database ke internet.
+
 ## Village Website CMS
 
 **Versi Dokumen:** 1.0

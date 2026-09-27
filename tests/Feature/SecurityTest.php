@@ -103,15 +103,18 @@ class SecurityTest extends TestCase
             'https://challenges.cloudflare.com/turnstile/v0/siteverify' => Http::response(['success' => true], 200),
         ]);
 
-        Livewire::test(Login::class)
+        $login = Livewire::test(Login::class)
             ->fillForm([
                 'username' => $admin->username,
                 'password' => 'wrongpassword',
                 'captcha' => 'valid-token',
             ])
             ->call('authenticate')
-            ->assertSee('Nama pengguna atau kata sandi tidak sesuai.')
-            ->assertDontSee('filament-panels::pages/auth/login.messages.failed');
+            ->assertHasFormErrors(['username']);
+
+        $this->assertSame('Kombinasi nama pengguna dan kata sandi salah.',
+            $login->errors()->first('data.username'));
+        $this->assertGuest('web');
     }
 
     public function test_turnstile_validation_fails_on_invalid_token()
@@ -271,8 +274,8 @@ class SecurityTest extends TestCase
         Livewire::test(EditProfile::class)
             ->fillForm([
                 'currentPassword' => 'oldpassword',
-                'password' => 'newpassword123',
-                'passwordConfirmation' => 'newpassword123',
+                'password' => 'Newpassword123',
+                'passwordConfirmation' => 'Newpassword123',
             ])
             ->call('save')
             ->assertHasNoFormErrors()
@@ -280,7 +283,7 @@ class SecurityTest extends TestCase
 
         $admin->refresh();
         $this->assertFalse((bool) $admin->force_password_change);
-        $this->assertTrue(Hash::check('newpassword123', $admin->password));
+        $this->assertTrue(Hash::check('Newpassword123', $admin->password));
         $this->assertNotNull($admin->password_changed_at);
 
         $log = AuditLog::where('event_type', 'password_changed')->first();
@@ -311,6 +314,7 @@ class SecurityTest extends TestCase
 
     public function test_rate_limiter_progressive_delay_and_lockout()
     {
+        $this->freezeTime();
         $admin = Admin::factory()->create([
             'password' => Hash::make('password'),
         ]);
@@ -319,7 +323,9 @@ class SecurityTest extends TestCase
             'https://challenges.cloudflare.com/turnstile/v0/siteverify' => Http::response(['success' => true], 200),
         ]);
 
-        for ($i = 0; $i < 5; $i++) {
+        $throttle = app(\App\Services\AdminLoginThrottle::class);
+        $key = $throttle->key($admin->username, request()->ip());
+        foreach ([1, 3, 5, 10] as $delay) {
             Livewire::test(Login::class)
                 ->fillForm([
                     'username' => $admin->username,
@@ -328,17 +334,27 @@ class SecurityTest extends TestCase
                 ])
                 ->call('authenticate')
                 ->assertHasFormErrors(['username']);
+            $this->assertSame($delay, $throttle->waitSeconds($key));
+            $this->travel($delay)->seconds();
         }
 
-        // 6th attempt should be throttled
+        Livewire::test(Login::class)
+            ->fillForm(['username' => $admin->username, 'password' => 'wrongpassword', 'captcha' => 'valid-token'])
+            ->call('authenticate')->assertHasFormErrors(['username']);
+
+        // The fifth failure starts the 15-minute lockout.
         Livewire::test(Login::class)
             ->fillForm([
                 'username' => $admin->username,
                 'password' => 'wrongpassword',
                 'captcha' => 'valid-token',
             ])
-            ->call('authenticate')
-            ->assertHasFormErrors(['username']); // Just check if username has error
+            ->call('authenticate');
+
+        \Filament\Notifications\Notification::assertNotified();
+        $this->assertGuest('web');
+        $this->assertSame(5, \Illuminate\Support\Facades\RateLimiter::attempts($key));
+        $this->assertGreaterThanOrEqual(899, $throttle->waitSeconds($key));
     }
 
     public function test_security_headers()

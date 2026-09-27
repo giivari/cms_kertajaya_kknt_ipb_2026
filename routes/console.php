@@ -13,3 +13,8 @@ Schedule::call(fn (): int => app(AdminExportCleanupService::class)->pruneExpired
     ->hourly()
     ->name('admin-exports:prune')
     ->withoutOverlapping();
+
+Schedule::call(fn (): int => app(\App\Services\Preview\PreviewTokenStore::class)->pruneExpired())
+    ->hourly()
+    ->name('preview-tokens:prune')
+    ->withoutOverlapping();

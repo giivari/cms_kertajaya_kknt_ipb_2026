@@ -74,8 +74,12 @@ class PreviewController extends Controller
         if (in_array($type, ['menu', 'settings'])) {
             $context = PreviewContext::fromPayload($payload, ['token' => $token]);
             app()->instance(PreviewContext::class, $context);
-            $view = app(\App\Http\Controllers\PublicController::class)->index($request);
-            $response = response($view);
+            try {
+                $view = app(\App\Http\Controllers\PublicController::class)->index($request);
+                $response = response($view);
+            } finally {
+                app()->forgetInstance(PreviewContext::class);
+            }
         } else {
             $rendererClass = match ($type) {
                 'news' => \App\Support\Preview\Renderers\NewsPreviewRenderer::class,
@@ -84,19 +88,22 @@ class PreviewController extends Controller
                 'document' => \App\Support\Preview\Renderers\DocumentPreviewRenderer::class,
                 'gallery' => \App\Support\Preview\Renderers\GalleryAlbumPreviewRenderer::class,
                 'media' => \App\Support\Preview\Renderers\MediaPreviewRenderer::class,
+                'location-category', 'news-category', 'document-category' => \App\Support\Preview\Renderers\CategoryPreviewRenderer::class,
                 default => null,
             };
 
             if ($rendererClass) {
                 $context = PreviewContext::fromPayload($payload, ['token' => $token]);
                 app()->instance(PreviewContext::class, $context);
-                $renderer = new $rendererClass();
-                $view = $renderer->render($context);
-                $response = response($view);
+                try {
+                    $renderer = new $rendererClass();
+                    $view = $renderer->render($context);
+                    $response = response($view);
+                } finally {
+                    app()->forgetInstance(PreviewContext::class);
+                }
             } else {
-                $response = response()->view('public.preview.placeholder', [
-                    'type' => htmlspecialchars($type, ENT_QUOTES, 'UTF-8'),
-                ]);
+                abort(404);
             }
         }
 

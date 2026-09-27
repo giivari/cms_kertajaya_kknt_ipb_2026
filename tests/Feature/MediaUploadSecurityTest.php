@@ -2,13 +2,16 @@
 
 namespace Tests\Feature;
 
-use App\Http\Controllers\MediaController;
+use App\Filament\Resources\Media\Pages\CreateMedia;
 use App\Models\Admin;
+use App\Models\Media;
+use Filament\Auth\MultiFactor\App\AppAuthentication;
+use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Queue;
-use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 class MediaUploadSecurityTest extends TestCase
@@ -18,80 +21,60 @@ class MediaUploadSecurityTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->actingAs(Admin::factory()->create(), 'web');
+        $this->withoutVite();
         Queue::fake();
-
-        // Define route just for testing the Request validation and processing
-        Route::middleware('web')->post('/admin/media/upload', [MediaController::class, 'store']);
+        Filament::setCurrentPanel(Filament::getPanel('admin'));
+        $this->actingAs(Admin::factory()->create([
+            'app_authentication_secret' => AppAuthentication::make()->generateSecret(),
+        ]));
     }
 
-    public function test_upload_accepts_valid_files()
+    public function test_real_media_form_accepts_valid_image_into_private_original_storage(): void
     {
-        Storage::fake('private');
-        $image = UploadedFile::fake()->image('test.jpg')->size(100);
+        Livewire::test(CreateMedia::class)->fillForm([
+            'original_filename' => 'Test image',
+            'file' => UploadedFile::fake()->image('test.jpg', 32, 32),
+        ])->call('create')->assertHasNoFormErrors();
 
-        $response = $this->post('/admin/media/upload', [
-            'file' => $image,
-            'original_filename' => 'Test',
-        ]);
-
-        $response->assertStatus(201);
-        $this->assertDatabaseHas('media', ['original_filename' => 'Test']);
+        $media = Media::query()->sole();
+        Storage::disk('local')->assertExists('originals/'.$media->filename);
+        $this->assertSame([], Storage::disk('public')->allFiles());
     }
 
-    public function test_upload_rejects_unsupported_mime()
+    public function test_real_media_form_rejects_executable_and_svg_uploads(): void
     {
-        Storage::fake('private');
-        $phpFile = UploadedFile::fake()->create('malicious.php', 10, 'text/x-php');
+        foreach ([
+            UploadedFile::fake()->create('malicious.php', 10, 'text/x-php'),
+            UploadedFile::fake()->createWithContent('vector.svg', '<svg onload="alert(1)"/>'),
+        ] as $file) {
+            Livewire::test(CreateMedia::class)->fillForm([
+                'original_filename' => 'Blocked file', 'file' => $file,
+            ])->call('create')->assertHasFormErrors(['file']);
+        }
 
-        $response = $this->post('/admin/media/upload', [
-            'file' => $phpFile,
-            'original_filename' => 'Hack',
-        ]);
-
-        $response->assertInvalid('file');
+        $this->assertSame(0, Media::query()->count());
+        $this->assertSame([], Storage::disk('public')->allFiles());
     }
 
-    public function test_upload_rejects_svg_and_executables()
+    public function test_real_media_form_rejects_oversized_image(): void
     {
-        Storage::fake('private');
-        $svgFile = UploadedFile::fake()->create('vector.svg', 10, 'image/svg+xml');
+        Livewire::test(CreateMedia::class)->fillForm([
+            'original_filename' => 'Too wide',
+            'file' => UploadedFile::fake()->image('wide.jpg', 3841, 10),
+        ])->call('create')->assertHasFormErrors(['file']);
 
-        $response = $this->post('/admin/media/upload', [
-            'file' => $svgFile,
-            'original_filename' => 'SVG',
-        ]);
-
-        $response->assertInvalid('file');
+        $this->assertSame(0, Media::query()->count());
     }
 
-    public function test_upload_rejects_oversized_files()
+    public function test_real_media_form_rejects_pdf_document_payload(): void
     {
-        Storage::fake('private');
-        $largeFile = UploadedFile::fake()->create('large.jpg', 15000, 'image/jpeg');
+        Livewire::test(CreateMedia::class)->fillForm([
+            'original_filename' => 'Document',
+            'file' => UploadedFile::fake()->createWithContent(
+                'document.pdf', "%PDF-1.4\n/JavaScript /JS /Launch\n%%EOF\n",
+            ),
+        ])->call('create')->assertHasFormErrors(['file']);
 
-        $response = $this->post('/admin/media/upload', [
-            'file' => $largeFile,
-            'original_filename' => 'Large',
-        ]);
-
-        $response->assertInvalid('file');
-    }
-
-    public function test_upload_rejects_unsafe_pdf()
-    {
-        Storage::fake('private');
-        $unsafePdfContent = "%PDF-1.4\n/JavaScript /JS /Launch\n%%EOF";
-        $tempFile = tempnam(sys_get_temp_dir(), 'unsafe_pdf');
-        file_put_contents($tempFile, $unsafePdfContent);
-
-        $file = new UploadedFile($tempFile, 'test.pdf', 'application/pdf', null, true);
-
-        $response = $this->post('/admin/media/upload', [
-            'file' => $file,
-            'original_filename' => 'Unsafe PDF',
-        ]);
-
-        $response->assertInvalid('file');
+        $this->assertSame(0, Media::query()->count());
     }
 }

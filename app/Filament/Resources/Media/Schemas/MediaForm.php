@@ -32,21 +32,32 @@ class MediaForm
                                         '3:4',
                                         '9:16',
                                     ])
-                                    ->helperText('Format yang diterima: JPEG, PNG, WebP, HEIC, Word, atau PDF. Ukuran maksimal 10 MB.')
+                                    ->helperText('JPEG, PNG, WebP, HEIC, Word, atau PDF; maksimal 10 MB atau batas pengaturan yang lebih kecil. Word tetap privat karena belum didukung pemrosesan publik.')
                                     ->required()
-                                    ->acceptedFileTypes([
-                                        'image/jpeg', 
-                                        'image/png', 
-                                        'image/webp', 
-                                        'image/heic', 
-                                        'application/pdf', 
-                                        'application/msword', 
-                                        'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-                                    ])
-                                    ->maxSize(10240)
+                                    ->acceptedFileTypes(array_keys(\App\Services\MediaInputPolicy::EXTENSIONS))
+                                    ->maxSize(fn () => app(\App\Services\MediaInputPolicy::class)->maxKilobytes())
+                                    ->rules([new \App\Rules\SafeMediaUpload()])
+                                    ->saveUploadedFileUsing(function (FileUpload $component, \Livewire\Features\SupportFileUploads\TemporaryUploadedFile $file): ?string {
+                                        app(\App\Services\MediaInputPolicy::class)->inspect($file->getRealPath(), $file->getClientOriginalName());
+                                        return $component->saveUploadedFile($file);
+                                    })
                                     ->disk('local')
                                     ->directory('originals')
                                     ->visibility('private')
+                                    ->getUploadedFileUsing(function (string $file, ?\App\Models\Media $record): ?array {
+                                        if (! $record || $record->trashed() || $record->disk !== 'local' ||
+                                            $file !== 'originals/'.$record->filename ||
+                                            ! \Illuminate\Support\Facades\Gate::allows('update', $record)) {
+                                            return null;
+                                        }
+
+                                        return [
+                                            'name' => $record->original_filename,
+                                            'size' => $record->size,
+                                            'type' => $record->mime_type,
+                                            'url' => route('admin.media.original', $record),
+                                        ];
+                                    })
                                     ->downloadable(false)
                                     ->openable(false),
                                 \Filament\Forms\Components\ViewField::make('preview')

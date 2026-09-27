@@ -7,30 +7,39 @@ use App\Http\Controllers\Public\ContactController;
 use App\Http\Controllers\Public\DocumentController;
 use App\Http\Controllers\Public\GalleryController;
 use App\Http\Controllers\Public\MapController;
+use App\Http\Controllers\Public\MediaDerivativeController;
 use App\Http\Controllers\Public\NewsController;
 use App\Http\Controllers\Public\SearchController;
 use App\Http\Controllers\PublicController;
 use Illuminate\Support\Facades\Route;
 
+Route::get(config('village.admin_path', 'desa-dashboard').'/media/{media}/original', \App\Http\Controllers\Admin\MediaOriginalController::class)
+    ->whereNumber('media')
+    ->name('admin.media.original')
+    ->middleware('admin.security');
+
 Route::get('/', [PublicController::class, 'index'])->name('home');
+Route::get('/media/{media}/derivative', MediaDerivativeController::class)
+    ->whereNumber('media')
+    ->name('media.derivative');
 Route::get('/halaman/{slug}', [PageController::class, 'show'])->name('pages.show');
-Route::get('/preview/halaman/{slug}', [PageController::class, 'preview'])->name('pages.preview')->middleware('auth');
+Route::get('/preview/halaman/{slug}', [PageController::class, 'preview'])->name('pages.preview')->middleware('admin.security');
 
 Route::prefix('berita')->name('news.')->group(function () {
     Route::get('/', [NewsController::class, 'index'])->name('index');
-    Route::get('/preview/{slug}', [NewsController::class, 'preview'])->name('preview')->middleware('auth');
+    Route::get('/preview/{slug}', [NewsController::class, 'preview'])->name('preview')->middleware('admin.security');
     Route::get('/{slug}', [NewsController::class, 'show'])->name('show');
 });
 
 Route::prefix('galeri')->name('gallery.')->group(function () {
     Route::get('/', [GalleryController::class, 'index'])->name('index');
-    Route::get('/preview/{slug}', [GalleryController::class, 'preview'])->name('preview')->middleware('auth');
+    Route::get('/preview/{slug}', [GalleryController::class, 'preview'])->name('preview')->middleware('admin.security');
     Route::get('/{slug}', [GalleryController::class, 'show'])->name('show');
 });
 
 Route::prefix('dokumen')->name('documents.')->group(function () {
     Route::get('/', [DocumentController::class, 'index'])->name('index');
-    Route::get('/preview/{slug}/download', [DocumentController::class, 'preview'])->name('preview')->middleware('auth');
+    Route::get('/preview/{slug}/download', [DocumentController::class, 'preview'])->name('preview')->middleware('admin.security');
     Route::get('/{slug}/download', [DocumentController::class, 'download'])->name('download');
 });
 
@@ -48,37 +57,17 @@ Route::prefix('kontak')->name('public.contact.')->group(function () {
 
 Route::get(config('village.admin_path', 'desa-dashboard') . '/preview-shell/{token}', [PreviewController::class, 'shell'])
     ->name('admin.preview.shell')
-    ->middleware([
-        'panel:admin',
-        \Filament\Http\Middleware\Authenticate::class,
-        \App\Http\Middleware\ForcePasswordChange::class,
-        \App\Http\Middleware\AbsoluteSessionTimeout::class,
-    ]);
+    ->middleware('admin.security');
 
 Route::get(config('village.admin_path', 'desa-dashboard') . '/preview/{token}', [PreviewController::class, 'show'])
     ->name('admin.preview.show')
-    ->middleware([
-        'panel:admin',
-        \Filament\Http\Middleware\Authenticate::class,
-        \App\Http\Middleware\ForcePasswordChange::class,
-        \App\Http\Middleware\AbsoluteSessionTimeout::class,
-    ]);
+    ->middleware('admin.security');
 
 Route::get(config('village.admin_path', 'desa-dashboard') . '/preview/{token}/assets/{assetToken}', [\App\Http\Controllers\Admin\PreviewAssetController::class, 'show'])
     ->name('admin.preview.asset')
-    ->middleware([
-        'panel:admin',
-        \Filament\Http\Middleware\Authenticate::class,
-        \App\Http\Middleware\ForcePasswordChange::class,
-        \App\Http\Middleware\AbsoluteSessionTimeout::class,
-    ]);
+    ->middleware('admin.security');
 
 Route::get(config('village.admin_path', 'desa-dashboard').'/exports/pdf/{export}', AdminPdfExportDownloadController::class)
     ->whereNumber('export')
     ->name('admin.exports.pdf.download')
-    ->middleware([
-        'panel:admin',
-        \Filament\Http\Middleware\Authenticate::class,
-        \App\Http\Middleware\ForcePasswordChange::class,
-        \App\Http\Middleware\AbsoluteSessionTimeout::class,
-    ]);
+    ->middleware('admin.security');

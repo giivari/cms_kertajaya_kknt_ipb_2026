@@ -5,12 +5,10 @@ namespace Tests\Feature;
 use App\Enums\InvisibleWatermarkStatus;
 use App\Enums\MediaProcessingStatus;
 use App\Jobs\ProcessMediaJob;
-use App\Services\MediaProcessingService;
+use App\Models\Media;
 use App\Services\WatermarkService;
 use App\Services\WatermarkVerificationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
@@ -18,75 +16,64 @@ class MediaPipelineTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_media_processing_pipeline_success()
+    public function test_media_processing_publishes_only_a_verified_private_generation(): void
     {
-        Storage::fake('private');
-        Storage::fake('public');
-        Queue::fake();
-        config(['watermark.signing_key' => 'test-signing-key']);
+        config(['watermark.signing_key' => 'disposable-pipeline-test-key']);
+        [$media, $original] = $this->original();
 
-        $image = imagecreatetruecolor(100, 100);
-        $tempPath = tempnam(sys_get_temp_dir(), 'test_img').'.jpg';
-        imagejpeg($image, $tempPath);
-        imagedestroy($image);
+        (new ProcessMediaJob($media))->handle(
+            app(WatermarkService::class), app(WatermarkVerificationService::class),
+        );
 
-        $file = new UploadedFile($tempPath, 'test.jpg', 'image/jpeg', null, true);
-
-        $service = new MediaProcessingService;
-        $media = $service->handleUpload($file, ['original_filename' => 'Test Image']);
-
-        $this->assertEquals(MediaProcessingStatus::PENDING, $media->processing_status);
-        $this->assertEquals('private', $media->disk);
-        Storage::disk('private')->assertExists('originals/'.$media->filename);
-
-        // Run the job synchronously
-        $job = new ProcessMediaJob($media);
-        $job->handle(app(WatermarkService::class), app(WatermarkVerificationService::class));
-
-        $media->refresh();
-
-        $this->assertEquals(MediaProcessingStatus::COMPLETED, $media->processing_status);
-        $this->assertEquals(InvisibleWatermarkStatus::VERIFIED, $media->invisible_watermark_status);
-
-        $derivatives = $media->derivatives;
-        $this->assertCount(1, $derivatives);
-        $this->assertEquals('public', $derivatives->first()->disk);
-
-        Storage::disk('public')->assertExists($derivatives->first()->filename);
-
-        $logs = $media->verificationLogs;
-        $this->assertCount(1, $logs);
-        $this->assertTrue($logs->first()->is_verified);
+        $processed = $media->fresh();
+        $derivative = $processed->derivatives()->where('derivative_type', \App\Enums\DerivativeType::PUBLIC)->sole();
+        $this->assertSame(MediaProcessingStatus::COMPLETED, $processed->processing_status);
+        $this->assertSame(InvisibleWatermarkStatus::VERIFIED, $processed->invisible_watermark_status);
+        $this->assertSame('local', $derivative->disk);
+        $this->assertStringStartsWith('derivatives/'.$media->id.'/', $derivative->filename);
+        $this->assertSame(hash('sha256', Storage::disk('local')->get($derivative->filename)), $derivative->checksum);
+        $this->assertTrue(app(WatermarkVerificationService::class)->verifyDerivative($derivative, $processed));
+        $this->assertSame($original, Storage::disk('local')->get('originals/'.$media->filename));
+        $this->assertSame([], Storage::disk('public')->allFiles());
     }
 
-    public function test_media_pipeline_fails_closed_and_keeps_private()
+    public function test_verification_failure_keeps_original_private_and_candidate_unpublished(): void
     {
-        Storage::fake('public');
-        Storage::fake('private');
-        config(['watermark.signing_key' => 'test']);
+        config(['watermark.signing_key' => 'disposable-pipeline-test-key']);
+        [$media, $original] = $this->original();
+        $verification = \Mockery::mock(WatermarkVerificationService::class)->makePartial();
+        $verification->shouldReceive('verifyDerivative')->once()->andReturn(false);
 
-        // Use a mock to force verification failure
-        $mockVerification = \Mockery::mock(WatermarkVerificationService::class)->makePartial();
-        $mockVerification->shouldReceive('verifyDerivative')->andReturn(false);
-        $this->app->instance(WatermarkVerificationService::class, $mockVerification);
+        (new ProcessMediaJob($media))->handle(app(WatermarkService::class), $verification);
 
-        $tempPath = tempnam(sys_get_temp_dir(), 'test_img');
-        $image = imagecreatetruecolor(10, 10);
-        imagejpeg($image, $tempPath);
-        $file = new UploadedFile($tempPath, 'test.jpg', 'image/jpeg', null, true);
+        $processed = $media->fresh();
+        $this->assertSame(MediaProcessingStatus::FAILED, $processed->processing_status);
+        $this->assertSame(InvisibleWatermarkStatus::FAILED, $processed->invisible_watermark_status);
+        $this->assertSame(0, $processed->derivatives()->count());
+        $this->assertSame($original, Storage::disk('local')->get('originals/'.$media->filename));
+        $this->assertSame([], Storage::disk('public')->allFiles());
+    }
 
-        $service = new MediaProcessingService;
-        $media = $service->handleUpload($file, ['original_filename' => 'Test Image']);
+    private function original(): array
+    {
+        $image = imagecreatetruecolor(40, 40);
+        imagefilledrectangle($image, 0, 0, 39, 39, imagecolorallocate($image, 20, 100, 180));
+        ob_start();
+        imagepng($image);
+        $bytes = (string) ob_get_clean();
+        imagedestroy($image);
 
-        $job = new ProcessMediaJob($media);
-        $job->handle(app(WatermarkService::class), app(WatermarkVerificationService::class));
+        $filename = 'pipeline-'.uniqid().'.png';
+        Storage::disk('local')->put('originals/'.$filename, $bytes);
+        $media = Media::create([
+            'disk' => 'local', 'directory' => 'originals', 'filename' => $filename,
+            'original_filename' => 'fixture.png', 'mime_type' => 'image/png', 'extension' => 'png',
+            'size' => strlen($bytes), 'width' => 40, 'height' => 40,
+            'checksum' => hash('sha256', $bytes), 'metadata' => [],
+            'processing_status' => MediaProcessingStatus::PENDING,
+            'invisible_watermark_status' => InvisibleWatermarkStatus::PENDING,
+        ]);
 
-        $media->refresh();
-
-        $this->assertEquals(MediaProcessingStatus::FAILED, $media->processing_status);
-        $this->assertEquals(InvisibleWatermarkStatus::FAILED, $media->invisible_watermark_status);
-        Storage::disk('public')->assertMissing('media/'.$media->filename);
-        Storage::disk('private')->assertMissing('staging/'.$media->filename);
-        Storage::disk('private')->assertExists('originals/'.$media->filename);
+        return [$media, $bytes];
     }
 }

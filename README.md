@@ -1,67 +1,20 @@
-# Sistem Informasi & Website Desa Kertajaya (CMS)
+# Village CMS Desa Kertajaya
 
-Selamat datang di repositori resmi **Website & Content Management System (CMS) Desa Kertajaya**. 
-Sistem ini dibangun secara khusus (Custom-Built) menggunakan teknologi web modern untuk membantu pemerintah Desa Kertajaya mengelola informasi, potensi desa, dan pelayanan masyarakat secara digital dengan aman dan responsif.
+CMS satu desa/satu Admin berbasis Laravel 12, PostgreSQL, Filament 4, Livewire, Blade, dan Tailwind. Modul aktif mencakup halaman, berita, galeri, lokasi, dokumen terkelola (PDF, Word, Excel), pesan kontak, media, navigasi, preview, dan ekspor Admin.
 
----
+**Status P9: CLOSURE AUDIT COMPLETE — MATERIAL DEFECTS REMAIN.** Suite P9: **434 lulus, 0 gagal, 2.688 assertion, 91,45 detik** pada PostgreSQL disposable. Pemeriksaan caller aktif menemukan transaksi parent/child Page belum mencakup satu logical save; tes yang lulus memasok transaksi sendiri. F22/F34 dibuka kembali, bersama gap consumer settings F24 dan audit events F30. Baca [laporan closure](docs/FINAL_REMEDIATION_CLOSURE_2026-09-25.md), [traceability requirement](docs/REQUIREMENT_TRACEABILITY.md), dan [status proyek](docs/PROJECT_STATE.md). Rilis belum disetujui; gate browser, origin legacy, format, operasi, dan keputusan pemilik tetap berlaku.
 
-## 🌟 Fitur Unggulan
+## Memulai dengan aman
 
-- **Panel Admin Berbasis Filament:** Antarmuka pengelola konten yang elegan, responsif, dan mudah digunakan (User Friendly).
-- **Keamanan Lapis Baja (Single Session):** Akses admin dikunci ketat; hanya satu admin atau perangkat yang dapat aktif dalam satu waktu untuk mencegah pembajakan sesi.
-- **Sistem Perpustakaan Media (Media Library):** Mengelola foto dan dokumen terpusat, lengkap dengan fitur pemberian tanda air (Watermarking) otomatis dan anti-maling.
-- **Dinamis & Terintegrasi:** Berita desa, galeri kegiatan, struktur organisasi, hingga manajemen kontak keluhan warga terhubung dalam satu portal utama.
-- **Arsitektur Berkinerja Tinggi:** Dioptimasi (Hyper-Optimized) agar web memuat dalam waktu seketika menggunakan mekanisme *Caching* tingkat lanjut pada *Views*, *Routes*, dan *Config*.
+- Instalasi baru pada database **kosong**: [deployment — Fresh install](docs/DEPLOYMENT_GUIDE.md).
+- Memperbarui instalasi yang sudah berisi data: [deployment — Update](docs/DEPLOYMENT_GUIDE.md).
+- Pengembangan lokal: [LOCAL_DEVELOPMENT](docs/LOCAL_DEVELOPMENT.md) dan [DEVELOPER_SAFETY](docs/DEVELOPER_SAFETY.md).
+- Pemulihan: [RECOVERY](docs/operations/RECOVERY.md). Database, berkas, kunci, identitas instalasi, dan konfigurasi harus diperlakukan sebagai satu unit.
 
-## 🛠 Teknologi yang Digunakan
+Jangan memakai `migrate:fresh`, menghapus database/media, atau menjalankan `key:generate` pada update atau recovery. Script Composer `setup` dan `post-create-project-cmd` bukan prosedur update; keduanya memuat inisialisasi yang hanya masuk akal pada instalasi baru.
 
-*   **Framework Inti:** Laravel (PHP)
-*   **Admin Panel:** Filament
-*   **Basis Data:** PostgreSQL
-*   **Tampilan Depan (Frontend):** Blade Templates & Tailwind CSS
-*   **Pemrosesan Sinkron:** Sistem *Queue* (Antrean) dirancang menggunakan mode `sync` untuk penanganan data secara seketika (*real-time*).
+## Kontrak operasi
 
-## 🚀 Panduan Instalasi (Untuk Pengembang/Developer)
+[Prasyarat runtime](docs/operations/RUNTIME_PREREQUISITES.md) · [worker dan scheduler](docs/operations/QUEUE_AND_SCHEDULER.md) · [ekspor](docs/operations/EXPORTS.md) · [preview](docs/operations/PREVIEW.md) · [cutover media legacy](docs/operations/MEDIA_LEGACY_CUTOVER.md) · [inventaris dokumen](docs/DOCUMENT_STATUS.md)
 
-Jika Anda ingin menjalankan sistem ini di komputer lokal, ikuti langkah berikut:
-
-1. **Kloning Repositori:**
-   ```bash
-   git clone https://github.com/UsernameAnda/nama-repo-anda.git
-   cd village-cms
-   ```
-
-2. **Instalasi Dependensi:**
-   ```bash
-   composer install
-   npm install && npm run build
-   ```
-
-3. **Konfigurasi Environment:**
-   ```bash
-   cp .env.example .env
-   php artisan key:generate
-   ```
-   *Sesuaikan pengaturan koneksi database (PostgreSQL) di file `.env`.*
-
-4. **Migrasi Database & Penyemaian Data (Seeding):**
-   ```bash
-   php artisan migrate:fresh --seed
-   ```
-
-5. **Jalankan Server Lokal:**
-   ```bash
-   php artisan serve
-   ```
-   *Akses web publik di `http://127.0.0.1:8000` dan Dasbor Admin di `http://127.0.0.1:8000/desa-dashboard`.*
-
----
-
-## 🔒 Catatan Keamanan Penting (Deployment)
-Untuk peluncuran (*deployment*) ke VPS atau Server Produksi, pastikan:
-1. `APP_ENV=production` dan `APP_DEBUG=false`.
-2. Lakukan optimalisasi penuh: `php artisan optimize` dan `php artisan view:cache`.
-3. Hak akses folder (*Permission*) untuk `storage/` dan `bootstrap/cache/` diatur dengan tepat agar log dan *cache* tidak *error*.
-
----
-*Dibangun dan dikembangkan dengan bangga dalam rangka mewujudkan Desa Kertajaya yang Go-Digital.*
+Original media privat; derivative publik dan dokumen melalui route terkontrol. Preview bukan autosave atau publikasi. Pesan kontak saat ini masuk ke inbox Admin tanpa email otomatis; keputusan produk D10 masih menunggu pemilik. Watermark PDF ditunda, tanpa mengurangi dukungan dokumen PDF.

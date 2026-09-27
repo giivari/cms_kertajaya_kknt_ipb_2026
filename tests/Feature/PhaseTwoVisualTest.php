@@ -53,6 +53,6 @@ class PhaseTwoVisualTest extends TestCase
             ->assertSee('Halaman Diterbitkan')
             ->assertSee('Berita Diterbitkan')
             ->assertSee('Album Galeri')
-            ->assertSee('Dokumen Publik');
+            ->assertSee('Dokumen Diterbitkan');
     }
 }

@@ -3,12 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\PreviewToken;
+use App\Services\MediaInputPolicy;
 use App\Services\Preview\PreviewTokenStore;
 use Filament\Facades\Filament;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class PreviewAssetController extends Controller
 {
@@ -32,42 +31,39 @@ class PreviewAssetController extends Controller
         }
 
         $assetsMap = $payload['temporary_assets_map'] ?? [];
-        if (!isset($assetsMap[$assetToken])) {
+        if (! is_array($assetsMap) || ! preg_match('/^[a-f0-9]{32}$/D', $assetToken) || !isset($assetsMap[$assetToken])) {
             abort(404);
         }
 
-        $tempPath = $assetsMap[$assetToken];
-        // Ensure path doesn't contain directory traversal
-        if (str_contains($tempPath, '..')) {
-            abort(403);
-        }
+        $asset = $assetsMap[$assetToken];
+        $path = is_array($asset) ? ($asset['path'] ?? null) : null;
+        abort_unless(is_string($path) && preg_match('~^preview-assets/[a-f0-9]{32}/'.preg_quote($assetToken, '~').'$~D', $path), 404);
 
-        $disk = Storage::disk(config('filament.default_filesystem_disk')); // Or livewire tmp disk? Let's assume default for Filament uploads, though Filament usually uses local or public.
-        // Actually livewire temp uses local disk typically, but Filament file upload may move it or keep it.
-        // If it's a livewire temporary upload, it is on the local disk. Let's just use Storage::disk('local') since livewire tmp is there.
-        // Wait, filament uses its own temp disk sometimes. Let's try Storage::disk('local') or Storage::disk(config('livewire.temporary_file_upload.disk') ?: 'local')
-        $diskName = config('livewire.temporary_file_upload.disk') ?: 'local';
-        $disk = Storage::disk($diskName);
+        $disk = Storage::disk('local');
+        $root = realpath($disk->path('preview-assets'));
+        $resolved = realpath($disk->path($path));
+        abort_unless($root !== false && $resolved !== false && is_file($resolved)
+            && str_starts_with($resolved, rtrim($root, DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR)
+            && ! is_link($disk->path('preview-assets'))
+            && ! is_link($disk->path($path)) && ! is_link(dirname($disk->path($path))), 404);
 
-        if (!$disk->exists($tempPath)) {
+        try {
+            $mime = app(MediaInputPolicy::class)->inspect($resolved);
+        } catch (\Illuminate\Validation\ValidationException $exception) {
             abort(404);
         }
+        abort_unless(in_array($mime, ['image/jpeg', 'image/png', 'image/webp'], true)
+            && hash_equals((string) ($asset['mime'] ?? ''), $mime)
+            && hash_equals((string) ($asset['sha256'] ?? ''), hash_file('sha256', $resolved)), 404);
 
-        $mimeType = $disk->mimeType($tempPath);
-        $allowedMimes = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
-        
-        if (!in_array($mimeType, $allowedMimes)) {
-            abort(403, 'Tipe file tidak diizinkan untuk pratinjau.');
-        }
-
-        $response = response()->file($disk->path($tempPath), [
-            'Content-Type' => $mimeType,
+        $response = response()->file($resolved, [
+            'Content-Type' => $mime,
             'Content-Disposition' => 'inline',
             'X-Content-Type-Options' => 'nosniff',
+            'Content-Security-Policy' => "default-src 'none'; sandbox",
+            'Cache-Control' => 'private, no-store, max-age=0',
         ]);
 
-        $response->headers->set('Cache-Control', 'no-store, private, no-cache, must-revalidate');
-        
-        return $response;
+        return $response->setPrivate();
     }
 }

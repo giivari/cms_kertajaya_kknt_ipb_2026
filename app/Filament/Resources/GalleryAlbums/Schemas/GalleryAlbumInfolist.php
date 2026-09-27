@@ -18,8 +18,7 @@ class GalleryAlbumInfolist
                 ->schema([
                     ImageEntry::make('cover_thumbnail')
                         ->label('Gambar Sampul')
-                        ->state(fn (GalleryAlbum $record): ?string => MediaThumbnail::path($record->coverMedia))
-                        ->disk(fn (GalleryAlbum $record): string => MediaThumbnail::disk($record->coverMedia))
+                        ->state(fn (GalleryAlbum $record): ?string => MediaThumbnail::url($record->coverMedia))
                         ->defaultImageUrl(MediaThumbnail::placeholderUrl())
                         ->extraImgAttributes(fn (GalleryAlbum $record): array => [
                             'class' => 'admin-gallery-detail-cover',

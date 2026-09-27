@@ -7,17 +7,10 @@ use App\Models\GalleryAlbum;
 use App\Models\Media;
 use App\Models\News;
 use App\Models\NewsCategory;
-use Illuminate\Auth\AuthenticationException;
+use Filament\Auth\MultiFactor\App\AppAuthentication;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Storage;
-use Symfony\Component\Routing\Exception\RouteNotFoundException;
 
 uses(RefreshDatabase::class);
-
-beforeEach(function () {
-    Route::get('/login', fn () => 'login')->name('login');
-});
 
 $models = [
     'news' => fn () => News::create(['title' => 'Test News', 'content' => 'x', 'news_category_id' => NewsCategory::firstOrCreate(['name' => 'Cat'])->id]),
@@ -73,28 +66,12 @@ foreach ($models as $name => $factory) {
             'document' => '/dokumen/preview/'.$model->slug.'/download',
         ];
 
-        try {
-            test()->withoutExceptionHandling();
-            $response = test()->get($routes[$name]);
-            $response->assertStatus(302);
-        } catch (RouteNotFoundException $e) {
-            expect($e->getMessage())->toContain('login');
-        } catch (AuthenticationException $e) {
-            expect(true)->toBeTrue();
-        }
+        test()->get($routes[$name])->assertRedirect(route('filament.admin.auth.login'));
     });
 
-    test("{$name} authenticated Admin preview allowed", function () use ($factory, $name) {
+    test("{$name} authenticated Admin preview observes managed-file availability", function () use ($factory, $name) {
         $model = $factory();
         $model->update(['status' => 'draft']);
-
-        if ($name === 'document') {
-            $media = Media::factory()->create(['processing_status' => 'completed', 'invisible_watermark_status' => 'verified']);
-            $media->derivatives()->create(['derivative_type' => 'public', 'disk' => 'local', 'filename' => 'test.pdf', 'extension' => 'pdf', 'size' => 1024, 'mime_type' => 'application/pdf']);
-            $model->update(['file_media_id' => $media->id]);
-            Storage::fake('local');
-            Storage::disk('local')->put('test.pdf', 'pdf');
-        }
 
         $routes = [
             'news' => '/berita/preview/'.$model->slug,
@@ -102,8 +79,10 @@ foreach ($models as $name => $factory) {
             'document' => '/dokumen/preview/'.$model->slug.'/download',
         ];
 
-        $admin = Admin::factory()->create();
+        $admin = Admin::factory()->create([
+            'app_authentication_secret' => AppAuthentication::make()->generateSecret(),
+        ]);
         $response = test()->actingAs($admin)->get($routes[$name]);
-        $response->assertStatus(200);
+        $response->assertStatus($name === 'document' ? 404 : 200);
     });
 }

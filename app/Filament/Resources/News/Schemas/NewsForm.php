@@ -2,9 +2,8 @@
 
 namespace App\Filament\Resources\News\Schemas;
 
-use App\Filament\Resources\NewsCategories\NewsCategoryResource;
-use App\Filament\Resources\NewsCategories\Schemas\NewsCategoryForm;
 use App\Models\NewsCategory;
+use App\Services\CategoryMutationService;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Repeater;
@@ -71,6 +70,10 @@ class NewsForm
                     ->schema([
                                 Hidden::make('status')
                                     ->default('draft'),
+                                \Filament\Forms\Components\DateTimePicker::make('published_at')
+                                    ->label('Jadwal Publikasi')
+                                    ->timezone('Asia/Jakarta')
+                                    ->helperText('Kosongkan untuk terbit segera saat dipublikasikan; tanggal mendatang tidak tampil lebih awal.'),
                         Section::make('Klasifikasi')
                             ->description('Kelompokkan berita agar lebih mudah ditemukan.')
                             ->schema([
@@ -84,7 +87,7 @@ class NewsForm
                                         TextInput::make('name')
                                             ->label('Nama Kategori Baru')
                                             ->required()
-                                            ->maxLength(255),
+                                            ->maxLength(150),
                                     ])
                                     ->helperText('Anda dapat membuat kategori baru secara langsung, atau melalui tombol Kelola Kategori.')
                                     ->hintAction(
@@ -99,8 +102,14 @@ class NewsForm
                                                     'id' => $cat->id,
                                                     'name' => $cat->name,
                                                 ])->toArray(),
+                                                'original_ids' => NewsCategory::query()->pluck('id')->all(),
+                                                'original_versions' => NewsCategory::query()->get()->mapWithKeys(fn ($cat) => [
+                                                    (string) $cat->id => $cat->updated_at?->format('Y-m-d\\TH:i:s.uP'),
+                                                ])->all(),
                                             ])
                                             ->form([
+                                                Hidden::make('original_ids')->dehydrated(),
+                                                Hidden::make('original_versions')->dehydrated(),
                                                 Repeater::make('categories')
                                                     ->label('')
                                                     ->schema([
@@ -108,24 +117,20 @@ class NewsForm
                                                         TextInput::make('name')
                                                             ->required()
                                                             ->hiddenLabel()
-                                                            ->placeholder('Nama Kategori Baru'),
+                                                            ->placeholder('Nama Kategori Baru')
+                                                            ->maxLength(150),
                                                     ])
                                                     ->itemLabel(fn (array $state): ?string => $state['name'] ?? null)
                                                     ->addActionLabel('Tambah Kategori')
                                                     ->reorderable(false)
                                             ])
-                                            ->action(function (array $data) {
-                                                $submittedIds = collect($data['categories'])->pluck('id')->filter()->toArray();
-                                                NewsCategory::whereNotIn('id', $submittedIds)->delete();
-                                                
-                                                foreach ($data['categories'] as $catData) {
-                                                    if (!empty($catData['name'])) {
-                                                        NewsCategory::updateOrCreate(
-                                                            ['id' => $catData['id'] ?? null],
-                                                            ['name' => $catData['name']]
-                                                        );
-                                                    }
-                                                }
+                                            ->action(function (array $data): void {
+                                                app(CategoryMutationService::class)->syncNews(
+                                                    auth()->user(),
+                                                    $data['categories'] ?? [],
+                                                    $data['original_ids'] ?? [],
+                                                    $data['original_versions'] ?? [],
+                                                );
                                             })
                                     ),
                                 Toggle::make('is_featured')

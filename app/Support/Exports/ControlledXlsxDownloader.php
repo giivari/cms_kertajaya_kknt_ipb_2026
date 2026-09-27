@@ -1,0 +1,26 @@
+<?php
+
+namespace App\Support\Exports;
+
+use App\Filament\Exports\BaseAdminExporter;
+use App\Models\Admin;
+use App\Services\ExportArtifactService;
+use Filament\Actions\Exports\Downloaders\XlsxDownloader;
+use Filament\Actions\Exports\Models\Export;
+use Symfony\Component\HttpFoundation\StreamedResponse;
+
+final class ControlledXlsxDownloader extends XlsxDownloader
+{
+    public function __invoke(Export $export): StreamedResponse
+    {
+        $admin = auth()->user();
+        abort_unless(request()->hasValidSignature(absolute: false), 403);
+        abort_unless($admin instanceof Admin && $export->user()->is($admin), 403);
+        abort_unless(is_a($export->exporter, BaseAdminExporter::class, true), 404);
+
+        return app(ExportArtifactService::class)->download(
+            $export, 'xlsx', $export->file_name.'.xlsx',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        );
+    }
+}

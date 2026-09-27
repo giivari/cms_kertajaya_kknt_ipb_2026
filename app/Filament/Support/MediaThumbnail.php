@@ -40,6 +40,11 @@ class MediaThumbnail
         return $derivative?->disk ?? (string) config('filament.default_filesystem_disk', 'public');
     }
 
+    public static function url(?Media $media): ?string
+    {
+        return $media?->thumbnail_url;
+    }
+
     public static function placeholderUrl(?string $mimeType = null): string
     {
         $isPdf = $mimeType === 'application/pdf';
@@ -61,8 +66,8 @@ SVG;
     private static function isEligibleMedia(?Media $media): bool
     {
         return $media
+            && ! $media->trashed()
             && ($media->processing_status === MediaProcessingStatus::COMPLETED)
-            && ($media->invisible_watermark_status === InvisibleWatermarkStatus::VERIFIED)
-            && (str_starts_with((string) $media->mime_type, 'image/') || $media->mime_type === 'application/pdf');
+            && ($media->invisible_watermark_status === InvisibleWatermarkStatus::VERIFIED);
     }
 }

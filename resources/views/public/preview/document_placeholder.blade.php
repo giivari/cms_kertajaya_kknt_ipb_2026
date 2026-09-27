@@ -13,6 +13,12 @@
             </div>
             
             <h1 class="text-2xl font-bold text-slate-900 mb-2">{{ $document->title ?? 'Dokumen Tanpa Judul' }}</h1>
+            @if($document->description)
+                <p class="mb-4 text-slate-600">{{ $document->description }}</p>
+            @endif
+            @if($document->upload_name)
+                <p class="mb-4 text-sm text-slate-500">Berkas dipilih: {{ $document->upload_name }} ({{ $document->upload_mime ?: 'tipe belum tersedia' }})</p>
+            @endif
             <p class="text-slate-500 mb-6">
                 Kategori: <span class="font-medium text-slate-700">{{ $document->category?->name ?? '-' }}</span>
             </p>

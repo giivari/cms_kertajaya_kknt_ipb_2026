@@ -75,8 +75,8 @@ class ForcePasswordChangeExtendedTest extends TestCase
         Livewire::test(EditProfile::class)
             ->fillForm([
                 'currentPassword' => 'wrong-old-password',
-                'password' => 'new-password-123',
-                'passwordConfirmation' => 'new-password-123',
+                'password' => 'New-password-123',
+                'passwordConfirmation' => 'New-password-123',
             ])
             ->call('save')
             ->assertHasFormErrors(['currentPassword']);
@@ -99,8 +99,8 @@ class ForcePasswordChangeExtendedTest extends TestCase
         Livewire::test(EditProfile::class)
             ->fillForm([
                 'currentPassword' => 'old-password',
-                'password' => 'new-password-123',
-                'passwordConfirmation' => 'new-password-123',
+                'password' => 'New-password-123',
+                'passwordConfirmation' => 'New-password-123',
             ])
             ->call('save')
             ->assertHasNoFormErrors();

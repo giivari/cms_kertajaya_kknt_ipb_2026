@@ -100,4 +100,9 @@ class MediaResource extends Resource
                 SoftDeletingScope::class,
             ]);
     }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()->withoutGlobalScopes([SoftDeletingScope::class]);
+    }
 }

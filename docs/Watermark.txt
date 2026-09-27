@@ -1,5 +1,9 @@
 # ADDENDUM PERSYARATAN WATERMARK TAK TERLIHAT DAN PERLINDUNGAN MEDIA
 
+> Keputusan pemilik 26 September 2026: image optimization JPEG/PNG/WebP terjadi pada kandidat privat sebelum visible watermark, metadata autentik, checksum byte final, dan verifikasi format; thumbnail memiliki metadata/checksum sendiri. Original tidak diubah; gagal reprocess mempertahankan turunan aktif. NFR-029 berarti tidak ada perubahan byte setelah verifikasi akhir sebelum aktivasi. HEIC masih memerlukan bukti decoder target. NFR-031 menerima Media sinkron (`dispatchSync`) saat ini, terpisah dari queue ekspor. NFR-033 kompatibilitas versi algoritma/key masa depan ditunda; versi 1.0 dan trusted key aktif saja yang didukung. D05 tidak menjanjikan ketahanan terhadap crop/resize/kompresi eksternal; D03 menunda watermark PDF.
+
+> STATUS P8: Addendum historis. Source P3-B memverifikasi metadata, byte checksum dan format gambar; ini tidak menjamin tahan crop/resize/compression. Watermark PDF ditunda (D03), sedangkan PDF tetap didukung sebagai dokumen. Lihat `PROJECT_STATE.md`.
+
 ## Village Website CMS
 
 ### Single Village Installation

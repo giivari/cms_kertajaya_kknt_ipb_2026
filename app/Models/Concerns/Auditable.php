@@ -27,6 +27,7 @@ trait Auditable
                 'email',
                 'force_password_change',
                 'password_changed_at',
+                'mfa_recovery_version',
                 'created_at',
                 'updated_at',
                 'deleted_at',

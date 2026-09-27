@@ -5,6 +5,7 @@ namespace App\Filament\Support;
 use App\Filament\Exports\BaseAdminExporter;
 use App\Models\Admin;
 use App\Services\AdminTablePdfExportService;
+use App\Jobs\Exports\PrepareAdminCsvExport;
 use App\Support\Exports\PdfExportLimitExceeded;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
@@ -49,7 +50,10 @@ final class AdminTable
                 ->columnMapping(false)
                 ->chunkSize(100)
                 ->maxRows(10_000)
-                ->fileDisk('local')
+                ->fileDisk('admin_exports')
+                ->options(['p5_format' => 'csv'])
+                ->job(PrepareAdminCsvExport::class)
+                ->fileName(fn (\Filament\Actions\Exports\Models\Export $export): string => self::pendingFileName($export, $exporter, 'csv'))
                 ->authorize($canExport)
                 ->modalHeading('Ekspor CSV')
                 ->modalDescription('Data akan mengikuti pencarian, filter, dan urutan tabel saat ini. Maksimal 10.000 baris.')
@@ -62,7 +66,10 @@ final class AdminTable
                 ->columnMapping(false)
                 ->chunkSize(100)
                 ->maxRows(10_000)
-                ->fileDisk('local')
+                ->fileDisk('admin_exports')
+                ->options(['p5_format' => 'xlsx'])
+                ->job(PrepareAdminCsvExport::class)
+                ->fileName(fn (\Filament\Actions\Exports\Models\Export $export): string => self::pendingFileName($export, $exporter, 'xlsx'))
                 ->authorize($canExport)
                 ->modalHeading('Ekspor Excel')
                 ->modalDescription('Data akan mengikuti pencarian, filter, dan urutan tabel saat ini. Maksimal 10.000 baris.')
@@ -114,5 +121,13 @@ final class AdminTable
             ->color('gray')
             ->extraAttributes(['class' => 'admin-table-export-trigger'])
             ->extraDropdownAttributes(['class' => 'admin-table-export-control'], merge: true);
+    }
+
+    /** @param class-string<BaseAdminExporter> $exporter */
+    private static function pendingFileName(\Filament\Actions\Exports\Models\Export $export, string $exporter, string $format): string
+    {
+        $export->forceFill(['requested_format' => $format])->save();
+
+        return $export->getExporter([], [])->getFileName($export);
     }
 }

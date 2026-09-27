@@ -93,7 +93,7 @@ class B12ADashboardRegistrationTest extends TestCase
             ->assertSee('Halaman Diterbitkan')
             ->assertSee('Berita Diterbitkan')
             ->assertSee('Album Galeri')
-            ->assertSee('Dokumen Publik');
+            ->assertSee('Dokumen Diterbitkan');
     }
 
     public function test_quick_actions_view_preserves_expected_actions(): void

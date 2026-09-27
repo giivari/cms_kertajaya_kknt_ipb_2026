@@ -1,5 +1,7 @@
 # Roadmap Redesign UI & Spesifikasi Deployment
 
+> STATUS P8: Roadmap historis. Pernyataan rotasi kunci, rilis, atau keadaan server di bawah bukan bukti saat ini. Gunakan [status](PROJECT_STATE.md), [deployment](DEPLOYMENT_GUIDE.md), dan [recovery](operations/RECOVERY.md) untuk operasi.
+
 Berdasarkan *Software Requirements Specification (SRS)* dan integrasi nyata, Sprint 5 (Kontak, Pencarian, Peta) telah dinyatakan selesai. Sisa masa KKN difokuskan pada penyelarasan desain dengan *Figma Make* (Sprint 6) yang dibagi menjadi batch-batch UI yang ketat sebelum *handover* ke pihak desa.
 
 ## A. Roadmap Redesign UI (Admin & Guest)

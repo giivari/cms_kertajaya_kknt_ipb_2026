@@ -14,7 +14,9 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    $this->admin = Admin::factory()->create();
+    $this->admin = Admin::factory()->create([
+        'app_authentication_secret' => \Filament\Auth\MultiFactor\App\AppAuthentication::make()->generateSecret(),
+    ]);
 
     $this->startSession();
     $session = app('session.store');
@@ -245,7 +247,6 @@ test('constructing non-news preview action does not create token', function () {
     expect($action)->toBeInstanceOf(\Filament\Actions\Action::class)
         ->and(PreviewToken::count())->toBe($beforeTokenCount);
 });
-
 
 
 

@@ -14,6 +14,7 @@ use App\Filament\Resources\Pages\Pages\ListPages;
 use App\Filament\Resources\Pages\Pages\ViewPage;
 use App\Filament\Resources\Pages\Schemas\PageInfolist;
 use App\Models\Media;
+use App\Models\Document;
 use App\Models\Page;
 use App\Services\PageTemplateService;
 use Filament\Actions\ActionGroup;
@@ -150,6 +151,7 @@ class PageResource extends Resource
                                                 Block::make('heading')
                                                     ->label('Judul')
                                                     ->schema([
+                                                        Hidden::make('id')->dehydrated(),
                                                         TextInput::make('text')->label('Teks')->required()->placeholder('Contoh: Sambutan Kepala Desa'),
                                                         Select::make('level')->label('Tingkat Judul')->options(['h1' => 'H1', 'h2' => 'H2', 'h3' => 'H3', 'h4' => 'H4'])->default('h2')->required(),
                                                         Select::make('alignment')->label('Perataan')->options(['left' => 'Kiri', 'center' => 'Tengah', 'right' => 'Kanan'])->default('left'),
@@ -157,11 +159,13 @@ class PageResource extends Resource
                                                 Block::make('rich_text')
                                                     ->label('Teks Lengkap')
                                                     ->schema([
+                                                        Hidden::make('id')->dehydrated(),
                                                         Forms\Components\RichEditor::make('content')->label('Isi')->required(),
                                                     ]),
                                                 Block::make('image')
                                                     ->label('Gambar')
                                                     ->schema([
+                                                        Hidden::make('id')->dehydrated(),
                                                         Select::make('media_id')
                                                             ->label('Pilih Gambar')
                                                             ->options(fn () => Media::query()
@@ -179,6 +183,7 @@ class PageResource extends Resource
                                                 Block::make('gallery')
                                                     ->label('Galeri')
                                                     ->schema([
+                                                        Hidden::make('id')->dehydrated(),
                                                         Select::make('images')
                                                             ->label('Pilih Gambar')
                                                             ->multiple()
@@ -194,6 +199,7 @@ class PageResource extends Resource
                                                 Block::make('statistics')
                                                     ->label('Statistik')
                                                     ->schema([
+                                                        Hidden::make('id')->dehydrated(),
                                                         Repeater::make('items')
                                                             ->label('Data Statistik')
                                                             ->schema([
@@ -228,12 +234,14 @@ class PageResource extends Resource
                                                 Block::make('video')
                                                     ->label('Video')
                                                     ->schema([
+                                                        Hidden::make('id')->dehydrated(),
                                                         TextInput::make('video_url')->label('Alamat Video')->url()->required()->placeholder('Contoh: https://youtube.com/watch?v=...'),
                                                         TextInput::make('caption')->label('Keterangan')->placeholder('Contoh: Video Profil Desa Kertajaya Tahun 2026'),
                                                     ]),
                                                 Block::make('map')
                                                     ->label('Peta')
                                                     ->schema([
+                                                        Hidden::make('id')->dehydrated(),
                                                         TextInput::make('latitude')->label('Garis Lintang')->numeric()->required()->placeholder('Contoh: -6.917464'),
                                                         TextInput::make('longitude')->label('Garis Bujur')->numeric()->required()->placeholder('Contoh: 107.619123'),
                                                         TextInput::make('zoom')->label('Tingkat Pembesaran')->numeric()->default(15),
@@ -241,21 +249,18 @@ class PageResource extends Resource
                                                 Block::make('documents')
                                                     ->label('Dokumen')
                                                     ->schema([
-                                                        Select::make('documents')
+                                                        Hidden::make('id')->dehydrated(),
+                                                        Hidden::make('documents')->dehydrated(),
+                                                        Select::make('document_ids')
                                                             ->label('Pilih Dokumen')
                                                             ->multiple()
-                                                            ->options(fn () => Media::query()
-                                                                ->where('processing_status', MediaProcessingStatus::COMPLETED->value)
-                                                                ->where('invisible_watermark_status', InvisibleWatermarkStatus::VERIFIED->value)
-                                                                ->where('mime_type', 'application/pdf')
-                                                                ->whereHas('derivatives', fn ($q) => $q->whereIn('derivative_type', [DerivativeType::PUBLIC->value, DerivativeType::PUBLIC_VISIBLE_WATERMARK->value]))
-                                                                ->pluck('original_filename', 'id')
-                                                            )
+                                                            ->options(fn () => Document::query()->orderBy('title')->pluck('title', 'id'))
                                                             ->searchable(),
                                                     ]),
                                                 Block::make('cta_button')
                                                     ->label('Tombol Tautan')
                                                     ->schema([
+                                                        Hidden::make('id')->dehydrated(),
                                                         TextInput::make('text')->label('Teks')->required()->placeholder('Contoh: Hubungi Kami Sekarang'),
                                                         TextInput::make('url')->label('Alamat Tautan')->required()->placeholder('Contoh: /kontak'),
                                                         Select::make('style')->label('Tampilan')->options(['primary' => 'Utama', 'secondary' => 'Sekunder', 'outline' => 'Garis Tepi'])->default('primary'),
@@ -263,6 +268,7 @@ class PageResource extends Resource
                                                 Block::make('card_grid')
                                                     ->label('Kumpulan Kartu')
                                                     ->schema([
+                                                        Hidden::make('id')->dehydrated(),
                                                         Repeater::make('cards')
                                                             ->label('Daftar Kartu')
                                                             ->schema([
@@ -274,6 +280,7 @@ class PageResource extends Resource
                                                 Block::make('contact_block')
                                                     ->label('Informasi Kontak')
                                                     ->schema([
+                                                        Hidden::make('id')->dehydrated(),
                                                         TextInput::make('email')->label('Email')->email()->placeholder('Contoh: kontak@kertajaya.desa.id'),
                                                         TextInput::make('phone')->label('Nomor Telepon')->placeholder('Contoh: 081234567890'),
                                                         Forms\Components\Textarea::make('address')->label('Alamat')->placeholder('Contoh: Jl. Raya Kertajaya No. 1, RT 01/RW 02'),
@@ -311,6 +318,10 @@ class PageResource extends Resource
                     ->schema([
                                 Hidden::make('status')
                                     ->default('draft'),
+                                Forms\Components\DateTimePicker::make('published_at')
+                                    ->label('Jadwal Publikasi')
+                                    ->timezone('Asia/Jakarta')
+                                    ->helperText('Kosongkan untuk terbit segera saat status dipublikasikan. Waktu mendatang tetap tersembunyi sampai jadwalnya tiba.'),
                         Section::make('Gambar Utama')
                             ->description('Gambar opsional dari Perpustakaan Media yang sudah terverifikasi.')
                             ->schema([

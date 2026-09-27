@@ -1,26 +1,18 @@
-# Developer Safety Guardrails
-Workflow: Start -> Implement -> Validate -> safe-test/safe-build -> Visual Approval -> PreCommit -> Explicit staging -> Commit.
-- .guardrails.local.json: Local configurations (ignored).
-- Linked Worktrees: Git config like core.hooksPath affects ALL worktrees. Hooks are local boundaries, not ultimate server-side security.
-- Git hooks do NOT intercept --no-verify or destructive commands executed outside git push/git commit.
-- AI prompts must explicitly instruct agents to read AGENTS.md.
+# Keselamatan pengembangan
 
-## Example Safe PowerShell Workflow
-`powershell
-# Run a safe target test
-& .\scripts\guardrails\safe-test.ps1 -TestPaths @('tests/Feature/ExampleTest.php')
+[AGENTS.md](../AGENTS.md) adalah kontrak agent. Dokumen ini menjelaskan cara menjalankan guardrail tanpa residu generator lama. Jangan menjadikan hook lokal satu-satunya batas keamanan.
 
-# Run a safe build
-& .\scripts\guardrails\safe-build.ps1
-`
-"@
+1. Periksa branch, worktree dan `git status` sebelum bekerja. Jangan menimpa perubahan P0–P7 yang belum di-commit. Jangan melakukan `git add .` atau perintah Git destruktif pada data kerja.
+2. Pastikan tujuan DB/storage/queue. `.env.testing` dan `.guardrails.local.json` lokal diabaikan Git; jangan mencetak credential atau memindahkan secret ke dokumen.
+3. Validasi sebelum tes/build:
 
-# 7. RECOVERY.md
-Write-Utf8NoBom 'docs/RECOVERY.md' @"
-# Recovery Guide
-- If preflight or validation fails, STOP immediately.
-- Record the branch, HEAD, and git status.
-- Do NOT modify the dirty worktree to attempt fixing the failure.
-- Create a completely new worktree from a verified checkpoint to recover functionality.
-- Do NOT run destructive Git operations (git reset, git clean, git checkout --) or database operations (db:wipe, migrate:fresh) on the broken environment.
-- Escalate the failure to the reviewer/team lead.
+   ```powershell
+   powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\guardrails\safe-test.ps1 -ProjectRoot . -ValidateOnly
+   powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\guardrails\safe-build.ps1 -ValidateOnly
+   ```
+
+4. Jalankan tes terfokus lewat `safe-test.ps1 -ProjectRoot . -TestPaths @('tests/Feature/CategoryTest.php')`; jalankan suite penuh hanya setelah isolation gate dan sesuai scope. Build melalui `safe-build.ps1` bila root/output aman. Jangan menjalankan migrasi/tes pada database kerja/recovery.
+5. Gunakan pemeriksaan statis (`php -l`, referensi path/command, `git diff --check`) dan review diff. Browser/visual dan produksi harus dilaporkan sebagai pending bila tidak benar-benar diuji.
+6. Untuk kegagalan runtime atau pemulihan, ikuti [RECOVERY](operations/RECOVERY.md): satu unit DB+files+keys+identity dari checkpoint yang cocok, bukan reset DB/storage atau ganti APP_KEY. Jangan otomatis membuka kembali URL media legacy.
+
+Perintah dokumentasi dan contoh bukan otorisasi mengubah server produksi, data kerja, DNS, origin, atau kunci. Status dan gate terkini ada di [PROJECT_STATE](PROJECT_STATE.md).

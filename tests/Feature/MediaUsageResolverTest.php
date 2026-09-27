@@ -24,10 +24,10 @@ test('news featured image protects media', function () {
 
     $news->delete(); // Soft delete
 
-    // The requirement says: soft-deleted content does not incorrectly retain references
-    // unless the approved retention rule requires it.
-    // Our NewsMediaUsageResolver ignores soft-deleted news.
-    $media->delete(); // Should succeed now
+    // The soft-deleted News may still be restored with its featured image.
+    expect(fn () => $media->delete())->toThrow(Exception::class, 'Cannot delete media because it is currently in use by other content.');
+    $news->forceDelete();
+    $media->delete();
     expect($media->trashed())->toBeTrue();
 });
 

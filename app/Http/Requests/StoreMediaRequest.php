@@ -27,6 +27,7 @@ class StoreMediaRequest extends FormRequest
                 'file',
                 'mimetypes:image/jpeg,image/png,image/webp,application/pdf',
                 "max:{$maxSizeKB}",
+                new \App\Rules\SafeMediaUpload(),
             ],
             'original_filename' => 'nullable|string|max:255',
             'alt_text' => 'nullable|string|max:500',

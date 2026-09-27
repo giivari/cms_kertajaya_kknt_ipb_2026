@@ -1,6 +1,6 @@
 @php
     $record = $getRecord();
-    $path = $record ? \App\Filament\Support\MediaThumbnail::path($record) : null;
+    $url = $record ? \App\Filament\Support\MediaThumbnail::url($record) : null;
     $status = $record ? (is_object($record->processing_status) ? $record->processing_status->value : $record->processing_status) : 'pending';
 @endphp
 
@@ -9,9 +9,8 @@
     :field="$field"
 >
     <div class="mt-2">
-        @if ($path)
+        @if ($url)
             @php
-                $url = \Illuminate\Support\Facades\Storage::disk(\App\Filament\Support\MediaThumbnail::disk($record))->url($path);
                 $isPdf = $record->mime_type === 'application/pdf';
             @endphp
             @if($isPdf)

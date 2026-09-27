@@ -1,12 +1,8 @@
 @php
     use App\Filament\Support\MediaThumbnail;
-    use Illuminate\Support\Facades\Storage;
 
     $record = $getRecord();
-    $thumbnailPath = MediaThumbnail::path($record->coverMedia);
-    $thumbnailUrl = $thumbnailPath
-        ? Storage::disk(MediaThumbnail::disk($record->coverMedia))->url($thumbnailPath)
-        : MediaThumbnail::placeholderUrl();
+    $thumbnailUrl = MediaThumbnail::url($record->coverMedia) ?? MediaThumbnail::placeholderUrl();
 @endphp
 
 <div class="admin-gallery-mobile-album">

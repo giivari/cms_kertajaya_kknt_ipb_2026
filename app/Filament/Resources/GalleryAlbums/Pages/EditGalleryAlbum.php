@@ -4,6 +4,7 @@ namespace App\Filament\Resources\GalleryAlbums\Pages;
 
 use App\Filament\Resources\GalleryAlbums\GalleryAlbumResource;
 use App\Filament\Support\Concerns\HasEditPreview;
+use App\Services\ScopedPositionService;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\ForceDeleteAction;
 use Filament\Actions\RestoreAction;
@@ -43,5 +44,14 @@ class EditGalleryAlbum extends EditRecord
     protected function getSavedNotificationTitle(): ?string
     {
         return 'Perubahan album galeri berhasil disimpan';
+    }
+
+    protected function beforeSave(): void
+    {
+        // EditRecord keeps this hook and relationship persistence in the same
+        // Filament transaction. Existing positions are first moved outside the
+        // final range so a row-by-row repeater reorder cannot collide with the
+        // unique (gallery_album_id, position) constraint.
+        app(ScopedPositionService::class)->reserveGalleryAlbumItems($this->record);
     }
 }

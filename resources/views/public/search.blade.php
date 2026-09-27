@@ -35,7 +35,7 @@
             {{-- Results Summary --}}
             <p class="text-gray-500 text-sm mb-8" id="search-summary">
                 @if($totalCount > 0)
-                    Ditemukan <span class="font-semibold text-navy">{{ $totalCount }}</span> hasil untuk
+                    Menampilkan <span class="font-semibold text-navy">{{ $totalCount }}</span> hasil teratas untuk
                     "<span class="font-semibold text-teal">{{ e($query) }}</span>"
                 @else
                     Tidak ada hasil untuk "<span class="font-semibold text-teal">{{ e($query) }}</span>"

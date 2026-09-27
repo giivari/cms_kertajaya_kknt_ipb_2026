@@ -10,13 +10,13 @@ class NewsMediaUsageResolver implements MediaUsageResolver
 {
     public function isInUse(Media $media): bool
     {
-        return News::where('featured_media_id', $media->id)->exists();
+        return News::withTrashed()->where('featured_media_id', $media->id)->exists();
     }
 
     public function getUsage(Media $media): array
     {
         $usages = [];
-        $newsItems = News::where('featured_media_id', $media->id)->get();
+        $newsItems = News::withTrashed()->where('featured_media_id', $media->id)->get();
         foreach ($newsItems as $news) {
             $usages[] = "News Featured Media: {$news->title}";
         }

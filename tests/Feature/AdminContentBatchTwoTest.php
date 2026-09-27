@@ -44,7 +44,7 @@ test('admin can render the news and page management screens with Indonesian labe
         ->assertStatus(200)
         ->assertSee('Konten Utama')
         ->assertSee('Klasifikasi')
-        ->assertSee('Publikasi')
+        ->assertFormFieldExists('status')
         ->assertSee('Pengaturan Lanjutan');
 
     Livewire::actingAs($admin)->test(EditNews::class, ['record' => $news->getRouteKey()])
@@ -65,7 +65,7 @@ test('admin can render the news and page management screens with Indonesian labe
         ->assertStatus(200)
         ->assertSee('Informasi Halaman')
         ->assertSee('Penyusun Halaman')
-        ->assertSee('Publikasi')
+        ->assertFormFieldExists('status')
         ->assertSee('Pengaturan Lanjutan');
 
     Livewire::actingAs($admin)->test(EditPage::class, ['record' => $page->getRouteKey()])
@@ -79,12 +79,12 @@ test('guest cannot access news page or category administration', function () {
     $this->get(route('filament.admin.resources.news-categories.index'))->assertRedirect();
 });
 
-test('technical slug and publication timestamp fields stay out of content forms', function () {
+test('technical slug stays hidden while approved publication scheduling is available', function () {
     $admin = Admin::factory()->create();
 
     Livewire::actingAs($admin)->test(CreateNews::class)
         ->assertFormFieldDoesNotExist('slug')
-        ->assertFormFieldDoesNotExist('published_at')
+        ->assertFormFieldExists('published_at')
         ->assertFormFieldExists('status')
         ->assertFormFieldExists('is_featured', fn ($field): bool => ! $field->isRequired())
         ->assertFormFieldExists('seo_title')
@@ -96,7 +96,7 @@ test('technical slug and publication timestamp fields stay out of content forms'
 
     Livewire::actingAs($admin)->test(CreatePage::class)
         ->assertFormFieldDoesNotExist('slug')
-        ->assertFormFieldDoesNotExist('published_at')
+        ->assertFormFieldExists('published_at')
         ->assertFormFieldExists('status')
         ->assertFormFieldExists('builder_sections')
         ->assertFormFieldExists('seo_title')
@@ -191,7 +191,8 @@ test('page publication time is automatic stable and hidden again when returned t
     $this->get(route('pages.show', $page->slug))->assertNotFound();
 });
 
-test('opening edit forms does not mutate content and preview actions remain unregistered', function () {
+test('opening edit forms does not mutate content and preview remains available', function () {
+    config(['preview.ui_enabled' => true]);
     $admin = Admin::factory()->create();
     $news = News::create([
         'title' => 'Berita Tetap',
@@ -218,9 +219,9 @@ test('opening edit forms does not mutate content and preview actions remain unre
         $page->seo_title,
     ];
     Livewire::actingAs($admin)->test(EditNews::class, ['record' => $news->getRouteKey()])
-        ->assertActionVisible('website');
+        ->assertActionVisible(TestAction::make('preview')->schemaComponent('form-actions', schema: 'content'));
     Livewire::actingAs($admin)->test(EditPage::class, ['record' => $page->getRouteKey()])
-        ->assertActionVisible('website');
+        ->assertActionVisible(TestAction::make('preview')->schemaComponent('form-actions', schema: 'content'));
 
     $freshNews = $news->fresh();
     $freshPage = $page->fresh();
