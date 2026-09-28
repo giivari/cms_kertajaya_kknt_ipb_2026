@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Media;
 use Exception;
 use Illuminate\Support\Facades\Log;
 use Intervention\Image\Drivers\Gd\Driver;
@@ -30,13 +31,11 @@ class WatermarkService
                     return $this->injectPngMetadata($filePath, $payloadString);
                 case 'image/webp':
                     return $this->injectWebpMetadata($filePath, $payloadString);
-                case 'application/pdf':
-                    return $this->injectPdfMetadata($filePath, $payloadString);
                 default:
                     return false;
             }
         } catch (Exception $e) {
-            Log::error("Watermark injection failed for {$mimeType}: ".$e->getMessage());
+            Log::warning('Watermark metadata injection failed.', ['mime_type' => $mimeType]);
 
             return false;
         }
@@ -59,16 +58,13 @@ class WatermarkService
                 case 'image/webp':
                     $payloadString = $this->extractWebpMetadata($filePath);
                     break;
-                case 'application/pdf':
-                    $payloadString = $this->extractPdfMetadata($filePath);
-                    break;
             }
 
             if ($payloadString) {
                 return json_decode($payloadString, true);
             }
         } catch (Exception $e) {
-            Log::error("Watermark extraction failed for {$mimeType}: ".$e->getMessage());
+            Log::warning('Watermark metadata extraction failed.', ['mime_type' => $mimeType]);
         }
 
         return null;
@@ -178,7 +174,7 @@ class WatermarkService
                 break;
         }
 
-        $imagePath = SettingsService::get('watermark_image', null);
+        $imagePath = $this->configuredWatermarkLogoPath();
         $placePosition = 'bottom-right';
         switch ($position) {
             case 'top-left': $placePosition = 'top-left'; break;
@@ -188,11 +184,17 @@ class WatermarkService
             case 'center': $placePosition = 'center'; break;
         }
 
-        if ($imagePath && \Illuminate\Support\Facades\Storage::disk('public')->exists($imagePath)) {
-            $watermarkImage = $manager->decode(\Illuminate\Support\Facades\Storage::disk('public')->path($imagePath));
+        if ($imagePath !== null) {
+            $watermarkImage = $manager->decode($imagePath);
             $targetWidth = max(1, intval($width * ($scale / 100)));
             $watermarkImage->scale(width: $targetWidth);
-            $image->insert($watermarkImage, $placePosition, 20, 20);
+            $image->insert(
+                $watermarkImage,
+                20,
+                20,
+                $placePosition,
+                max(0, min(100, $opacity)) / 100,
+            );
         } else {
             // Write text using downloaded TTF font
             $alpha = $opacity / 100;
@@ -208,6 +210,30 @@ class WatermarkService
         }
 
         $image->save($filePath);
+    }
+
+    private function configuredWatermarkLogoPath(): ?string
+    {
+        $configuredId = SettingsService::get('watermark_image');
+        if ($configuredId === null || $configuredId === '') {
+            return null;
+        }
+
+        if (filter_var($configuredId, FILTER_VALIDATE_INT) === false || (int) $configuredId < 1) {
+            throw new \RuntimeException('Configured watermark logo is invalid.');
+        }
+
+        $logo = Media::query()->approvedImages()->find((int) $configuredId);
+        if (! $logo) {
+            throw new \RuntimeException('Configured watermark logo is unavailable.');
+        }
+
+        $delivery = app(MediaDeliveryService::class)->resolve($logo);
+        if (! $delivery || ! str_starts_with($delivery['mime'], 'image/')) {
+            throw new \RuntimeException('Configured watermark logo cannot be read safely.');
+        }
+
+        return $delivery['path'];
     }
 
     protected function injectPngMetadata(string $filePath, string $payload): bool
@@ -357,49 +383,4 @@ class WatermarkService
         return null;
     }
 
-    protected function injectPdfMetadata(string $filePath, string $payload): bool
-    {
-        $contents = file_get_contents($filePath);
-
-        // Basic incremental update to add an Info dictionary
-        if (! preg_match('/startxref\s+(\d+)\s+%%EOF/s', $contents, $matches)) {
-            return false;
-        }
-        $prevXref = (int) $matches[1];
-
-        if (! preg_match('/\/Root\s+(\d+\s+\d+\s+R)/', $contents, $rootMatches)) {
-            return false;
-        }
-        $root = $rootMatches[1];
-
-        $newObjectId = 999999;
-        $offset = strlen($contents);
-
-        $b64Payload = base64_encode($payload);
-
-        $newObject = "\n{$newObjectId} 0 obj\n<<\n/Creator (VillageCMS)\n/Keywords (VillageCMS: [{$b64Payload}])\n>>\nendobj\n";
-
-        $xrefOffset = $offset + strlen($newObject);
-        $xrefStr = "xref\n0 1\n0000000000 65535 f \n{$newObjectId} 1\n".sprintf('%010d', $offset)." 00000 n \n";
-
-        $trailerStr = "trailer\n<<\n/Size 1000000\n/Info {$newObjectId} 0 R\n/Root {$root}\n/Prev {$prevXref}\n>>\n";
-        $endStr = "startxref\n{$xrefOffset}\n%%EOF\n";
-
-        file_put_contents($filePath, $contents.$newObject.$xrefStr.$trailerStr.$endStr);
-
-        return true;
-    }
-
-    protected function extractPdfMetadata(string $filePath): ?string
-    {
-        $contents = file_get_contents($filePath);
-        if (preg_match('/\/Keywords\s+\(VillageCMS:\s+\[([a-zA-Z0-9+\/=\s]+)\]\)/', $contents, $matches)) {
-            $decoded = base64_decode(trim(preg_replace('/\s+/', '', $matches[1])));
-            if ($decoded) {
-                return $decoded;
-            }
-        }
-
-        return null;
-    }
 }

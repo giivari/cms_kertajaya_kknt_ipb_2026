@@ -1,0 +1,9 @@
+# Operasi pratinjau editor (P4)
+
+Pratinjau merender state editor sementara. **Preview bukan autosave, bukan publikasi, dan tidak mengubah record bisnis hanya karena dibuka.** Editor tetap harus memakai tindakan simpan/publikasi yang berwenang. Data draft yang dipulihkan dari sesi membantu editor kembali ke form, tetapi tidak menggantikan simpan permanen; perilaku draft produk final D01 masih menunggu pemilik.
+
+`config/preview.php` menetapkan TTL token 30 menit, maksimum 5 token aktif per Admin+sesi, payload maksimum 2 MiB, dan tipe yang didukung. Token acak hanya dipaparkan ke alur pemilik; database menyimpan hash token dan payload terenkripsi. Akses preview mensyaratkan Admin, sesi yang sama, token belum kedaluwarsa, serta boundary MFA/password P1A. Refresh/replay oleh pemilik selama TTL memang dimungkinkan; URL tidak boleh dikirim sebagai tautan publik. Token salah/asing/kedaluwarsa gagal tertutup.
+
+Upload gambar sementara yang didukung disalin ke namespace privat `preview-assets`, terikat token/pemilik/sesi; preview tidak membuat URL original publik. File yang tak didukung tidak dipaksakan tampil sebagai gambar. Penghapusan token atau kedaluwarsa membersihkan aset yang kepemilikannya dapat diverifikasi; pruning orphan konservatif menyisakan file tak dikenal. Scheduler hourly menjalankan `PreviewTokenStore::pruneExpired()`; berhentinya scheduler dapat menyisakan token/file sementara lebih lama. Backup/recovery harus mempertimbangkan token dan APP_KEY bila sesi preview harus dipulihkan, tetapi preview biasanya bisa dibuat ulang oleh editor.
+
+Route legacy yang masih dipertahankan tunduk pada boundary Admin/preview yang sama; jangan membuat route preview tanpa autentikasi untuk kompatibilitas. Tes P4/P6/P7 membuktikan navigasi/normalisasi/asset pada lingkungan disposable. Paritas visual penuh dan interaksi browser masih gate P7/P9, bukan klaim dokumen ini.

@@ -6,10 +6,12 @@ use App\Models\Concerns\Auditable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\DB;
 
 class Document extends Model
 {
-    use \App\Traits\HasContentLifecycle, Auditable, HasFactory, SoftDeletes;
+    use \App\Traits\HasContentLifecycle, Auditable, HasFactory;
+    use SoftDeletes { forceDelete as private softDeletesForceDelete; }
 
     protected $guarded = [];
 
@@ -31,5 +33,14 @@ class Document extends Model
     public function thumbnailMedia()
     {
         return $this->belongsTo(Media::class, 'thumbnail_media_id');
+    }
+
+    public function forceDelete()
+    {
+        return DB::transaction(function () {
+            app(\App\Services\DocumentReferenceCoordinator::class)->lockForDeletion((int) $this->getKey());
+
+            return $this->softDeletesForceDelete();
+        });
     }
 }

@@ -10,6 +10,7 @@ use Filament\Resources\Pages\EditRecord;
 class EditNewsCategory extends EditRecord
 {
     use HasEditPreview;
+    use \App\Filament\Support\Concerns\HasCategoryPreviewActions;
 
     protected static string $resource = NewsCategoryResource::class;
 

@@ -9,6 +9,13 @@ use Tests\TestCase;
 
 class TurnstileVerifierTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+        config(['services.turnstile.secret' => 'test-only-placeholder']);
+        Http::preventStrayRequests();
+    }
+
     public function test_verify_returns_false_if_token_empty()
     {
         $verifier = app(TurnstileVerifier::class);
@@ -16,12 +23,25 @@ class TurnstileVerifierTest extends TestCase
         $this->assertFalse($verifier->verify(''));
     }
 
-    public function test_missing_secret_fails_closed()
+    public function test_missing_secret_is_an_explicit_configuration_failure()
     {
         config(['services.turnstile.secret' => null]);
         
         $verifier = app(TurnstileVerifier::class);
-        $this->assertFalse($verifier->verify('any-token'));
+        try {
+            $verifier->verify('any-token');
+            $this->fail('Missing configuration must never accept verification.');
+        } catch (\Symfony\Component\HttpKernel\Exception\HttpException $exception) {
+            $this->assertSame(503, $exception->getStatusCode());
+        }
+        Http::assertNothingSent();
+    }
+
+    public function test_malformed_configuration_never_reaches_the_service(): void
+    {
+        config(['services.turnstile.secret' => ['unexpected' => 'array']]);
+        $this->expectException(\Symfony\Component\HttpKernel\Exception\HttpException::class);
+        app(TurnstileVerifier::class)->verify('any-token');
     }
 
     public function test_verify_returns_true_on_success()

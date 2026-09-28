@@ -14,11 +14,13 @@ use App\Services\Preview\PreviewTokenStore;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\View;
+use Filament\Facades\Filament;
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
     $this->store = new PreviewTokenStore();
-    $this->admin = Admin::factory()->create();
+    $this->admin = Admin::factory()->create(['app_authentication_secret' => 'JBSWY3DPEHPK3PXP']);
+    Filament::setCurrentPanel(Filament::getPanel('admin'));
 
     $this->previewType = 'news-category';
     $this->payload = ['version' => 1, 'type' => 'news-category', 'mode' => 'create', 'record_id' => null, 'state' => ['title' => 'SUPER_SECRET_PAYLOAD_TITLE_123', 'content' => 'Some content'], 'snapshot' => []];
@@ -31,6 +33,7 @@ beforeEach(function () {
 
     // Karena SESSION_DRIVER=database, simpan session awal agar ID tersebut memiliki
     // state yang konsisten sebelum request pertama.
+    $session->put('session_created_at', time());
     $session->save();
 
     // Gunakan withCookie agar Laravel testing helper mengenkripsi cookie sebelum request melewati EncryptCookies
@@ -84,18 +87,20 @@ test('token from another admin ID returns 404 without creating second admin', fu
 
     $this->actingAs($otherAdmin)
          ->get($this->routeUrl)
-         ->assertNotFound();
+         ->assertRedirect();
 
-    // Ensure owner token is still accessible by the real owner
-    $this->actingAs($this->admin)->get($this->routeUrl)->assertOk();
+    expect($this->store->retrieve($this->rawToken, $otherAdmin->id, $this->sessionId))->toBeNull();
+
+    // The prior supported-owner request proves the token remains available;
+    // changing users on this session intentionally trips session security.
 });
 
 test('valid response uses public frontend layout and stable landmarks', function () {
     $response = $this->actingAs($this->admin)->get($this->routeUrl);
 
     $response->assertOk()
-             ->assertViewIs('public.preview.placeholder')
-             ->assertSee('True Frontend Preview Aktif')
+             ->assertViewIs('public.preview.category')
+             ->assertSee('Kategori Berita')
              ->assertSee('<html', false)
              ->assertSee('<body', false);
 });

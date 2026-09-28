@@ -1,5 +1,7 @@
 # DOKUMEN PERANCANGAN BASIS DATA DAN ENTITY RELATIONSHIP DIAGRAM
 
+> STATUS P8: Diagram historis, bukan schema runtime. Entri recovery-code lama tidak membuktikan fitur aktif; D02 masih pending. Migrasi/model saat ini adalah sumber schema. Lihat `DOCUMENT_STATUS.md`.
+
 ## Village Website CMS
 
 ### Single Village Installation

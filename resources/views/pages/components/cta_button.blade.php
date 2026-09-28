@@ -7,7 +7,7 @@
         };
     @endphp
     
-    <a href="{{ $data['url'] ?? '#' }}" class="inline-flex items-center justify-center px-6 py-3 border font-medium rounded-md shadow-sm transition-colors duration-200 {{ $styleClass }}">
+    <a href="{{ \App\Support\ContentSecurity::url($data['url'] ?? '#') }}" class="inline-flex items-center justify-center px-6 py-3 border font-medium rounded-md shadow-sm transition-colors duration-200 {{ $styleClass }}">
         {{ $data['text'] ?? 'Click Here' }}
     </a>
 </div>

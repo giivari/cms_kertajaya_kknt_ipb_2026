@@ -25,6 +25,7 @@ class Admin extends Authenticatable implements FilamentUser, HasAppAuthenticatio
         'force_password_change',
         'password_changed_at',
         'app_authentication_secret',
+        'mfa_recovery_version',
     ];
 
     protected $hidden = [
@@ -36,6 +37,7 @@ class Admin extends Authenticatable implements FilamentUser, HasAppAuthenticatio
         return [
             'password' => 'hashed',
             'app_authentication_secret' => 'encrypted',
+            'mfa_recovery_version' => 'integer',
         ];
     }
 

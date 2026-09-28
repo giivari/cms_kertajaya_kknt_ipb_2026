@@ -43,8 +43,7 @@ class GalleryAlbumsTable
                     ->hiddenFrom('md'),
                 ImageColumn::make('cover_thumbnail')
                     ->label('Sampul')
-                    ->state(fn (GalleryAlbum $record): ?string => MediaThumbnail::path($record->coverMedia))
-                    ->disk(fn (GalleryAlbum $record): string => MediaThumbnail::disk($record->coverMedia))
+                    ->state(fn (GalleryAlbum $record): ?string => MediaThumbnail::url($record->coverMedia))
                     ->defaultImageUrl(MediaThumbnail::placeholderUrl())
                     ->extraImgAttributes(fn (GalleryAlbum $record): array => [
                         'class' => 'admin-gallery-thumbnail',
@@ -123,7 +122,7 @@ class GalleryAlbumsTable
                 ActionGroup::make([
                     ViewAction::make()->label('Lihat')->icon('heroicon-o-eye'),
                     EditAction::make()->label('Ubah')->icon('heroicon-o-pencil-square'),
-                    \Filament\Tables\Actions\Action::make('archive')
+                    \Filament\Actions\Action::make('archive')
                         ->label('Arsipkan')
                         ->icon('heroicon-o-archive-box')
                         ->color('warning')

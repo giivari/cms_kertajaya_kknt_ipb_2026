@@ -16,7 +16,7 @@
             if ($media) {
                 $deriv = $media->getPublicDerivative('large');
                 if ($deriv) {
-                    $heroImage = Storage::disk('public')->url($deriv->filename);
+                    $heroImage = $media->url;
                 }
             }
         } catch (\Exception $e) {}
@@ -90,7 +90,7 @@
                                     $media = \App\Models\Media::find($news->featured_image_id);
                                     if ($media && $media->invisible_watermark_status?->value === 'verified') {
                                         $deriv = $media->getPublicDerivative('medium');
-                                        if ($deriv) $imgUrl = Storage::disk('public')->url($deriv->filename);
+                                        if ($deriv) $imgUrl = $media->url;
                                     }
                                 } catch(\Exception $e){}
                             @endphp
@@ -162,7 +162,7 @@
                                 $media = \App\Models\Media::find($album->cover_image_id);
                                 if ($media && $media->invisible_watermark_status?->value === 'verified') {
                                     $deriv = $media->getPublicDerivative($index === 0 ? 'large' : 'medium');
-                                    if ($deriv) $coverUrl = Storage::disk('public')->url($deriv->filename);
+                                    if ($deriv) $coverUrl = $media->url;
                                 }
                             } catch(\Exception $e){}
                         }

@@ -33,8 +33,18 @@ return [
         'local' => [
             'driver' => 'local',
             'root' => storage_path('app/private'),
-            'serve' => true,
+            // Originals use the authorized editor route, never bearer-only
+            // local-disk URLs. Livewire temporary uploads use their own route.
+            'serve' => false,
             'throw' => false,
+            'report' => false,
+        ],
+
+        'admin_exports' => [
+            'driver' => 'local',
+            'root' => storage_path('app/private'),
+            'serve' => false,
+            'throw' => true,
             'report' => false,
         ],
 

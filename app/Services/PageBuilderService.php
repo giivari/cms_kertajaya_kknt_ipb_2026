@@ -16,48 +16,105 @@ class PageBuilderService
     public function saveSectionsAndComponents(Page $page, array $sectionsData): void
     {
         DB::transaction(function () use ($page, $sectionsData) {
-            // Delete all existing sections (and their components via cascade or manual delete)
-            // to avoid unique constraint violations on position indexes.
-            foreach ($page->sections as $section) {
-                $section->components()->delete();
-            }
-            $page->sections()->delete();
+            // Filament surrounds create/edit hooks with its own transaction. This
+            // nested transaction is therefore a savepoint when invoked from the
+            // panel, while keeping this service atomic for other callers.
+            $lockedPage = Page::query()->lockForUpdate()->findOrFail($page->getKey());
+            app(DocumentReferenceCoordinator::class)->lockReferences($this->referencedDocumentIds($sectionsData));
+            app(MediaReferenceCoordinator::class)->lockReferences($this->referencedMediaIds($sectionsData));
+            $existingSections = $lockedPage->sections()
+                ->lockForUpdate()
+                ->with(['components' => fn ($query) => $query->lockForUpdate()])
+                ->get()
+                ->keyBy('id');
 
+            $this->reserveSectionPositions($lockedPage);
+
+            $submittedSectionIds = [];
             $sectionPosition = 0;
-            foreach ($sectionsData as $sectionUuid => $sectionData) {
-                $sectionModel = new PageSection;
-                $sectionModel->page_id = $page->id;
-                $sectionModel->name = $sectionData['name'] ?? null;
-                $sectionModel->layout_type = $sectionData['layout_type'] ?? 'single_column';
-                $sectionModel->position = $sectionPosition++;
-                $sectionModel->section_settings = $sectionData['section_settings'] ?? [];
-                $sectionModel->is_visible = $sectionData['is_visible'] ?? true;
-                $sectionModel->save();
+            foreach ($sectionsData as $sectionData) {
+                $sectionId = $sectionData['id'] ?? null;
+                $section = $this->existingSection($existingSections, $sectionId);
 
-                $this->saveComponents($sectionModel, $sectionData['components'] ?? []);
+                if ($sectionId !== null && ! $section) {
+                    throw new \InvalidArgumentException('Page builder section does not belong to this page.');
+                }
+
+                $section ??= new PageSection(['page_id' => $lockedPage->id]);
+                $section->name = $sectionData['name'] ?? null;
+                $section->layout_type = $sectionData['layout_type'] ?? 'single_column';
+                $section->position = $sectionPosition++;
+                $section->section_settings = $sectionData['section_settings'] ?? $section->section_settings ?? [];
+                $section->is_visible = $sectionData['is_visible'] ?? $section->is_visible ?? true;
+                $section->save();
+
+                $submittedSectionIds[] = $section->id;
+                $this->saveComponents($section, $sectionData['components'] ?? []);
+            }
+
+            foreach ($existingSections->except($submittedSectionIds) as $section) {
+                $section->components()->delete();
+                $section->delete();
             }
         });
     }
 
     protected function saveComponents(PageSection $section, array $componentsData): void
     {
-        // Delete all existing components first to avoid unique constraint violations
-        // on the (section_id, column_position, position) unique index.
-        // Components will be fully recreated from the builder state.
-        $section->components()->delete();
+        $existingComponents = $section->components()
+            ->lockForUpdate()
+            ->get()
+            ->keyBy('id');
+        $this->reserveComponentPositions($section);
 
+        $submittedComponentIds = [];
         $position = 0;
-        foreach ($componentsData as $componentUuid => $componentData) {
+        foreach ($componentsData as $componentData) {
             // Filament Builder passes data in format: ['type' => 'heading', 'data' => [...]]
-            $type = $componentData['type'];
-            $data = $componentData['data'];
+            $type = $componentData['type'] ?? null;
+            $data = $componentData['data'] ?? [];
+            if (! is_string($type) || ! is_array($data)) {
+                throw new \InvalidArgumentException('Invalid page builder component payload.');
+            }
 
-            $componentModel = new PageComponent;
-            $componentModel->section_id = $section->id;
+            $componentId = $data['id'] ?? null;
+            $component = $this->existingComponent($existingComponents, $componentId);
+            if ($componentId !== null && ! $component) {
+                throw new \InvalidArgumentException('Page builder component does not belong to this section.');
+            }
 
-            $componentModel->component_type = $type;
-            $componentModel->column_position = isset($data['column_position']) ? (int) $data['column_position'] : 1;
-            $componentModel->position = $position++;
+            if ($type === 'rich_text') {
+                $data['content'] = \App\Support\ContentSecurity::richText($data['content'] ?? '');
+            }
+
+            $component ??= new PageComponent(['section_id' => $section->id]);
+
+            if ($type === 'documents') {
+                $ids = $data['document_ids'] ?? [];
+                if (! is_array($ids) || collect($ids)->contains(fn ($id) => filter_var($id, FILTER_VALIDATE_INT) === false || (int) $id < 1)) {
+                    throw \Illuminate\Validation\ValidationException::withMessages(['document_ids' => 'Pilihan dokumen tidak valid.']);
+                }
+                $data['document_ids'] = array_values(array_unique(array_map('intval', $ids)));
+                if ($data['document_ids'] !== []) {
+                    unset($data['documents']);
+                } elseif ($component->exists) {
+                    // A legacy Media ID is never reinterpreted as a Document ID.
+                    // Keep unresolved old payloads on unrelated editor saves.
+                    $legacy = $component->content_data['documents'] ?? null;
+                    if ($legacy !== null) {
+                        $data['documents'] = $legacy;
+                    }
+                } else {
+                    unset($data['documents']);
+                }
+            }
+
+            $component->component_type = $type;
+            // Column and component settings are not editable in the current
+            // Builder schema. Retain them for existing rows instead of silently
+            // collapsing metadata during an unrelated edit.
+            $component->column_position = $component->exists ? $component->column_position : 1;
+            $component->position = $position++;
 
             if ($type === 'cta_button' && isset($data['url'])) {
                 $data['url'] = $this->sanitizeUrl($data['url']);
@@ -71,13 +128,17 @@ class PageBuilderService
             }
 
             // Extract settings from data if we want to separate them, or keep them all in content_data
-            $settings = $data['component_settings'] ?? [];
-            unset($data['component_settings'], $data['id'], $data['column_position']);
+            unset($data['id'], $data['column_position'], $data['component_settings'], $data['is_visible']);
 
-            $componentModel->content_data = $data;
-            $componentModel->component_settings = $settings;
-            $componentModel->is_visible = $data['is_visible'] ?? true;
-            $componentModel->save();
+            $component->content_data = $data;
+            $component->component_settings = $component->component_settings ?? [];
+            $component->is_visible = $component->exists ? $component->is_visible : true;
+            $component->save();
+            $submittedComponentIds[] = $component->id;
+        }
+
+        foreach ($existingComponents->except($submittedComponentIds) as $component) {
+            $component->delete();
         }
     }
 
@@ -101,13 +162,9 @@ class PageBuilderService
             foreach ($section->components as $component) {
                 $data = $component->content_data ?? [];
                 
-                // Do not inject id, column_position, component_settings, and is_visible into data
-                // as Filament Builder blocks will strip them or reject the block if undeclared.
-                // Filament Builder uses the UUID key to identify the block, and we can just recreate
-                // the components on save (since PageBuilderService deletes missing ones).
-
-                // Filament Builder format uses a UUID for the array key usually,
-                // but sequential array works for setting state.
+                // The Builder UUID is only a Livewire state key. The explicit
+                // hidden ID is the stable relational identity used during save.
+                $data['id'] = $component->id;
                 $sectionData['components'][(string) Str::uuid()] = [
                     'type' => $component->component_type,
                     'data' => $data,
@@ -127,11 +184,80 @@ class PageBuilderService
             return $url;
         }
 
-        // Reject javascript: and vbscript: URLs
-        if (preg_match('/^(javascript|vbscript):/i', trim($url))) {
-            return '#';
+        return \App\Support\ContentSecurity::url($url);
+    }
+
+    /** @param \Illuminate\Support\Collection<int, PageSection> $sections */
+    private function existingSection($sections, mixed $id): ?PageSection
+    {
+        return filter_var($id, FILTER_VALIDATE_INT) !== false ? $sections->get((int) $id) : null;
+    }
+
+    /** @param \Illuminate\Support\Collection<int, PageComponent> $components */
+    private function existingComponent($components, mixed $id): ?PageComponent
+    {
+        return filter_var($id, FILTER_VALIDATE_INT) !== false ? $components->get((int) $id) : null;
+    }
+
+    private function reserveSectionPositions(Page $page): void
+    {
+        $count = $page->sections()->count();
+        if ($count === 0) {
+            return;
         }
 
-        return $url;
+        $offset = (int) $page->sections()->max('position') + $count + 1;
+        $page->sections()->update(['position' => DB::raw("position + {$offset}")]);
+    }
+
+    private function reserveComponentPositions(PageSection $section): void
+    {
+        $count = $section->components()->count();
+        if ($count === 0) {
+            return;
+        }
+
+        $offset = (int) $section->components()->max('position') + $count + 1;
+        $section->components()->update(['position' => DB::raw("position + {$offset}")]);
+    }
+
+    /** @return array<int, mixed> */
+    private function referencedMediaIds(array $sectionsData): array
+    {
+        $ids = [];
+        foreach ($sectionsData as $section) {
+            foreach (($section['components'] ?? []) as $component) {
+                $data = is_array($component['data'] ?? null) ? $component['data'] : [];
+                $ids[] = $data['media_id'] ?? null;
+                foreach (['images'] as $key) {
+                    foreach ((array) ($data[$key] ?? []) as $value) {
+                        $ids[] = is_array($value) ? ($value['media_id'] ?? $value['id'] ?? null) : $value;
+                    }
+                }
+            }
+        }
+
+        return $ids;
+    }
+
+    private function referencedDocumentIds(array $sectionsData): array
+    {
+        $ids = [];
+        foreach ($sectionsData as $section) {
+            foreach (($section['components'] ?? []) as $component) {
+                if (($component['type'] ?? null) !== 'documents') {
+                    continue;
+                }
+                $data = $component['data'] ?? [];
+                foreach ((array) ($data['document_ids'] ?? []) as $id) {
+                    if (filter_var($id, FILTER_VALIDATE_INT) === false || (int) $id < 1) {
+                        throw \Illuminate\Validation\ValidationException::withMessages(['document_ids' => 'Pilihan dokumen tidak valid.']);
+                    }
+                    $ids[] = (int) $id;
+                }
+            }
+        }
+
+        return $ids;
     }
 }

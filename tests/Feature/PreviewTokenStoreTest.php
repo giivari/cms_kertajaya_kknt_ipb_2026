@@ -74,8 +74,8 @@ test('token from another session is rejected', function () {
 });
 
 test('expired token is rejected', function () {
-    Config::set('preview.ttl_minutes', -1); // Expired immediately
     $rawToken = $this->store->create($this->admin->id, $this->sessionId, $this->previewType, ['data' => 'test']);
+    PreviewToken::where('token_hash', hash('sha256', $rawToken))->update(['expires_at' => now()->subSecond()]);
 
     $retrieved = $this->store->retrieve($rawToken, $this->admin->id, $this->sessionId);
     expect($retrieved)->toBeNull();

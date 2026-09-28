@@ -8,6 +8,7 @@ use App\Models\MediaDerivative;
 use App\Services\WatermarkService;
 use App\Services\WatermarkVerificationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class WatermarkVerificationTest extends TestCase
@@ -25,13 +26,23 @@ class WatermarkVerificationTest extends TestCase
 
     private function makeDerivative(Media $media): MediaDerivative
     {
+        $image = imagecreatetruecolor(2, 2);
+        imagefilledrectangle($image, 0, 0, 1, 1, imagecolorallocate($image, 25, 100, 75));
+        ob_start();
+        imagepng($image);
+        $bytes = (string) ob_get_clean();
+        imagedestroy($image);
+        $path = 'staging/'.$media->id.'/verification.png';
+        Storage::disk('local')->put($path, $bytes);
+
         return new MediaDerivative([
             'media_id' => $media->id,
             'derivative_type' => DerivativeType::PUBLIC,
-            'filename' => 'test.jpg',
-            'disk' => 'public',
-            'size' => 100,
-            'mime_type' => 'image/jpeg',
+            'filename' => $path,
+            'disk' => 'local',
+            'size' => strlen($bytes),
+            'mime_type' => 'image/png',
+            'checksum' => hash('sha256', $bytes),
         ]);
     }
 

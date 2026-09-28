@@ -1,5 +1,7 @@
 # Software Requirements Specification (SRS) v1.0
 
+> STATUS P8: Dokumen kebutuhan historis. Klaim email kontak dan jadwal backup di bawah belum menjadi perilaku/kebijakan final. Lihat `PROJECT_STATE.md` dan `DOCUMENT_STATUS.md`; D09/D10 memerlukan keputusan pemilik. Jangan pakai dokumen ini sebagai runbook produksi.
+
 ## Village Website CMS (Single Village Installation)
 
 ### 1. Tujuan Sistem

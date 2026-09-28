@@ -72,7 +72,7 @@ test('guest stays outside gallery and media administration', function () {
     $this->get(route('filament.admin.resources.media.index'))->assertRedirect();
 });
 
-test('gallery form keeps technical fields hidden and preserves lifecycle defaults', function () {
+test('gallery form exposes approved scheduling and preserves lifecycle defaults', function () {
     $admin = Admin::factory()->create();
 
     Livewire::actingAs($admin)->test(CreateGalleryAlbum::class)
@@ -82,7 +82,7 @@ test('gallery form keeps technical fields hidden and preserves lifecycle default
         ->assertSee('Publikasi')
         ->assertSee('Gambar Sampul')
         ->assertFormFieldDoesNotExist('slug')
-        ->assertFormFieldDoesNotExist('published_at')
+        ->assertFormFieldExists('published_at')
         ->assertFormFieldExists('items')
         ->assertFormFieldExists('cover_media_id')
         ->assertFormFieldExists('cover_preview')
@@ -134,10 +134,10 @@ test('media upload keeps its private MIME and size security contract', function 
     Livewire::actingAs($admin)->test(CreateMedia::class)
         ->assertStatus(200)
         ->assertFormFieldExists('file', function ($field): bool {
-            return $field->getDiskName() === 'private'
+            return $field->getDiskName() === 'local'
                 && $field->getVisibility() === 'private'
                 && $field->getMaxSize() === 10240
-                && $field->getAcceptedFileTypes() === ['image/jpeg', 'image/png', 'image/webp', 'application/pdf']
+                && $field->getAcceptedFileTypes() === array_keys(\App\Services\MediaInputPolicy::EXTENSIONS)
                 && (! $field->isDownloadable())
                 && (! $field->isOpenable());
         })

@@ -26,7 +26,7 @@ trait HasContentLifecycle
             }
 
             if ($model->isDirty('status')) {
-                if ($model->status === 'published') {
+                if ($model->status === 'published' && empty($model->published_at)) {
                     $model->published_at = now();
                 }
             }

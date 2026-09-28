@@ -12,10 +12,6 @@ trait HasCreatePreview
 
     protected function afterCreate(): void
     {
-        $cacheKey = 'preview_draft_' . static::class . '_new';
-        if (session()->has($cacheKey)) {
-            session()->forget($cacheKey);
-        }
+        app(\App\Services\Preview\PreviewDraftStore::class)->forget(static::class, null);
     }
 }
-

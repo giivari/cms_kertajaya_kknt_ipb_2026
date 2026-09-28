@@ -36,7 +36,13 @@ class GalleryAlbumPreviewRenderer
                     'caption' => $itemData['caption'] ?? null,
                     'alt_text' => $itemData['alt_text'] ?? null,
                 ]);
-                if (!empty($itemData['media_id'])) {
+                $assetId = \App\Services\Preview\PreviewTemporaryAssets::assetId($itemData['media_id'] ?? null);
+                if ($assetId && isset($context->routeTokenMetadata['token'])) {
+                    $item->setAttribute('preview_asset_url', route('admin.preview.asset', [
+                        'token' => $context->routeTokenMetadata['token'], 'assetToken' => $assetId,
+                    ]));
+                }
+                if (is_int($itemData['media_id'] ?? null)) {
                     $media = Media::find($itemData['media_id']);
                     if ($media) {
                         $item->setRelation('media', $media);

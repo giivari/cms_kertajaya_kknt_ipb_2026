@@ -10,7 +10,7 @@
             $media = \App\Models\Media::find($mediaId);
             if ($media && $media->invisible_watermark_status?->value === 'verified') {
                 $deriv = $media->getPublicDerivative($derivative);
-                if ($deriv) return Storage::disk('public')->url($deriv->filename);
+                if ($deriv) return $media->url;
             }
         } catch (\Exception $e) {}
         return $fallback;
@@ -252,7 +252,7 @@
 
         <div class="grid lg:grid-cols-2 gap-6 md:gap-8 items-stretch">
             <!-- Large Card -->
-            <{{ $pot1['link'] ? 'a' : 'div' }} {!! $pot1['link'] ? 'href="'.$pot1['link'].'"' : '' !!} class="block relative rounded-[32px] overflow-hidden group ring-4 ring-white shadow-lg h-full" style="min-height: 450px;">
+            <{{ $pot1['link'] ? 'a' : 'div' }} @if($pot1['link']) href="{{ $pot1['link'] }}" @endif class="block relative rounded-[32px] overflow-hidden group ring-4 ring-white shadow-lg h-full" style="min-height: 450px;">
                 <img src="{{ $getMediaUrl($pot1['image'], 'large', 'https://images.unsplash.com/photo-1559628233-100c798642d4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxpbmRvbmVzaWElMjBuYXR1cmUlMjBhZ3JpY3VsdHVyZXxlbnwxfHx8fDE3ODQyOTcyNTh8MA&ixlib=rb-4.1.0&q=80&w=1080') }}" alt="{{ $pot1['title'] }}" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
                 <div class="absolute inset-0 bg-gradient-to-t from-navy/90 via-navy/20 to-transparent"></div>
                 <div class="absolute inset-0 p-8 flex flex-col justify-end">
@@ -273,7 +273,7 @@
             <!-- Small Cards -->
             <div class="flex flex-col gap-6 md:gap-8 h-full">
                 <!-- Card 2 -->
-                <{{ $pot2['link'] ? 'a' : 'div' }} {!! $pot2['link'] ? 'href="'.$pot2['link'].'"' : '' !!} class="block relative rounded-[32px] overflow-hidden group ring-4 ring-white shadow-lg" style="flex: 1 1 0%; min-height: 250px;">
+                <{{ $pot2['link'] ? 'a' : 'div' }} @if($pot2['link']) href="{{ $pot2['link'] }}" @endif class="block relative rounded-[32px] overflow-hidden group ring-4 ring-white shadow-lg" style="flex: 1 1 0%; min-height: 250px;">
                     <img src="{{ $getMediaUrl($pot2['image'], 'medium', 'https://images.unsplash.com/photo-1513415756790-2ac1db1297d0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwzfHxpbmRvbmVzaWElMjBuYXR1cmUlMjBhZ3JpY3VsdHVyZXxlbnwxfHx8fDE3ODQyOTcyNTh8MA&ixlib=rb-4.1.0&q=80&w=1080') }}" alt="{{ $pot2['title'] }}" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
                     <div class="absolute inset-0 bg-gradient-to-t from-navy/90 to-transparent"></div>
                     <div class="absolute inset-0 p-6 flex flex-col justify-end">
@@ -289,7 +289,7 @@
                 </{{ $pot2['link'] ? 'a' : 'div' }}>
                 
                 <!-- Card 3 -->
-                <{{ $pot3['link'] ? 'a' : 'div' }} {!! $pot3['link'] ? 'href="'.$pot3['link'].'"' : '' !!} class="block relative rounded-[32px] overflow-hidden group ring-4 ring-white shadow-lg" style="flex: 1 1 0%; min-height: 250px;">
+                <{{ $pot3['link'] ? 'a' : 'div' }} @if($pot3['link']) href="{{ $pot3['link'] }}" @endif class="block relative rounded-[32px] overflow-hidden group ring-4 ring-white shadow-lg" style="flex: 1 1 0%; min-height: 250px;">
                     <img src="{{ $getMediaUrl($pot3['image'], 'medium', 'https://images.unsplash.com/photo-1569134471968-872d5cd1fca9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwzfHxpbmRvbmVzaWElMjB2aWxsYWdlJTIwbGFuZHNjYXBlfGVufDF8fHx8MTc4NDI5NzI1OHww&ixlib=rb-4.1.0&q=80&w=1080') }}" alt="{{ $pot3['title'] }}" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
                     <div class="absolute inset-0 bg-gradient-to-t from-navy/90 to-transparent"></div>
                     <div class="absolute inset-0 p-6 flex flex-col justify-end">
@@ -384,7 +384,7 @@
             <a href="{{ route('news.show', $mainNews->slug) }}" class="lg:col-span-7 group cursor-pointer block">
                 <div class="rounded-[24px] overflow-hidden aspect-[4/3] md:aspect-[16/9] mb-6 relative bg-gray-100">
                     @if($mainNews->featuredMedia && $mainNews->featuredMedia->invisible_watermark_status?->value === 'verified' && ($deriv = $mainNews->featuredMedia->getPublicDerivative('large')))
-                        <img src="{{ Storage::disk('public')->url($deriv->filename) }}" alt="{{ $mainNews->title }}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                        <img src="{{ $mainNews->featuredMedia->url }}" alt="{{ $mainNews->title }}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
                     @else
                         <div class="w-full h-full bg-gray-200 transition-transform duration-500 group-hover:scale-105 flex items-center justify-center text-gray-400">
                             <svg class="w-10 h-10 sm:w-12 sm:h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
@@ -413,7 +413,7 @@
                 <a href="{{ route('news.show', $item->slug) }}" class="group cursor-pointer flex flex-col sm:flex-row gap-6 items-start">
                     <div class="rounded-[16px] overflow-hidden w-full sm:w-48 shrink-0 aspect-[4/3] relative bg-gray-100">
                         @if($item->featuredMedia && $item->featuredMedia->invisible_watermark_status?->value === 'verified' && ($deriv = $item->featuredMedia->getPublicDerivative('medium')))
-                            <img src="{{ Storage::disk('public')->url($deriv->filename) }}" alt="{{ $item->title }}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                            <img src="{{ $item->featuredMedia->thumbnail_url }}" alt="{{ $item->title }}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
                         @else
                             <div class="w-full h-full bg-gray-200 transition-transform duration-500 group-hover:scale-105 flex items-center justify-center text-gray-400">
                                 <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
@@ -441,6 +441,31 @@
     </div>
 </section>
 @endif
+@if($featuredPages->isNotEmpty())
+<section class="bg-white responsive-section" aria-labelledby="featured-pages-heading">
+    <div class="w-full mx-auto px-4 md:px-8 lg:px-12 xl:px-24 2xl:px-32">
+        <div class="mb-8">
+            <p class="text-teal font-semibold tracking-wider text-xs uppercase mb-2">Pilihan Desa</p>
+            <h2 id="featured-pages-heading" class="text-2xl sm:text-3xl lg:text-4xl font-bold font-display text-navy">Halaman Unggulan</h2>
+        </div>
+        <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            @foreach($featuredPages as $page)
+                <a href="{{ route('pages.show', $page->slug) }}" class="group block rounded-[24px] overflow-hidden bg-cream focus:outline-none focus:ring-2 focus:ring-teal">
+                    @if($page->featuredMedia?->url && $page->featuredMedia->getPublicDerivative())
+                        <img src="{{ $page->featuredMedia->url }}" alt="{{ $page->title }}" class="w-full aspect-[16/9] object-cover" loading="lazy" />
+                    @endif
+                    <div class="p-6">
+                        <h3 class="font-display text-xl font-bold text-navy group-hover:text-teal line-clamp-2">{{ $page->title }}</h3>
+                        @if($page->excerpt)
+                            <p class="mt-2 text-gray-500 line-clamp-2">{{ $page->excerpt }}</p>
+                        @endif
+                    </div>
+                </a>
+            @endforeach
+        </div>
+    </div>
+</section>
+@endif
         <!-- GaleriDesa Section -->
 @if(isset($latestAlbums) && $latestAlbums->isNotEmpty())
 <section id="galeri" class="bg-cream responsive-section">
@@ -455,13 +480,13 @@
 
         <div class="grid grid-cols-2 md:grid-cols-4 grid-rows-[300px_200px_200px] md:grid-rows-2 gap-4 md:gap-6 h-auto md:h-[700px]">
             @php $count = 0; @endphp
-            @foreach($latestAlbums->take(4) as $idx => $album)
+            @foreach($latestAlbums->take(3) as $idx => $album)
                 @php $count++; @endphp
                 @if($idx === 0)
                     <!-- Main large album -->
                     <a href="{{ route('gallery.show', $album->slug) }}" class="col-span-2 row-span-1 md:row-span-2 rounded-[24px] overflow-hidden group relative block bg-gray-200">
                         @if($album->coverMedia && $album->coverMedia->invisible_watermark_status?->value === 'verified' && ($deriv = $album->coverMedia->getPublicDerivative('large')))
-                            <img src="{{ Storage::disk('public')->url($deriv->filename) }}" alt="{{ $album->title }}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                            <img src="{{ $album->coverMedia->url }}" alt="{{ $album->title }}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
                         @else
                             <div class="w-full h-full bg-gray-300 flex items-center justify-center text-gray-400">
                                 <svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
@@ -477,7 +502,7 @@
                     <!-- Second album -->
                     <a href="{{ route('gallery.show', $album->slug) }}" class="col-span-2 row-span-1 rounded-[24px] overflow-hidden group relative block bg-gray-200">
                         @if($album->coverMedia && $album->coverMedia->invisible_watermark_status?->value === 'verified' && ($deriv = $album->coverMedia->getPublicDerivative('medium')))
-                            <img src="{{ Storage::disk('public')->url($deriv->filename) }}" alt="{{ $album->title }}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                            <img src="{{ $album->coverMedia->thumbnail_url }}" alt="{{ $album->title }}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
                         @else
                             <div class="w-full h-full bg-gray-300 flex items-center justify-center text-gray-400">
                                 <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
@@ -492,7 +517,7 @@
                     <!-- Third album -->
                     <a href="{{ route('gallery.show', $album->slug) }}" class="col-span-1 row-span-1 rounded-[24px] overflow-hidden group relative block bg-gray-200">
                         @if($album->coverMedia && $album->coverMedia->invisible_watermark_status?->value === 'verified' && ($deriv = $album->coverMedia->getPublicDerivative('medium')))
-                            <img src="{{ Storage::disk('public')->url($deriv->filename) }}" alt="{{ $album->title }}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                            <img src="{{ $album->coverMedia->thumbnail_url }}" alt="{{ $album->title }}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
                         @else
                             <div class="w-full h-full bg-gray-300 flex items-center justify-center text-gray-400">
                                 <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>

@@ -80,6 +80,8 @@ class WebsiteSettings extends Page
             'max_upload_size' => SettingsService::get('max_upload_size', 10),
             'max_image_width' => SettingsService::get('max_image_width', 3840),
             'max_image_height' => SettingsService::get('max_image_height', 2160),
+            'optimized_image_width' => SettingsService::get('optimized_image_width', 1920),
+            'optimized_image_height' => SettingsService::get('optimized_image_height', 1080),
             'processing_timeout' => SettingsService::get('processing_timeout', 120),
             'notification_email' => SettingsService::get('notification_email', ''),
             // BERANDA SETTINGS
@@ -159,6 +161,7 @@ class WebsiteSettings extends Page
             'potensi_3_text' => SettingsService::get('potensi_3_text', 'Lihat selengkapnya'),
             'potensi_3_type' => SettingsService::get('potensi_3_type', 'none'),
             'potensi_3_page_id' => SettingsService::get('potensi_3_page_id', null),
+            'potensi_3_custom_url' => SettingsService::get('potensi_3_custom_url', null),
             'service_hours' => SettingsService::get('service_hours', [
                 ['day' => 'Senin - Kamis:', 'time' => '08.00 - 15.00'],
                 ['day' => 'Jumat:', 'time' => '08.00 - 11.30'],
@@ -215,6 +218,8 @@ class WebsiteSettings extends Page
     public function form(Schema $schema): Schema
     {
         $mediaOptions = fn () => Media::where('invisible_watermark_status', 'verified')
+            ->pluck('original_filename', 'id');
+        $watermarkImageOptions = fn () => Media::query()->approvedImages()
             ->pluck('original_filename', 'id');
 
         return $schema
@@ -400,7 +405,7 @@ class WebsiteSettings extends Page
                                         TextInput::make('watermark_text')->label('Teks Tanda Air')->live(onBlur: true)->placeholder('Contoh: Desa Kertajaya'),
                                         Select::make('watermark_image')
                                             ->label('Gambar Tanda Air (Opsional)')
-                                            ->options($mediaOptions)
+                                            ->options($watermarkImageOptions)
                                             ->searchable()
                                             ->live(),
                                         TextInput::make('watermark_opacity')->label('Opasitas (%)')->numeric()->minValue(0)->maxValue(100)->live(onBlur: true)->placeholder('Contoh: 30'),
@@ -423,14 +428,16 @@ class WebsiteSettings extends Page
                                     ])->columns(1),
                                 Section::make('Batas Unggahan')
                                     ->schema([
-                                        TextInput::make('max_upload_size')->numeric()->minValue(1)->maxValue(50)->label('Ukuran Maksimal Berkas (MB)')->placeholder('Contoh: 10'),
+                                        TextInput::make('max_upload_size')->numeric()->minValue(1)->maxValue(10)->label('Ukuran Maksimal Berkas (MB)')->placeholder('Contoh: 10'),
                                         TextInput::make('max_image_width')->numeric()->minValue(100)->maxValue(8000)->label('Maksimal Lebar Gambar (px)')->placeholder('Contoh: 1920'),
                                         TextInput::make('max_image_height')->numeric()->minValue(100)->maxValue(8000)->label('Maksimal Tinggi Gambar (px)')->placeholder('Contoh: 1080'),
+                                        TextInput::make('optimized_image_width')->numeric()->minValue(100)->maxValue(3840)->label('Lebar Maksimal Hasil Publik (px)')->helperText('Gambar diperkecil tanpa memperbesar gambar kecil; unggahan asli tetap privat.'),
+                                        TextInput::make('optimized_image_height')->numeric()->minValue(100)->maxValue(2160)->label('Tinggi Maksimal Hasil Publik (px)'),
                                         TextInput::make('processing_timeout')->numeric()->minValue(10)->maxValue(600)->label('Batas Waktu Pemrosesan (detik)')->placeholder('Contoh: 120'),
                                     ])->columns(2),
                                 Section::make('Notifikasi Email')
                                     ->schema([
-                                        TextInput::make('notification_email')->label('Email Penerima Notifikasi (Opsional)')->email()->placeholder('Contoh: admin@kertajaya.desa.id'),
+                                        TextInput::make('notification_email')->label('Email Notifikasi (Belum Aktif)')->email()->helperText('D10: pesan kontak hanya masuk inbox Admin. Alamat ini tersimpan untuk kemungkinan fitur email di masa depan, tanpa pengiriman saat ini.')->placeholder('Contoh: admin@kertajaya.desa.id'),
                                     ])->columns(1),
                             ]),
                     ])->columnSpanFull(),
@@ -443,9 +450,18 @@ class WebsiteSettings extends Page
         try {
             $data = $this->form->getState();
 
-            foreach ($data as $key => $value) {
-                SettingsService::set($key, $value);
+            // Validate all links before the first settings write, including fields
+            // that permit local paths and anchors rather than absolute URLs only.
+            foreach (\App\Support\ContentSecurity::SETTING_URL_KEYS as $key) {
+                if (isset($data[$key]) && ! \App\Support\ContentSecurity::isSafeUrl($data[$key])) {
+                    throw \Illuminate\Validation\ValidationException::withMessages([
+                        "data.{$key}" => 'Gunakan URL HTTP/HTTPS, path lokal, atau anchor yang valid.',
+                    ]);
+                }
             }
+
+            SettingsService::setMany($data);
+            app(\App\Services\Preview\PreviewDraftStore::class)->forget(static::class, null);
 
             Notification::make()
                 ->success()
@@ -459,5 +475,19 @@ class WebsiteSettings extends Page
     public function previewAction(): \Filament\Actions\Action
     {
         return PreviewAction::make('settings', editing: true);
+    }
+
+    public function hasPreviewDraft(): bool
+    {
+        return app(\App\Services\Preview\PreviewDraftStore::class)->restore(static::class, null) !== null;
+    }
+
+    public function restorePreviewDraft(): void
+    {
+        $state = app(\App\Services\Preview\PreviewDraftStore::class)->restore(static::class, null);
+        if ($state !== null) {
+            $this->form->fill($state);
+            Notification::make()->success()->title('Draf pratinjau dipulihkan.')->send();
+        }
     }
 }

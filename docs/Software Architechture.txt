@@ -1,5 +1,7 @@
 # SOFTWARE ARCHITECTURE DOCUMENT (SAD)
 
+> STATUS P8: Rancangan historis. Bagian email kontak, queue, storage, dan retensi mungkin merupakan target lama, bukan source aktif. Current behavior dan D10 ada di `PROJECT_STATE.md`; prosedur operasi ada di `operations/`.
+
 ## Village Website CMS
 
 ### Single Village Installation

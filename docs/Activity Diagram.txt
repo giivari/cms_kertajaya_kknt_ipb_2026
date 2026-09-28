@@ -1,5 +1,7 @@
 # DOKUMEN ACTIVITY DIAGRAM
 
+> STATUS P8: Diagram historis. Jalur email kontak/retensi dan kegagalan lama bukan bukti implementasi. Lihat `PROJECT_STATE.md` dan runbook `operations/`; D10 belum diputuskan.
+
 ## Village Website CMS
 
 ### Single Village Installation

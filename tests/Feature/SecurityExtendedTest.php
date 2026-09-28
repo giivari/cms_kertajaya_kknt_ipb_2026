@@ -6,6 +6,9 @@ use App\Filament\Pages\Auth\EditProfile;
 use App\Filament\Pages\Auth\Login;
 use App\Filament\Pages\WebsiteSettings as WebsiteSettingsPage;
 use App\Models\Admin;
+use App\Models\AuditLog;
+use Filament\Auth\MultiFactor\App\AppAuthentication;
+use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
@@ -20,24 +23,45 @@ class SecurityExtendedTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        Filament::setCurrentPanel(Filament::getPanel('admin'));
+        config(['services.turnstile.secret' => 'disposable-test-secret']);
+    }
+
     public function test_invalid_totp_denies_access()
     {
         $admin = Admin::factory()->create([
             'password' => Hash::make('password'),
             'app_authentication_secret' => 'JBSWY3DPEHPK3PXP',
         ]);
+        Http::fake(['https://challenges.cloudflare.com/turnstile/v0/siteverify' => Http::response(['success' => true])]);
+        $login = Livewire::test(Login::class)->fillForm([
+            'username' => $admin->username, 'password' => 'password', 'captcha' => 'test-token',
+        ])->call('authenticate');
 
-        $this->actingAs($admin, 'web');
-
-        // Note: Full integration testing of Filament's MFA challenge form
-        // requires interacting with the specific Filament MFA challenge component.
-        // We will assert the generic behavior.
-        $this->assertTrue(true);
+        $this->assertGuest('web');
+        $login->set('data.multiFactor.app.code', '000000')->call('authenticate');
+        $this->assertGuest('web');
     }
 
     public function test_valid_totp_permits_dashboard_access()
     {
-        $this->assertTrue(true); // Placeholder, assuming underlying Filament handles this correctly.
+        $admin = Admin::factory()->create([
+            'password' => Hash::make('password'),
+            'app_authentication_secret' => 'JBSWY3DPEHPK3PXP',
+        ]);
+        Http::fake(['https://challenges.cloudflare.com/turnstile/v0/siteverify' => Http::response(['success' => true])]);
+        $login = Livewire::test(Login::class)->fillForm([
+            'username' => $admin->username, 'password' => 'password', 'captcha' => 'test-token',
+        ])->call('authenticate');
+
+        $this->assertGuest('web');
+        $login->set('data.multiFactor.app.code', AppAuthentication::make()->getCurrentCode($admin))
+            ->call('authenticate');
+        $this->assertAuthenticatedAs($admin, 'web');
+        $this->get(route('filament.admin.pages.dashboard'))->assertOk();
     }
 
     public function test_recovery_codes_are_unavailable()
@@ -70,8 +94,8 @@ class SecurityExtendedTest extends TestCase
         Livewire::test(EditProfile::class)
             ->fillForm([
                 'currentPassword' => 'wrongpassword',
-                'password' => 'newpassword123',
-                'passwordConfirmation' => 'newpassword123',
+                'password' => 'Newpassword123',
+                'passwordConfirmation' => 'Newpassword123',
             ])
             ->call('save')
             ->assertHasFormErrors();
@@ -89,27 +113,27 @@ class SecurityExtendedTest extends TestCase
         Livewire::test(EditProfile::class)
             ->fillForm([
                 'currentPassword' => 'oldpassword',
-                'password' => 'newpassword123',
-                'passwordConfirmation' => 'newpassword123',
+                'password' => 'Newpassword123',
+                'passwordConfirmation' => 'Newpassword123',
                 'totp' => '000000',
             ])
             ->call('save')
             ->assertHasFormErrors();
     }
 
-    public function test_idle_timeout_after_30_minutes()
+    public function test_expired_absolute_session_denies_dashboard_request()
     {
-        // Assert the session lifetime configuration is exactly 30 minutes.
-        // Laravel's native session GC handles idle timeout.
-        $this->assertEquals(30, config('session.lifetime'));
+        $admin = Admin::factory()->create(['app_authentication_secret' => 'JBSWY3DPEHPK3PXP']);
+        $this->actingAs($admin, 'web')->withSession(['session_created_at' => time() - 8 * 60 * 60 - 1]);
+        $this->get(route('filament.admin.pages.dashboard'))
+            ->assertRedirect(route('filament.admin.auth.login'));
+        $this->assertGuest('web');
     }
 
     public function test_logout_invalidates_session()
     {
-        $this->withoutMiddleware();
-
-        $admin = Admin::factory()->create();
-        $this->actingAs($admin, 'web');
+        $admin = Admin::factory()->create(['app_authentication_secret' => 'JBSWY3DPEHPK3PXP']);
+        $this->actingAs($admin, 'web')->withSession(['session_created_at' => time()]);
 
         $this->post(route('filament.admin.auth.logout'))
             ->assertRedirect();
@@ -119,23 +143,28 @@ class SecurityExtendedTest extends TestCase
 
     public function test_csrf_token_is_regenerated_on_login()
     {
-        // Testing CSRF regeneration requires full HTTP request simulation.
-        $this->assertTrue(true);
+        $admin = Admin::factory()->create(['password' => Hash::make('password')]);
+        Http::fake(['https://challenges.cloudflare.com/turnstile/v0/siteverify' => Http::response(['success' => true])]);
+        session()->start();
+        $oldSessionId = session()->getId();
+        Livewire::test(Login::class)->fillForm([
+            'username' => $admin->username, 'password' => 'password', 'captcha' => 'test-token',
+        ])->call('authenticate');
+
+        $this->assertAuthenticatedAs($admin, 'web');
+        $this->assertNotSame($oldSessionId, session()->getId());
     }
 
-    public function test_secure_cookies_config()
+    public function test_secure_session_cookie_configuration_is_respected()
     {
-        // Assert local behavior
-        Config::set('app.env', 'local');
-        $this->assertFalse(config('session.secure'));
-
-        // Assert production behavior
-        Config::set('app.env', 'production');
-        // Actually the config is evaluated at boot time. So we just assert our .env logic.
-        $this->assertTrue(true);
+        Config::set('session.secure', true);
+        $response = $this->get('/');
+        $cookie = collect($response->headers->getCookies())->first(fn ($cookie) => $cookie->getName() === config('session.cookie'));
+        $this->assertNotNull($cookie);
+        $this->assertTrue($cookie->isSecure());
     }
 
-    public function test_rate_limiter_uses_normalized_username_and_ip()
+    public function test_login_rate_limiter_records_a_failed_attempt_for_the_component_and_ip()
     {
         $admin = Admin::factory()->create(['password' => Hash::make('password')]);
         Http::fake(['*' => Http::response(['success' => true], 200)]);
@@ -145,18 +174,19 @@ class SecurityExtendedTest extends TestCase
 
         Livewire::test(Login::class)
             ->fillForm([
-                'username' => strtoupper($username), // Testing normalization
+                'username' => $username,
                 'password' => 'wrongpassword',
                 'captcha' => 'valid-token',
             ])
             ->call('authenticate');
 
-        $key = 'login.'.strtolower($username).'.'.$ip;
-        $this->assertEquals(1, RateLimiter::attempts($key));
+        $key = app(\App\Services\AdminLoginThrottle::class)->key($admin->username, $ip);
+        $this->assertSame(1, RateLimiter::attempts($key));
     }
 
-    public function test_successful_authentication_clears_rate_limiter()
+    public function test_successful_authentication_after_a_failed_attempt_still_requires_valid_credentials()
     {
+        $this->freezeTime();
         $admin = Admin::factory()->create(['password' => Hash::make('password')]);
         Http::fake(['*' => Http::response(['success' => true], 200)]);
 
@@ -168,8 +198,8 @@ class SecurityExtendedTest extends TestCase
             ])
             ->call('authenticate');
 
-        $key = 'login.'.strtolower($admin->username).'.'.request()->ip();
-        $this->assertEquals(1, RateLimiter::attempts($key));
+        $this->assertGuest('web');
+        $this->travel(1)->seconds();
 
         Livewire::test(Login::class)
             ->fillForm([
@@ -179,16 +209,21 @@ class SecurityExtendedTest extends TestCase
             ])
             ->call('authenticate');
 
-        $this->assertEquals(0, RateLimiter::attempts($key));
+        $this->assertAuthenticatedAs($admin, 'web');
     }
 
     public function test_hsts_header_in_production()
     {
-        Config::set('app.env', 'production');
-        $response = $this->get('/admin/login');
-        // Since we evaluate config dynamically, the test might not reload the middleware config,
-        // but the code is `$request->isSecure() && app()->environment('production')`
-        $this->assertTrue(true);
+        $originalEnvironment = app()->environment();
+        try {
+            app()->detectEnvironment(fn () => 'production');
+            $this->assertTrue(app()->environment('production'));
+            $this->get('https://localhost/')->assertHeader(
+                'Strict-Transport-Security', 'max-age=31536000',
+            );
+        } finally {
+            app()->detectEnvironment(fn () => $originalEnvironment);
+        }
     }
 
     public function test_website_settings_validation()
@@ -206,7 +241,8 @@ class SecurityExtendedTest extends TestCase
 
     public function test_website_settings_audit_logs_redact_sensitive_information()
     {
-        $admin = Admin::factory()->create();
+        $secret = 'JBSWY3DPEHPK3PXP';
+        $admin = Admin::factory()->create(['app_authentication_secret' => $secret]);
         $this->actingAs($admin, 'web');
 
         Livewire::test(WebsiteSettingsPage::class)
@@ -215,7 +251,9 @@ class SecurityExtendedTest extends TestCase
             ])
             ->call('save');
 
-        // We assert no sensitive data logic leak.
-        $this->assertTrue(true);
+        $logs = AuditLog::query()->where('subject_type', \App\Models\WebsiteSetting::class)->get();
+        $this->assertNotEmpty($logs);
+        $this->assertStringNotContainsString($secret, $logs->toJson());
+        $this->assertStringNotContainsString($admin->password, $logs->toJson());
     }
 }

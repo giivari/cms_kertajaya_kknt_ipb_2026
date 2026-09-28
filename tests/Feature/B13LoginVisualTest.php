@@ -15,7 +15,7 @@ class B13LoginVisualTest extends TestCase
 
         $this->assertIsString($source);
         $this->assertStringContainsString(
-            'CMS Desa Kertajaya',
+            'CMS {{ $villageName }}',
             $source
         );
         $this->assertStringContainsString(

@@ -3,12 +3,30 @@
 namespace Tests\Feature;
 
 use App\Models\Admin;
+use App\Filament\Pages\Auth\Login;
+use App\Services\AdminLoginThrottle;
 use Filament\Auth\MultiFactor\App\AppAuthentication;
+use Filament\Facades\Filament;
 use Filament\Forms\Components\OneTimeCodeInput;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\RateLimiter;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 class B14MfaExperienceTest extends TestCase
 {
+    use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        Filament::setCurrentPanel(Filament::getPanel('admin'));
+        config(['services.turnstile.secret' => 'disposable-mfa-test-secret']);
+        Http::fake(['https://challenges.cloudflare.com/turnstile/v0/siteverify' => Http::response(['success' => true])]);
+    }
+
     public function test_auth_layout_exposes_the_official_theme_switcher(): void
     {
         $source = file_get_contents(
@@ -28,36 +46,29 @@ class B14MfaExperienceTest extends TestCase
 
     public function test_mfa_validation_exception_is_not_rewritten_to_hidden_username_field(): void
     {
-        $source = file_get_contents(
-            app_path('Filament/Pages/Auth/Login.php')
-        );
+        $admin = Admin::factory()->create([
+            'password' => Hash::make('password'),
+            'app_authentication_secret' => AppAuthentication::make()->generateSecret(),
+        ]);
+        $login = Livewire::test(Login::class)->fillForm([
+            'username' => $admin->username, 'password' => 'password', 'captcha' => 'test-token',
+        ])->call('authenticate');
+        $login->set('data.multiFactor.app.code', '000000')->call('authenticate');
 
-        $this->assertIsString($source);
-        $this->assertStringContainsString(
-            'if (filled($this->userUndertakingMultiFactorAuthentication))',
-            $source
-        );
-        $this->assertStringContainsString(
-            'throw $e;',
-            $source
-        );
+        $this->assertGuest('web');
+        $login->assertHasFormErrors();
     }
 
     public function test_primary_login_failure_still_uses_rate_limiting(): void
     {
-        $source = file_get_contents(
-            app_path('Filament/Pages/Auth/Login.php')
-        );
+        $admin = Admin::factory()->create(['password' => Hash::make('password')]);
+        $ip = request()->ip();
+        Livewire::test(Login::class)->fillForm([
+            'username' => $admin->username, 'password' => 'wrong-password', 'captcha' => 'test-token',
+        ])->call('authenticate')->assertHasFormErrors(['username']);
 
-        $this->assertIsString($source);
-        $this->assertStringContainsString(
-            'RateLimiter::hit($key, 900);',
-            $source
-        );
-        $this->assertStringContainsString(
-            "'data.username' => __('filament-panels::pages/auth/login.messages.failed')",
-            $source
-        );
+        $this->assertGuest('web');
+        $this->assertSame(1, RateLimiter::attempts(app(AdminLoginThrottle::class)->key($admin->username, $ip)));
     }
 
     public function test_mfa_code_label_uses_the_project_translation_without_the_vendor_typo(): void

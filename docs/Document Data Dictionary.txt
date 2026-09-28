@@ -1,5 +1,7 @@
 # DOKUMEN DATA DICTIONARY
 
+> STATUS P8: Kamus historis, bukan schema runtime. Tabel recovery-code, email kontak, dan purge terjadwal di bawah tidak boleh diasumsikan aktif. Gunakan migrasi/model saat ini, `PROJECT_STATE.md`, dan keputusan D02/D08/D10.
+
 ## Village Website CMS
 
 ### Single Village Installation

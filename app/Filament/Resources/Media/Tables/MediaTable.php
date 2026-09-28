@@ -19,10 +19,13 @@ use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
+use Filament\Actions\ForceDeleteAction;
+use Filament\Actions\RestoreAction;
 use Filament\Notifications\Notification;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Builder;
@@ -39,8 +42,7 @@ class MediaTable
             ->columns([
                 ImageColumn::make('thumbnail')
                     ->label('Pratinjau')
-                    ->state(fn (Media $record): ?string => str_starts_with((string) $record->mime_type, 'image/') ? MediaThumbnail::path($record) : null)
-                    ->disk(fn (Media $record): string => MediaThumbnail::disk($record))
+                    ->state(fn (Media $record): ?string => str_starts_with((string) $record->mime_type, 'image/') ? MediaThumbnail::url($record) : null)
                     ->defaultImageUrl(fn (Media $record): string => MediaThumbnail::placeholderUrl($record->mime_type))
                     ->extraImgAttributes(fn (Media $record): array => [
                         'class' => 'admin-media-thumbnail',
@@ -66,7 +68,7 @@ class MediaTable
                     ->visibleFrom('md')
                     ->sortable(),
                 TextColumn::make('processing_status')
-                    ->label('Status Pemrosesan')
+                    ->label('Status Ketersediaan')
                     ->badge()
                     ->formatStateUsing(fn ($state): string => match (is_object($state) ? $state->value : $state) {
                         'completed' => 'Selesai', 'failed' => 'Gagal', 'processing' => 'Sedang Diproses', default => 'Menunggu',
@@ -75,6 +77,28 @@ class MediaTable
                         'completed' => 'success', 'failed' => 'danger', 'processing' => 'info', default => 'warning',
                     })
                     ->sortable(),
+                TextColumn::make('last_processing_status')
+                    ->label('Pemrosesan Terakhir')
+                    ->placeholder('Belum tercatat')
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        'completed' => 'Berhasil', 'failed' => 'Gagal; dapat diproses ulang',
+                        'processing' => 'Sedang diproses', default => $state,
+                    })
+                    ->wrap(),
+                TextColumn::make('cleanup_status')
+                    ->label('Pembersihan')
+                    ->placeholder('Tidak dijadwalkan')
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        'pending' => 'Menunggu penyelesaian',
+                        'failed' => 'Gagal; dapat dicoba ulang',
+                        'completed' => 'Selesai',
+                        default => $state,
+                    })
+                    ->badge()
+                    ->color(fn (?string $state): string => match ($state) {
+                        'failed' => 'danger', 'pending' => 'warning', 'completed' => 'success', default => 'gray',
+                    })
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('invisible_watermark_status')
                     ->label('Status Tanda Air')
                     ->badge()
@@ -99,6 +123,7 @@ class MediaTable
                     ->sortable(),
             ])
             ->filters([
+                TrashedFilter::make()->label('Status arsip'),
                 SelectFilter::make('mime_type')
                     ->label('Jenis Berkas')
                     ->options([
@@ -133,11 +158,41 @@ class MediaTable
                     Action::make('verify')
                         ->label('Verifikasi')
                         ->icon('heroicon-o-check-circle')
+                        ->visible(fn (Media $record): bool => str_starts_with((string) $record->mime_type, 'image/'))
                         ->action(function ($record, WatermarkVerificationService $service) {
                             $derivative = $record->derivatives()->where('derivative_type', 'public')->first();
-                            if ($derivative) {
-                                $service->verifyDerivative($derivative, $record);
+                            if (! $derivative) {
+                                Notification::make()
+                                    ->warning()
+                                    ->title('Derivative publik tidak tersedia')
+                                    ->body('Media tidak dapat diverifikasi sebelum derivative publik yang aktif tersedia.')
+                                    ->send();
+
+                                return;
                             }
+
+                            $result = $service->verifyAndPersistActiveDerivative($derivative, $record);
+                            \App\Services\AuditLogService::log(
+                                $result['verified'] ? 'media_verified' : 'media_verification_failed',
+                                $record,
+                            );
+                            if ($result['verified']) {
+                                Notification::make()
+                                    ->success()
+                                    ->title('Media terverifikasi')
+                                    ->body('Autentisitas metadata, integritas byte, dan format derivative telah diperiksa.')
+                                    ->send();
+
+                                return;
+                            }
+
+                            Notification::make()
+                                ->danger()
+                                ->title($result['legacy_unverifiable'] ? 'Media lama belum dapat diverifikasi' : 'Verifikasi media gagal')
+                                ->body($result['legacy_unverifiable']
+                                    ? 'Derivative ini belum memiliki checksum tepercaya untuk verifikasi byte final.'
+                                    : 'Metadata, checksum, atau format derivative tidak memenuhi persyaratan verifikasi.')
+                                ->send();
                         })
                         ->requiresConfirmation()
                         ->modalHeading('Verifikasi Media')
@@ -148,6 +203,13 @@ class MediaTable
                         ->icon('heroicon-o-arrow-path')
                         ->action(function ($record) {
                             ProcessMediaJob::dispatchSync($record);
+                            $record->refresh();
+                            if ($record->last_processing_status === 'failed') {
+                                Notification::make()->warning()->title('Pemrosesan belum berhasil')
+                                    ->body('Derivative aktif sebelumnya dipertahankan bila tersedia.')->send();
+                            } elseif ($record->last_processing_status === 'completed') {
+                                Notification::make()->success()->title('Media berhasil diproses')->send();
+                            }
                         })
                         ->requiresConfirmation()
                         ->modalHeading('Proses Ulang Media')
@@ -159,6 +221,7 @@ class MediaTable
                         ->modalHeading('Hapus Media')
                         ->modalDescription('Media hanya dapat dihapus bila tidak sedang diproses dan tidak digunakan oleh konten lain.')
                         ->modalSubmitActionLabel('Hapus')
+                        ->using(fn ($record, MediaDeletionService $service): bool => $service->archive($record))
                         ->before(function (DeleteAction $action, $record, MediaUsageService $usageService) {
                             if ($usageService->isInUse($record)) {
                                 Notification::make()
@@ -169,6 +232,12 @@ class MediaTable
                                 $action->cancel();
                             }
                         }),
+                    RestoreAction::make()
+                        ->label('Pulihkan')
+                        ->using(fn ($record, MediaDeletionService $service): bool => $service->restore($record)),
+                    ForceDeleteAction::make()
+                        ->label('Hapus Permanen')
+                        ->using(fn ($record, MediaDeletionService $service): bool => $service->permanentlyDelete($record)),
                 ])
                     ->label('Aksi Media')
                     ->icon('heroicon-m-ellipsis-vertical')

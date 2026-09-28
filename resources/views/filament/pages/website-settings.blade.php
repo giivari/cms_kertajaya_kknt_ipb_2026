@@ -4,6 +4,11 @@
 
         <div class="mt-4 flex flex-wrap gap-3">
             {{ $this->previewAction }}
+            @if($this->hasPreviewDraft())
+                <x-filament::button type="button" color="warning" wire:click="restorePreviewDraft">
+                    Pulihkan Draf Pratinjau
+                </x-filament::button>
+            @endif
             <x-filament::button type="submit" wire:target="save">
                 Simpan Perubahan
             </x-filament::button>

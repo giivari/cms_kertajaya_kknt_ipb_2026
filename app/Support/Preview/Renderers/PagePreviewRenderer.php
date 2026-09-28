@@ -29,8 +29,10 @@ class PagePreviewRenderer
         foreach ($sectionsData as $sectionUuid => $sectionItem) {
             $sectionModel = new PageSection();
             $sectionModel->forceFill([
+                'id' => $sectionItem['id'] ?? null,
                 'name' => $sectionItem['name'] ?? null,
                 'layout_type' => $sectionItem['layout_type'] ?? 'single_column',
+                'section_settings' => $sectionItem['section_settings'] ?? [],
                 'is_visible' => $sectionItem['is_visible'] ?? true,
                 'position' => $sectionPosition++,
             ]);
@@ -46,9 +48,12 @@ class PagePreviewRenderer
 
                 $componentModel = new PageComponent();
                 $componentModel->forceFill([
+                    'id' => $data['id'] ?? null,
                     'component_type' => $type,
                     'content_data' => $data,
-                    'is_visible' => true,
+                    'component_settings' => $data['component_settings'] ?? [],
+                    'column_position' => $data['column_position'] ?? 0,
+                    'is_visible' => $data['is_visible'] ?? true,
                     'position' => $componentPosition++,
                 ]);
                 $components->push($componentModel);

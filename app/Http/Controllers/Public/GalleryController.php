@@ -9,7 +9,7 @@ class GalleryController extends Controller
 {
     public function index()
     {
-        $albums = GalleryAlbum::published()->with('coverMedia')->latest('published_at')->paginate(12);
+        $albums = GalleryAlbum::published()->with('coverMedia.derivatives')->latest('published_at')->paginate(12);
 
         return view('public.gallery.index', compact('albums'));
     }

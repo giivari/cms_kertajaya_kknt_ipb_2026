@@ -6,6 +6,8 @@ use App\Enums\LinkType;
 use App\Enums\PageStatus;
 use App\Filament\Exports\MenuExporter;
 use App\Filament\Resources\Menus\Pages\EditMenu;
+use App\Filament\Resources\Menus\Pages\EditFooterMenu;
+use App\Filament\Resources\Menus\Pages\CreateMenu;
 use App\Models\Menu;
 use App\Filament\Support\AdminTable;
 use Filament\Actions\BulkActionGroup;
@@ -63,11 +65,16 @@ class MenuResource extends Resource
     {
         return $schema
             ->schema([
+                Select::make('location')
+                    ->label('Posisi Menu')
+                    ->options(Menu::supportedLocations())
+                    ->required()
+                    ->disabled(fn (?Menu $record): bool => $record !== null),
                 Section::make('Tentang Menu')
                     ->schema([
                         Text::make(function (?Menu $record) {
                             if (! $record) {
-                                return 'Menu mengatur tombol navigasi yang tampil di website. Menu tidak membuat isi baru; buat isi melalui Halaman, lalu tambahkan halaman tersebut sebagai tautan di sini.';
+                                return 'Menu adalah daftar tautan navigasi. Menu tidak membuat isi baru; buat isi melalui Halaman, lalu tambahkan halaman tersebut sebagai tautan di sini.';
                             }
                             return "Anda sedang mengelola tautan navigasi untuk {$record->name}. Menu mengatur tombol navigasi yang tampil di website. Menu tidak membuat isi baru; buat isi melalui Halaman, lalu tambahkan halaman tersebut sebagai tautan di sini.";
                         })
@@ -185,6 +192,8 @@ class MenuResource extends Resource
     {
         return [
             'index' => EditMenu::route('/'),
+            'footer' => EditFooterMenu::route('/footer'),
+            'create' => CreateMenu::route('/create'),
         ];
     }
 }

@@ -9,7 +9,7 @@
             @php
                 $deriv = $media->getPublicDerivative('large') ?? $media->getPublicDerivative('small');
                 if (!$deriv) continue;
-                $url = \Illuminate\Support\Facades\Storage::disk('public')->url($deriv->filename);
+                $url = $media->url;
             @endphp
             <a href="{{ $url }}" target="_blank" class="block group relative overflow-hidden rounded-lg aspect-square bg-gray-100">
                 <img src="{{ $url }}" alt="{{ $media->original_filename }}" class="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300">

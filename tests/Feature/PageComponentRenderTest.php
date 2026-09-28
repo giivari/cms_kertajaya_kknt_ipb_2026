@@ -3,10 +3,16 @@
 namespace Tests\Feature;
 
 use App\Models\Media;
+use App\Models\Document;
+use App\Jobs\ProcessMediaJob;
+use App\Services\DocumentFilePolicy;
+use App\Services\WatermarkService;
+use App\Services\WatermarkVerificationService;
 use App\Models\Page;
 use App\Models\PageComponent;
 use App\Models\PageSection;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class PageComponentRenderTest extends TestCase
@@ -56,7 +62,22 @@ class PageComponentRenderTest extends TestCase
 
     public function test_renders_gallery()
     {
-        $media = Media::create(['disk' => 'public', 'directory' => 'test', 'filename' => 'test2.jpg', 'extension' => 'jpg', 'mime_type' => 'image/jpeg', 'size' => 100, 'original_filename' => 'GalleryImage']);
+        config(['watermark.signing_key' => 'disposable-page-component-key']);
+        $image = imagecreatetruecolor(10, 10);
+        imagefilledrectangle($image, 0, 0, 9, 9, imagecolorallocate($image, 50, 120, 90));
+        ob_start();
+        imagepng($image);
+        $bytes = (string) ob_get_clean();
+        imagedestroy($image);
+        Storage::disk('local')->put('originals/gallery-component.png', $bytes);
+        $media = Media::create([
+            'disk' => 'local', 'directory' => 'originals', 'filename' => 'gallery-component.png',
+            'extension' => 'png', 'mime_type' => 'image/png', 'size' => strlen($bytes),
+            'original_filename' => 'GalleryImage', 'checksum' => hash('sha256', $bytes),
+            'processing_status' => 'pending', 'invisible_watermark_status' => 'pending',
+        ]);
+        (new ProcessMediaJob($media))->handle(app(WatermarkService::class), app(WatermarkVerificationService::class));
+        $this->assertSame('completed', $media->fresh()->processing_status->value);
         $page = $this->createPageWithComponent('gallery', ['images' => [$media->id]]);
         $this->get('/halaman/'.$page->slug)->assertSee('GalleryImage');
     }
@@ -81,9 +102,25 @@ class PageComponentRenderTest extends TestCase
 
     public function test_renders_documents()
     {
-        $media = Media::create(['disk' => 'public', 'directory' => 'test', 'filename' => 'doc.pdf', 'extension' => 'pdf', 'mime_type' => 'application/pdf', 'size' => 100, 'original_filename' => 'Dokumen Penting']);
-        $page = $this->createPageWithComponent('documents', ['documents' => [$media->id]]);
-        $this->get('/halaman/'.$page->slug)->assertSee('Dokumen Penting');
+        $bytes = $this->pdfBytes();
+        $path = 'originals/component-document.pdf';
+        Storage::disk('local')->put($path, $bytes);
+        $validated = app(DocumentFilePolicy::class)->inspect(Storage::disk('local')->path($path), 'component-document.pdf');
+        $media = Media::create([
+            'disk' => 'local', 'directory' => 'originals', 'filename' => 'component-document.pdf',
+            'extension' => $validated['extension'], 'mime_type' => $validated['mime'],
+            'size' => $validated['size'], 'original_filename' => 'component-document.pdf',
+            'checksum' => $validated['checksum'],
+            'metadata' => ['document_validation' => ['version' => 1, 'format' => 'pdf']],
+            'processing_status' => 'completed', 'invisible_watermark_status' => 'unsupported',
+        ]);
+        $document = Document::create([
+            'title' => 'Dokumen Penting', 'file_media_id' => $media->id,
+            'status' => 'published', 'published_at' => now()->subMinute(),
+        ]);
+        $page = $this->createPageWithComponent('documents', ['document_ids' => [$document->id]]);
+        $this->get('/halaman/'.$page->slug)->assertSee('Dokumen Penting')
+            ->assertSee(route('documents.download', $document->slug));
     }
 
     public function test_renders_cta_button()
@@ -102,5 +139,28 @@ class PageComponentRenderTest extends TestCase
     {
         $page = $this->createPageWithComponent('contact_block', ['address' => 'Jalan Desa No 1', 'email' => 'desa@example.com']);
         $this->get('/halaman/'.$page->slug)->assertSee('Jalan Desa No 1')->assertSee('desa@example.com');
+    }
+
+    private function pdfBytes(): string
+    {
+        $objects = [
+            '<< /Type /Catalog /Pages 2 0 R >>',
+            '<< /Type /Pages /Kids [3 0 R] /Count 1 >>',
+            '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 100 100] /Contents 4 0 R >>',
+            "<< /Length 0 >>\nstream\n\nendstream",
+        ];
+        $pdf = "%PDF-1.4\n";
+        $offsets = [];
+        foreach ($objects as $number => $body) {
+            $offsets[] = strlen($pdf);
+            $pdf .= ($number + 1)." 0 obj\n".$body."\nendobj\n";
+        }
+        $xref = strlen($pdf);
+        $pdf .= "xref\n0 5\n0000000000 65535 f \n";
+        foreach ($offsets as $offset) {
+            $pdf .= sprintf('%010d 00000 n ', $offset)."\n";
+        }
+
+        return $pdf."trailer\n<< /Size 5 /Root 1 0 R >>\nstartxref\n{$xref}\n%%EOF\n";
     }
 }

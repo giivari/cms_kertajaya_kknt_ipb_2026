@@ -12,7 +12,13 @@ class SearchController extends Controller
 {
     public function index(Request $request)
     {
-        $query = trim($request->input('q', ''));
+        $rawQuery = $request->query('q', '');
+        $query = is_string($rawQuery) && mb_check_encoding($rawQuery, 'UTF-8')
+            ? trim($rawQuery)
+            : '';
+
+        // Remove control characters before calculating the public input limit.
+        $query = preg_replace('/[\x00-\x1F\x7F]/u', '', $query) ?? '';
 
         // Validate query length
         if (mb_strlen($query) < 2 || mb_strlen($query) > 100) {
@@ -25,17 +31,13 @@ class SearchController extends Controller
             ]);
         }
 
-        // Sanitize: strip control characters, keep only printable content
-        $query = preg_replace('/[\x00-\x1F\x7F]/u', '', $query);
-
         // PostgreSQL case-insensitive search using ILIKE
-        $likeQuery = '%' . str_replace(['%', '_', '\\'], ['\\%', '\\_', '\\\\'], $query) . '%';
+        // Escape the escape character first so literal %, _, and backslashes
+        // remain literals in PostgreSQL's default ILIKE escape mode.
+        $likeQuery = '%' . str_replace(['%', '_'], ['\\%', '\\_'], str_replace('\\', '\\\\', $query)) . '%';
 
         // Pages: search title and excerpt (published only, not soft-deleted)
-        $pages = Page::where('status', 'published')
-            ->whereNotNull('published_at')
-            ->where('published_at', '<=', now())
-            ->whereNull('deleted_at')
+        $pages = Page::published()
             ->where(function ($q) use ($likeQuery) {
                 $q->whereRaw('title ILIKE ?', [$likeQuery])
                   ->orWhereRaw('excerpt ILIKE ?', [$likeQuery]);
@@ -45,10 +47,7 @@ class SearchController extends Controller
             ->get(['id', 'title', 'slug', 'excerpt', 'published_at']);
 
         // News: search title, excerpt, and content (published only, not soft-deleted)
-        $news = News::where('status', 'published')
-            ->whereNotNull('published_at')
-            ->where('published_at', '<=', now())
-            ->whereNull('deleted_at')
+        $news = News::published()
             ->where(function ($q) use ($likeQuery) {
                 $q->whereRaw('title ILIKE ?', [$likeQuery])
                   ->orWhereRaw('excerpt ILIKE ?', [$likeQuery])
@@ -59,10 +58,7 @@ class SearchController extends Controller
             ->get(['id', 'title', 'slug', 'excerpt', 'published_at']);
 
         // Documents: search title and description (published only, not soft-deleted)
-        $documents = Document::where('status', 'published')
-            ->whereNotNull('published_at')
-            ->where('published_at', '<=', now())
-            ->whereNull('deleted_at')
+        $documents = Document::published()
             ->where(function ($q) use ($likeQuery) {
                 $q->whereRaw('title ILIKE ?', [$likeQuery])
                   ->orWhereRaw('description ILIKE ?', [$likeQuery]);

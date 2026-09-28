@@ -12,6 +12,7 @@ use Filament\Resources\Pages\EditRecord;
 class EditLocationCategory extends EditRecord
 {
     use HasEditPreview;
+    use \App\Filament\Support\Concerns\HasCategoryPreviewActions;
 
     protected static string $resource = LocationCategoryResource::class;
 

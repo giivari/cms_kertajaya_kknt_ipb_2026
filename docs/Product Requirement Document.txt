@@ -1,5 +1,9 @@
 # PRODUCT REQUIREMENTS DOCUMENT (PRD)
 
+> Keputusan pemilik 26 September 2026: dokumen ini menyimpan requirement awal. Kontrak aktif/penundaan D01/D02/D08/D09/D10/D12/D14/D15, F21, FR-021, NFR-015/NFR-029/NFR-031/NFR-033 dirinci dalam `OWNER_APPROVED_DECISIONS_2026-09-26.md` dan statusnya dilacak pada `REQUIREMENT_TRACEABILITY.md`. Draft tetap; featured Page/Gallery dan optimasi gambar disetujui; pesan kontak inbox saja; ekspor bukan snapshot nilai; pemrosesan Media sinkron serta kompatibilitas algoritma watermark masa depan ditunda.
+
+> STATUS P8: Requirement historis, bukan bukti implementasi atau instruksi deployment. Bandingkan dengan `PROJECT_STATE.md`, source aktif, dan `DOCUMENT_STATUS.md`; keputusan yang belum disetujui tetap terbuka.
+
 ## Village Website CMS (Single Village Installation)
 
 ### Versi Dokumen

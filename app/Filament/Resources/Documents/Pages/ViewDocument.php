@@ -21,7 +21,7 @@ class ViewDocument extends ViewRecord
     {
         return [
             EditAction::make()->label('Ubah'),
-            Action::make('website')->label('Lihat di Website')->url(fn () => route('documents.download', $this->record->slug))
+            Action::make('website')->label('Lihat di Website')->url(fn () => route('documents.index'))
                 ->openUrlInNewTab()->visible(fn (): bool => $this->record->isPublished()),
             DeleteAction::make()->label('Hapus'),
         ];

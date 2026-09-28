@@ -17,6 +17,23 @@ class CreateMedia extends CreateRecord
 
     protected static string $resource = MediaResource::class;
 
+    protected function getFormActions(): array
+    {
+        return [
+            $this->getCreateFormAction(),
+            \App\Filament\Support\PreviewAction::make('media'),
+            $this->getCancelFormAction(),
+        ];
+    }
+
+    protected function afterCreate(): void
+    {
+        \App\Services\AuditLogService::log('media_uploaded', $this->record, null, [
+            'processing_status' => $this->record->refresh()->processing_status?->value,
+        ]);
+        app(\App\Services\Preview\PreviewDraftStore::class)->forget(static::class, null);
+    }
+
     public function getTitle(): string
     {
         return 'Unggah Media';
@@ -31,9 +48,11 @@ class CreateMedia extends CreateRecord
     {
         $filePath = is_array($data['file']) ? array_values($data['file'])[0] : $data['file'];
 
-        $fullPath = Storage::disk('local')->path($filePath);
+        $policy = app(\App\Services\MediaInputPolicy::class);
+        $fullPath = $policy->originalPath($filePath);
         $fileSize = filesize($fullPath);
-        $mimeType = mime_content_type($fullPath);
+        $mimeType = $policy->inspect($fullPath, basename($filePath));
+        $dimensions = @getimagesize($fullPath);
 
         // $data['file'] was handled by Filament's FileUpload, which saved it to local disk
         // Create the media record
@@ -44,6 +63,9 @@ class CreateMedia extends CreateRecord
             'mime_type' => $mimeType,
             'extension' => pathinfo($filePath, PATHINFO_EXTENSION),
             'size' => $fileSize,
+            'width' => $dimensions ? $dimensions[0] : null,
+            'height' => $dimensions ? $dimensions[1] : null,
+            'checksum' => hash_file('sha256', $fullPath),
             'disk' => 'local',
             'alt_text' => $data['alt_text'] ?? null,
             'caption' => $data['caption'] ?? null,
@@ -59,5 +81,15 @@ class CreateMedia extends CreateRecord
     protected function getCreatedNotificationTitle(): ?string
     {
         return 'Media berhasil diunggah dan diproses';
+    }
+
+    protected function getCreatedNotification(): ?\Filament\Notifications\Notification
+    {
+        if ($this->record->refresh()->processing_status !== MediaProcessingStatus::COMPLETED) {
+            return \Filament\Notifications\Notification::make()->warning()
+                ->title('Berkas tersimpan privat, tetapi belum lolos pemrosesan publik.');
+        }
+
+        return parent::getCreatedNotification();
     }
 }

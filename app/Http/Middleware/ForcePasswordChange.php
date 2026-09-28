@@ -18,21 +18,9 @@ class ForcePasswordChange
 
             if ($user->force_password_change) {
                 $profileUrl = filament()->getProfileUrl();
-                $logoutUrl = filament()->getLogoutUrl();
-
-                if (app('livewire')->isLivewireRequest()) {
-                    $components = $request->input('components', []);
-                    foreach ($components as $component) {
-                        $snapshot = json_decode($component['snapshot'] ?? '{}', true);
-                        $name = $snapshot['memo']['name'] ?? '';
-
-                        if ($name === 'app.filament.pages.auth.edit-profile') {
-                            continue;
-                        }
-
-                        return redirect($profileUrl);
-                    }
-                } elseif (! $request->routeIs('filament.admin.auth.profile')
+                // Livewire resolves this route from a verified snapshot, not a
+                // component name supplied in the unverified request body.
+                if (! $request->routeIs('filament.admin.auth.profile')
                     && ! $request->routeIs('filament.admin.auth.logout')
                     && ! $request->routeIs('filament.admin.auth.multi-factor-authentication.*')) {
                     return redirect($profileUrl);

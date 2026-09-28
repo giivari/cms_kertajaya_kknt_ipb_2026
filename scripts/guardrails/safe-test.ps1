@@ -63,8 +63,18 @@ if (!(Test-Path (Join-Path $canonicalProjRoot 'artisan'))) { exit 10 }
 
 try {
     Push-Location $canonicalProjRoot
-    $args = @('artisan', 'test') + $TestPaths
-    php $args
+    $artisanCommands = @(php artisan list --raw 2>$null)
+
+    if ($LASTEXITCODE -eq 0 -and $artisanCommands -contains 'test') {
+        $args = @('artisan', 'test') + $TestPaths
+        php $args
+    } elseif (Test-Path (Join-Path $canonicalProjRoot 'vendor\bin\pest')) {
+        $args = @('vendor/bin/pest') + $TestPaths
+        php $args
+    } else {
+        exit 10
+    }
+
     exit $LASTEXITCODE
 } finally {
     Pop-Location

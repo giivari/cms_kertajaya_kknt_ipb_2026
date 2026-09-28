@@ -1,70 +1,21 @@
-# Menjalankan Website Lokal
+# Pengembangan lokal dan keselamatan data
 
-Seluruh layanan lokal dapat dinyalakan dari PowerShell tanpa membuka aplikasi Laragon.
+Script `scripts/local/start-local.ps1` dan `stop-local.ps1` adalah **khusus workstation historis**: source saat ini menunjuk cluster PostgreSQL bernama recovery di luar repository serta database kerja tertentu. Jangan menjalankannya untuk tes, rehearsal, atau sebagai contoh instalasi umum. Dokumen ini tidak menyalin path/credential historis. Pengguna harus memeriksa targetnya secara eksplisit sebelum memakai script lokal itu pada data kerja.
 
-## Menyalakan
+## Profil tes disposable
 
-Jalankan dari root proyek:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\local\start-local.ps1
-```
-
-Skrip akan memeriksa atau menyalakan PostgreSQL recovery pada port `5434`, memverifikasi database kerja, menjalankan Laravel pada port `8015`, menjalankan Vite, lalu membuka:
-
-`http://127.0.0.1:8015/desa-dashboard`
-
-## Mematikan
+Tes P6/P7 yang tercatat memakai `.env.testing`, `.guardrails.local.json` (keduanya diabaikan Git), PostgreSQL `village_cms_test` pada loopback port tes dan cluster disposable di `storage/testing/`. Nilai identitas harus divalidasi setiap kali, bukan disimpulkan dari `APP_ENV` saja. `tests/TestCase.php` memakai storage fake untuk disk `local`, `public`, dan `admin_exports`; tes file lain harus tetap memeriksa semua root, symlink, queue dan konfigurasi yang dipakai.
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\local\stop-local.ps1
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\guardrails\safe-test.ps1 -ProjectRoot . -ValidateOnly
+# Setelah cluster disposable dan semua storage dipastikan benar:
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\guardrails\safe-test.ps1 -ProjectRoot . -TestPaths @('tests/Feature/CategoryTest.php')
 ```
 
-Skrip stop hanya menghentikan Laravel dan Vite yang direkam oleh skrip start, kemudian menghentikan cluster PostgreSQL recovery secara clean. PostgreSQL Laragon pada port `5432` tidak disentuh.
+Wrapper adalah jalur wajib tes. Jangan memakai database kerja/recovery, menjalankan `migrate:fresh`/seeder pada keduanya, atau menganggap `.env.testing` mengisolasi setiap path file. Jangan menjalankan `media:lifecycle-inventory --env=testing` sebelum root `public` juga terbukti terisolasi: command itu pernah dapat melihat nama file media kerja. Hentikan hanya cluster disposable yang benar-benar Anda mulai setelah tes.
 
-## Konfigurasi Lokal
+## Build dan operasi lokal
 
-- PostgreSQL: `127.0.0.1:5434`
-- Database aplikasi: `village_cms_local_working_20260802`
-- Database test: `village_cms_test_local_20260802`
-- Laravel: `127.0.0.1:8015`
-- Vite: `127.0.0.1:5173`
-- Data cluster: `C:\Users\givar\KULIAH\WEB_KKN\_archive\database-recovery\db-recovery-20260801\data`
+`scripts/guardrails/safe-build.ps1 -ValidateOnly` memeriksa prasyarat build tanpa mengubah aset; build melalui wrapper hanya bila target artefaknya aman. `public/hot` milik Vite development dan tidak boleh terbawa ke release. P5 memakai queue database untuk CSV/XLSX; caller media image saat ini memakai `dispatchSync()` sehingga berjalan dalam request, bukan worker. Baca [worker/scheduler](operations/QUEUE_AND_SCHEDULER.md). Preview bukan simpan, ekspor berada di storage privat, dan route cache target harus dibuat ulang; jangan mengedit artefak generated.
 
-Jangan menjalankan `initdb`, `migrate:fresh`, `migrate:refresh`, `migrate:reset`, `db:wipe`, atau seeder pada database kerja/recovery.
-
-Seluruh test wajib dijalankan melalui `scripts/guardrails/safe-test.ps1`. Database test boleh dikosongkan atau dimigrasikan ulang oleh test. Database aplikasi dan seluruh database recovery/kandidat tidak boleh pernah menjadi target test.
-
-## Ekspor Tabel Admin
-
-Migration Batch 3C untuk tabel `exports` dan `notifications` telah diterapkan ke database kerja pada 2026-08-02. Checkpoint pramigration tersedia di:
-
-`C:\Users\givar\KULIAH\WEB_KKN\_archive\database-recovery\db-recovery-20260801\working-backup\batch-3c-pre-migration\village-cms-local-working-pre-batch3c-20260802-203426.dump`
-
-SHA-256: `15B54BD776116B82083CB8DA67C16E9221DB09D486AAF2A445F0A13028728600`
-
-CSV dan Excel diproses melalui queue database. Saat mengembangkan fitur ekspor, pastikan worker queue berjalan; worker dapat dijalankan pada terminal terpisah:
-
-```powershell
-php artisan queue:work --queue=default --tries=3
-```
-
-File ekspor berada pada disk privat `local`, bukan `public/storage`. Scheduler Laravel perlu berjalan agar ekspor berumur lebih dari 24 jam dibersihkan:
-
-```powershell
-php artisan schedule:work
-```
-
-Jangan menghapus direktori media atau memakai wildcard untuk membersihkan ekspor. Cleanup project-owned hanya menangani direktori `filament_exports/{id}` yang terhubung ke record ekspor kedaluwarsa.
-
-PDF dibuat sinkron saat action dipilih, lalu disimpan sementara di direktori privat `filament_exports/{id}`. Browser menerima redirect ke route bertanda tangan yang memverifikasi Admin pemilik; PDF tidak dikirim sebagai binary melalui response JSON Livewire. Scheduler yang sama menghapus file PDF sementara setelah 24 jam.
-
-## Jika Start Gagal
-
-Periksa berkas berikut di `storage/logs`:
-
-- `local-postgresql.log`
-- `local-laravel.out.log` dan `local-laravel.err.log`
-- `local-vite.out.log` dan `local-vite.err.log`
-
-Jika pesan menyebut port telah dipakai proses yang tidak direkam, hentikan proses tersebut secara sadar atau pilih port lain melalui perubahan terkontrol. Jangan menghapus `postmaster.pid`.
+Untuk instalasi baru, update, dan pemulihan gunakan [DEPLOYMENT_GUIDE](DEPLOYMENT_GUIDE.md) serta [RECOVERY](operations/RECOVERY.md). Jangan mengandalkan backup database saja atau memutar kunci instalasi saat update. D09 belum memilih jadwal/retensi backup.

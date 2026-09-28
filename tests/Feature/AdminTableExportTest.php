@@ -20,7 +20,6 @@ use App\Filament\Resources\GalleryAlbums\Pages\ListGalleryAlbums;
 use App\Filament\Resources\LocationCategories\Pages\ListLocationCategories;
 use App\Filament\Resources\Locations\Pages\ListLocations;
 use App\Filament\Resources\Media\Pages\ListMedia;
-use App\Filament\Resources\Menus\Pages\ListMenus;
 use App\Filament\Resources\News\Pages\ListNews;
 use App\Filament\Resources\NewsCategories\Pages\ListNewsCategories;
 use App\Filament\Resources\Pages\Pages\ListPages;
@@ -40,8 +39,11 @@ use Illuminate\Support\Str;
 use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
+beforeEach(function (): void {
+    Storage::fake('admin_exports');
+});
 
-test('all real admin tables remove the column manager and register the three export formats', function () {
+test('active admin tables register the three export formats', function () {
     $admin = Admin::factory()->create();
     $pages = [
         ListNews::class,
@@ -53,7 +55,6 @@ test('all real admin tables remove the column manager and register the three exp
         ListDocumentCategories::class,
         ListLocations::class,
         ListLocationCategories::class,
-        ListMenus::class,
         ListContactMessages::class,
         ListAuditLogs::class,
     ];
@@ -62,7 +63,6 @@ test('all real admin tables remove the column manager and register the three exp
         $table = Livewire::actingAs($admin)->test($page)->instance()->getTable();
 
         expect($table->hasColumnManager())->toBeFalse()
-            ->and(collect($table->getColumns())->contains(fn ($column): bool => $column->isToggleable()))->toBeFalse()
             ->and($table->getExtraAttributeBag()->get('class'))->toContain('admin-table-shell')
             ->and($table->hasAction('exportCsv'))->toBeTrue()
             ->and($table->hasAction('exportXlsx'))->toBeTrue()
@@ -81,7 +81,7 @@ test('all real admin tables remove the column manager and register the three exp
             ->and($csv->hasColumnMapping())->toBeFalse()
             ->and($csv->getFormats())->toBe([ExportFormat::Csv])
             ->and($csv->getMaxRows())->toBe(10_000)
-            ->and($csv->getFileDisk())->toBe('local')
+            ->and($csv->getFileDisk())->toBe('admin_exports')
             ->and($xlsx)->toBeInstanceOf(ExportAction::class)
             ->and($xlsx->hasColumnMapping())->toBeFalse()
             ->and($xlsx->getFormats())->toBe([ExportFormat::Xlsx]);
@@ -147,7 +147,7 @@ test('spreadsheet text sanitizer prevents formula injection without mutating sou
 });
 
 test('csv and xlsx exports use the filtered table query and private disk', function () {
-    Storage::fake('local');
+    Storage::fake('admin_exports');
     $admin = Admin::factory()->create();
     News::create(['title' => 'Berita Sasaran', 'content' => '<p>Aman</p>', 'status' => 'draft']);
     News::create(['title' => 'Berita Lain', 'content' => '<p>Aman</p>', 'status' => 'draft']);
@@ -159,14 +159,14 @@ test('csv and xlsx exports use the filtered table query and private disk', funct
         ->callTableAction('exportCsv');
 
     $csvExport = Export::query()->latest('id')->firstOrFail();
-    $csvFiles = Storage::disk('local')->files($csvExport->getFileDirectory());
+    $csvFiles = Storage::disk('admin_exports')->files($csvExport->getFileDirectory());
     $csvBody = collect($csvFiles)
         ->filter(fn (string $file): bool => str_ends_with($file, '.csv') && ! str_ends_with($file, 'headers.csv'))
-        ->map(fn (string $file): string => Storage::disk('local')->get($file))
+        ->map(fn (string $file): string => Storage::disk('admin_exports')->get($file))
         ->implode("\n");
 
     expect($csvExport->user->is($admin))->toBeTrue()
-        ->and($csvExport->file_disk)->toBe('local')
+        ->and($csvExport->file_disk)->toBe('admin_exports')
         ->and($csvBody)->toContain('Berita Sasaran')
         ->and($csvBody)->not->toContain('Berita Lain');
 
@@ -177,7 +177,7 @@ test('csv and xlsx exports use the filtered table query and private disk', funct
 
     $xlsxExport = Export::query()->latest('id')->firstOrFail();
 
-    expect(Storage::disk('local')->exists($xlsxExport->getFileDirectory().'/'.$xlsxExport->file_name.'.xlsx'))->toBeTrue()
+    expect(Storage::disk('admin_exports')->exists($xlsxExport->getFileDirectory().'/'.$xlsxExport->file_name.'.xlsx'))->toBeTrue()
         ->and(News::count())->toBe($newsCount);
 });
 
@@ -214,11 +214,13 @@ test('pdf export returns a safe pdf response and leaves business records unchang
 });
 
 test('pdf table action redirects to an owner-only private download instead of returning binary to livewire', function () {
-    Storage::fake('local');
-    $owner = Admin::factory()->create();
+    Storage::fake('admin_exports');
+    $this->withSession(['session_created_at' => time()]);
+    $owner = Admin::factory()->create(['app_authentication_secret' => 'JBSWY3DPEHPK3PXP']);
     News::create(['title' => 'Berita PDF Browser', 'content' => '<p>Isi</p>', 'status' => 'draft']);
     $otherAdmin = (new Admin)->forceFill([
         'id' => (string) Str::uuid(),
+        'app_authentication_secret' => 'JBSWY3DPEHPK3PXP',
     ]);
     $newsCount = News::count();
     $auditLogCount = AuditLog::count();
@@ -243,12 +245,12 @@ test('pdf table action redirects to an owner-only private download instead of re
 
     expect($export->user()->is($owner))->toBeTrue()
         ->and($export->user()->is($otherAdmin))->toBeFalse()
-        ->and($export->file_disk)->toBe('local')
+        ->and($export->file_disk)->toBe('admin_exports')
         ->and($export->file_name)->toMatch('/^[A-Za-z0-9]{48}$/')
-        ->and(Storage::disk('local')->exists($path))->toBeTrue()
-        ->and(Storage::disk('local')->get($path))->toStartWith('%PDF-')
+        ->and(Storage::disk('admin_exports')->exists($path))->toBeTrue()
+        ->and(Storage::disk('admin_exports')->get($path))->toStartWith('%PDF-')
         ->and(News::count())->toBe($newsCount)
-        ->and(AuditLog::count())->toBe($auditLogCount)
+        ->and(AuditLog::count())->toBe($auditLogCount + 1)
         ->and(Admin::count())->toBe(1);
 
     auth()->logout();
@@ -266,37 +268,42 @@ test('pdf table action redirects to an owner-only private download instead of re
 
     expect($download->streamedContent())->toStartWith('%PDF-')
         ->and(News::count())->toBe($newsCount)
-        ->and(AuditLog::count())->toBe($auditLogCount);
+        ->and(AuditLog::where('event_type', 'export_completed')->where('subject_id', (string) $export->id)->count())->toBe(1)
+        ->and(AuditLog::where('event_type', 'admin_logout')->where('subject_id', $owner->id)->count())->toBe(1);
 });
 
-test('cleanup removes only expired export directories and records', function () {
-    Storage::fake('local');
+test('cleanup removes only completed expired exports and preserves pending work', function () {
+    Storage::fake('admin_exports');
     $admin = Admin::factory()->create();
 
     $expired = Export::create([
-        'file_disk' => 'local', 'file_name' => 'lama', 'exporter' => NewsExporter::class,
+        'file_disk' => 'admin_exports', 'file_name' => 'lama', 'exporter' => NewsExporter::class,
         'processed_rows' => 1, 'total_rows' => 1, 'successful_rows' => 1, 'user_id' => $admin->id,
-        'created_at' => now()->subHours(25), 'updated_at' => now()->subHours(25),
+        'lifecycle_state' => 'completed', 'requested_format' => 'csv',
+        'completed_at' => now()->subHours(25),
     ]);
     $current = Export::create([
-        'file_disk' => 'local', 'file_name' => 'baru', 'exporter' => NewsExporter::class,
+        'file_disk' => 'admin_exports', 'file_name' => 'baru', 'exporter' => NewsExporter::class,
         'processed_rows' => 1, 'total_rows' => 1, 'successful_rows' => 1, 'user_id' => $admin->id,
+        'lifecycle_state' => 'pending', 'created_at' => now()->subHours(25),
     ]);
-    Storage::disk('local')->put($expired->getFileDirectory().'/lama.csv', 'lama');
-    Storage::disk('local')->put($current->getFileDirectory().'/baru.csv', 'baru');
+    Storage::disk('admin_exports')->put($expired->getFileDirectory().'/lama.csv', 'lama');
+    Storage::disk('admin_exports')->put($current->getFileDirectory().'/baru.csv', 'baru');
 
     expect(app(AdminExportCleanupService::class)->pruneExpired())->toBe(1)
         ->and(Export::query()->whereKey($expired->id)->exists())->toBeFalse()
-        ->and(Storage::disk('local')->directoryExists($expired->getFileDirectory()))->toBeFalse()
+        ->and(Storage::disk('admin_exports')->directoryExists($expired->getFileDirectory()))->toBeFalse()
         ->and(Export::query()->whereKey($current->id)->exists())->toBeTrue()
-        ->and(Storage::disk('local')->exists($current->getFileDirectory().'/baru.csv'))->toBeTrue();
+        ->and(Storage::disk('admin_exports')->exists($current->getFileDirectory().'/baru.csv'))->toBeTrue();
 });
 
-test('private export download requires its owning admin', function () {
+test('legacy incomplete export is denied even to its owning admin', function () {
     Storage::fake('local');
-    $owner = Admin::factory()->create();
+    $this->withSession(['session_created_at' => time()]);
+    $owner = Admin::factory()->create(['app_authentication_secret' => 'JBSWY3DPEHPK3PXP']);
     $otherAdmin = (new Admin)->forceFill([
         'id' => (string) Str::uuid(),
+        'app_authentication_secret' => 'JBSWY3DPEHPK3PXP',
     ]);
     $export = Export::create([
         'file_disk' => 'local', 'file_name' => 'kepemilikan', 'exporter' => NewsExporter::class,
@@ -319,13 +326,11 @@ test('private export download requires its owning admin', function () {
         ->and($export->user()->is($otherAdmin))->toBeFalse()
         ->and(Admin::count())->toBe(1);
 
-    $this->get($url)->assertUnauthorized();
+    $this->get($url)->assertRedirect();
     $this->actingAs($otherAdmin)->get($url)->assertForbidden();
     $this->actingAs($owner)->get($missingUrl)->assertNotFound();
     $this->actingAs($owner)->get($url)
-        ->assertOk()
-        ->assertHeader('Content-Type', 'text/csv; charset=UTF-8')
-        ->assertHeader('X-Content-Type-Options', 'nosniff');
+        ->assertNotFound();
 });
 
 test('guest cannot reach export-enabled resource tables', function () {

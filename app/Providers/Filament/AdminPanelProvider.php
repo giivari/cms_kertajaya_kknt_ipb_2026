@@ -61,7 +61,7 @@ class AdminPanelProvider extends PanelProvider
                         if ($faviconMedia && $faviconMedia->invisible_watermark_status?->value === 'verified') {
                             $faviconDerivative = $faviconMedia->getPublicDerivative('thumbnail');
                             if ($faviconDerivative) {
-                                return \Illuminate\Support\Facades\Storage::disk('public')->url($faviconDerivative->filename);
+                                return $faviconMedia->url;
                             }
                         }
                     } catch (\Exception $e) {}
@@ -112,6 +112,7 @@ class AdminPanelProvider extends PanelProvider
                 AddQueuedCookiesToResponse::class,
                 StartSession::class,
                 AuthenticateSession::class,
+                \App\Http\Middleware\EnsureAdminMfaRecoveryVersion::class,
                 ShareErrorsFromSession::class,
                 VerifyCsrfToken::class,
                 SubstituteBindings::class,
@@ -122,6 +123,11 @@ class AdminPanelProvider extends PanelProvider
                 Authenticate::class,
                 ForcePasswordChange::class,
                 AbsoluteSessionTimeout::class,
+            ], isPersistent: true)
+            ->persistentMiddleware([
+                AuthenticateSession::class,
+                \App\Http\Middleware\EnsureAdminMfaRecoveryVersion::class,
+                \Filament\Auth\MultiFactor\Http\Middleware\EnsureMultiFactorAuthenticationIsEnabled::class,
             ]);
     }
 }

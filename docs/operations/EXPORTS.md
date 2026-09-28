@@ -1,0 +1,9 @@
+# Operasi ekspor tabel Admin (P5)
+
+Format aktif: CSV, XLSX, dan PDF. Action mengikuti pencarian, filter, dan urutan tabel Admin serta otorisasi resource. CSV/XLSX memakai queue database dan batas 10.000 baris, chunk 100; PDF dibatasi 1.000 baris dan dirender sinkron saat action dipilih. **D12 disetujui:** identitas permintaan/filter/urutan/chunk stabil, tetapi nilai baris yang berubah antarchunk boleh berbeda. Ekspor bukan snapshot nilai pada satu waktu.
+
+File berada pada disk `admin_exports` yang mengarah ke `storage/app/private/filament_exports/<id>`, bukan URL statis. P5 mencatat state pending/generating/failed/completed/cleanup_failed, manifest chunk, ukuran/hash/format artefak, dan menandai completed hanya setelah verifikasi. Download memeriksa pemilik Admin, sesi/security boundary, state completed, format, masa berlaku, lokasi dan byte artefak saat request. Notifikasi Filament adalah pemberitahuan dalam aplikasi; jangan menyebutnya email. Kegagalan harus terlihat pada state/notifikasi/log, bukan sukses semu.
+
+Source membatasi download completed hingga satu hari dari `completed_at`; scheduler hourly membersihkan completed/failed yang lebih dari satu hari dan mencoba lagi `cleanup_failed` secara aman. Ini masa berlaku **artefak ekspor saat ini**, bukan kebijakan retensi umum D08 atau backup D09. Scheduler/worker produksi belum diverifikasi; lihat [QUEUE_AND_SCHEDULER](QUEUE_AND_SCHEDULER.md). Jangan menghapus `filament_exports` secara wildcard: cleanup memeriksa ID, disk, ownership path, file yang dikenal, dan state. Ketika job tertahan, periksa queue/failed jobs dan status sebelum retry; jangan menganggap artefak parsial dapat diunduh.
+
+Daftar exporter/kolom dan filter spesifik dibentuk oleh resource saat runtime. Arsitektur snapshot nilai adalah perubahan produk terpisah di luar D12 yang disetujui. Pengujian P5/Suite P7 membuktikan artefak pada lingkungan disposable, bukan throughput produksi.

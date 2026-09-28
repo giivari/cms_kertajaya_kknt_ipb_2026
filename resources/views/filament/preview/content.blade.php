@@ -254,7 +254,7 @@
             <div class="grid gap-6 p-6 md:grid-cols-2">
                 <section><h2 class="font-bold">Mesin Pencari</h2><p>{{ $value('meta_title') }}</p><p class="text-gray-600">{{ $value('meta_description') }}</p></section>
                 <section><h2 class="font-bold">Kontak</h2><p>{{ $value('contact_email') }}</p><p>{{ $value('contact_phone') }}</p><p>{{ $value('address_street') }}</p></section>
-                <section><h2 class="font-bold">Media Sosial</h2><p>{{ $value('social_facebook') }}</p><p>{{ $value('social_instagram') }}</p><p>{{ $value('social_youtube') }}</p></section>
+                <section><h2 class="font-bold">Media Sosial</h2><p>{{ $value('social_facebook') }}</p><p>{{ $value('social_instagram') }}</p><p>{{ $value('social_twitter') }}</p><p>{{ $value('social_youtube') }}</p></section>
                 <section><h2 class="font-bold">Tanda Air</h2><p>{{ $value('enable_visible_watermark') ? $value('watermark_text', 'Aktif') : 'Tidak aktif' }}</p></section>
             </div>
             <footer class="bg-gray-900 p-5 text-white">{{ $value('footer_copyright_text', 'Teks kaki halaman') }}</footer>

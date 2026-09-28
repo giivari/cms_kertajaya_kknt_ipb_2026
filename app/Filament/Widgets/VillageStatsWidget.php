@@ -2,7 +2,6 @@
 
 namespace App\Filament\Widgets;
 
-use App\Enums\PageStatus;
 use App\Models\Document;
 use App\Models\GalleryAlbum;
 use App\Models\News;
@@ -23,14 +22,14 @@ class VillageStatsWidget extends Widget
             'stats' => [
                 [
                     'label' => 'Halaman Diterbitkan',
-                    'value' => Page::where('status', PageStatus::PUBLISHED->value)->count(),
+                    'value' => Page::published()->count(),
                     'description' => 'Dapat diakses pengunjung',
                     'icon' => 'heroicon-o-document-text',
                     'tone' => 'teal',
                 ],
                 [
                     'label' => 'Berita Diterbitkan',
-                    'value' => News::where('status', PageStatus::PUBLISHED->value)->count(),
+                    'value' => News::published()->count(),
                     'description' => 'Tayang di kanal berita',
                     'icon' => 'heroicon-o-newspaper',
                     'tone' => 'emerald',
@@ -43,9 +42,9 @@ class VillageStatsWidget extends Widget
                     'tone' => 'yellow',
                 ],
                 [
-                    'label' => 'Dokumen Publik',
-                    'value' => Document::where('status', PageStatus::PUBLISHED->value)->count(),
-                    'description' => 'Siap diunduh pengunjung',
+                    'label' => 'Dokumen Diterbitkan',
+                    'value' => Document::published()->count(),
+                    'description' => 'Berstatus terbit',
                     'icon' => 'heroicon-o-folder-open',
                     'tone' => 'navy',
                 ],

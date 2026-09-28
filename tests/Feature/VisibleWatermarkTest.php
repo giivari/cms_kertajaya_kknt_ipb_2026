@@ -1,84 +1,78 @@
 <?php
 
 use App\Jobs\ProcessMediaJob;
-use App\Services\MediaProcessingService;
+use App\Models\Media;
 use App\Services\SettingsService;
 use App\Services\WatermarkService;
 use App\Services\WatermarkVerificationService;
-use Illuminate\Http\UploadedFile;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
 
-it('changes pixels when visible watermark is enabled', function () {
-    Storage::fake('private');
-    Storage::fake('public');
-    config(['watermark.signing_key' => 'test']);
-    SettingsService::set('enable_visible_watermark', true);
+uses(RefreshDatabase::class);
 
-    $tempPath = tempnam(sys_get_temp_dir(), 'test');
-    $image = imagecreatetruecolor(100, 100);
-    $originalColor = imagecolorallocate($image, 0, 0, 0);
-    imagefill($image, 0, 0, $originalColor);
-    imagejpeg($image, $tempPath);
+function visibleWatermarkFixture(): array
+{
+    $image = imagecreatetruecolor(120, 120);
+    imagefilledrectangle($image, 0, 0, 119, 119, imagecolorallocate($image, 20, 20, 20));
+    ob_start();
+    imagepng($image);
+    $bytes = (string) ob_get_clean();
+    imagedestroy($image);
+    $filename = 'visible-'.uniqid().'.png';
+    Storage::disk('local')->put('originals/'.$filename, $bytes);
+    $media = Media::create([
+        'disk' => 'local', 'directory' => 'originals', 'filename' => $filename,
+        'original_filename' => 'fixture.png', 'mime_type' => 'image/png', 'extension' => 'png',
+        'size' => strlen($bytes), 'width' => 120, 'height' => 120,
+        'checksum' => hash('sha256', $bytes), 'metadata' => [],
+        'processing_status' => 'pending', 'invisible_watermark_status' => 'pending',
+    ]);
 
-    $originalImage = imagecreatefromjpeg($tempPath);
-    $originalColorAt50 = imagecolorat($originalImage, 50, 50);
+    return [$media, $bytes];
+}
 
-    $file = new UploadedFile($tempPath, 'test.jpg', 'image/jpeg', null, true);
-
-    $service = new MediaProcessingService;
-    $media = $service->handleUpload($file, ['original_filename' => 'Test Image']);
-
-    $job = new ProcessMediaJob($media);
-    $job->handle(app(WatermarkService::class), app(WatermarkVerificationService::class));
-
-    $media->refresh();
-    $publicPath = Storage::disk('public')->path('media/'.$media->filename);
-
-    $newImage = imagecreatefromjpeg($publicPath);
-
-    $changed = false;
-    for ($y = 0; $y < 100; $y++) {
-        for ($x = 0; $x < 100; $x++) {
-            if (imagecolorat($newImage, $x, $y) !== $originalColorAt50) {
-                $changed = true;
-                break 2;
-            }
+function visibleWatermarkPixels(string $path): array
+{
+    $image = imagecreatefrompng($path);
+    $pixels = [];
+    for ($y = 0; $y < 120; $y++) {
+        for ($x = 0; $x < 120; $x++) {
+            $pixels[] = imagecolorat($image, $x, $y);
         }
     }
+    imagedestroy($image);
 
-    expect($changed)->toBeTrue();
+    return $pixels;
+}
+
+it('changes image pixels when the visible watermark setting is enabled', function () {
+    config(['watermark.signing_key' => 'disposable-visible-test-key']);
+    SettingsService::set('enable_visible_watermark', true);
+    SettingsService::set('watermark_text', 'TEST');
+    SettingsService::set('watermark_position', 'center');
+    [$media] = visibleWatermarkFixture();
+    $originalPath = Storage::disk('local')->path('originals/'.$media->filename);
+    $before = visibleWatermarkPixels($originalPath);
+
+    (new ProcessMediaJob($media))->handle(app(WatermarkService::class), app(WatermarkVerificationService::class));
+
+    $active = $media->fresh()->derivatives()->where('derivative_type', \App\Enums\DerivativeType::PUBLIC)->sole();
+    $after = visibleWatermarkPixels(Storage::disk('local')->path($active->filename));
+    expect($after)->not->toEqual($before);
+    expect(Storage::disk('public')->allFiles())->toBe([]);
 });
 
-it('does not change pixels when visible watermark is disabled', function () {
-    Storage::fake('private');
-    Storage::fake('public');
-    config(['watermark.signing_key' => 'test']);
+it('preserves image pixels when the visible watermark setting is disabled', function () {
+    config(['watermark.signing_key' => 'disposable-visible-test-key']);
     SettingsService::set('enable_visible_watermark', false);
+    [$media] = visibleWatermarkFixture();
+    $originalPath = Storage::disk('local')->path('originals/'.$media->filename);
+    $before = visibleWatermarkPixels($originalPath);
 
-    $tempPath = tempnam(sys_get_temp_dir(), 'test');
-    $image = imagecreatetruecolor(100, 100);
-    $originalColor = imagecolorallocate($image, 0, 0, 0);
-    imagefill($image, 0, 0, $originalColor);
-    imagejpeg($image, $tempPath);
+    (new ProcessMediaJob($media))->handle(app(WatermarkService::class), app(WatermarkVerificationService::class));
 
-    $originalImage = imagecreatefromjpeg($tempPath);
-    $originalColorAt50 = imagecolorat($originalImage, 50, 50);
-
-    $file = new UploadedFile($tempPath, 'test.jpg', 'image/jpeg', null, true);
-
-    $service = new MediaProcessingService;
-    $media = $service->handleUpload($file, ['original_filename' => 'Test Image']);
-    $job = new ProcessMediaJob($media);
-    $job->handle(
-        app(WatermarkService::class),
-        app(WatermarkVerificationService::class)
-    );
-
-    $media->refresh();
-    $publicPath = Storage::disk('public')->path('media/'.$media->filename);
-
-    $newImage = imagecreatefromjpeg($publicPath);
-    $newColorAt50 = imagecolorat($newImage, 50, 50);
-
-    expect($newColorAt50)->toBe($originalColorAt50);
+    $active = $media->fresh()->derivatives()->where('derivative_type', \App\Enums\DerivativeType::PUBLIC)->sole();
+    $after = visibleWatermarkPixels(Storage::disk('local')->path($active->filename));
+    expect($after)->toEqual($before);
+    expect(Storage::disk('public')->allFiles())->toBe([]);
 });

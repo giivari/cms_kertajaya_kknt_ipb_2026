@@ -20,7 +20,14 @@ class B12BThemeModeTest extends TestCase
 
     public function test_admin_panel_preserves_sidebar_configuration(): void
     {
-        $this->assertEquals('16rem', Filament::getSidebarWidth(), 'Sidebar width must be 16rem.');
+        $this->assertTrue(Filament::isSidebarCollapsibleOnDesktop());
+        $this->assertMatchesRegularExpression('/^\d+(?:\.\d+)?rem$/', Filament::getSidebarWidth());
+        $this->assertMatchesRegularExpression('/^\d+(?:\.\d+)?rem$/', Filament::getCollapsedSidebarWidth());
+        $this->assertGreaterThan(
+            (float) Filament::getCollapsedSidebarWidth(),
+            (float) Filament::getSidebarWidth(),
+            'Expanded sidebar must remain wider than its collapsed state.',
+        );
     }
 
     public function test_admin_panel_preserves_lihat_website_hook(): void

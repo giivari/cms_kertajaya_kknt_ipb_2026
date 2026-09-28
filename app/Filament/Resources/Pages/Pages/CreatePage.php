@@ -12,8 +12,10 @@ class CreatePage extends CreateRecord
 {
     protected static bool $canCreateAnother = false;
 
+    protected ?bool $hasDatabaseTransactions = true;
+
     use \App\Filament\Support\Concerns\HasStatusActions;
-    use HasCreatePreview;
+    use HasCreatePreview { afterCreate as clearPreviewDraftAfterCreate; }
 
     protected static string $resource = PageResource::class;
 
@@ -52,6 +54,8 @@ class CreatePage extends CreateRecord
         }
 
         $service->saveSectionsAndComponents($this->record, $sections);
+        \App\Services\AuditLogService::log('page_created', $this->record);
+        $this->clearPreviewDraftAfterCreate();
     }
 
     protected function getCreatedNotificationTitle(): ?string

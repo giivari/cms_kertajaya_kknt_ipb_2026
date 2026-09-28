@@ -3,8 +3,10 @@
 namespace App\Services\Preview;
 
 use App\Models\PreviewToken;
+use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class PreviewTokenStore
 {
@@ -73,6 +75,9 @@ class PreviewTokenStore
         $expiresAt = (clone $now)->addMinutes(config('preview.ttl_minutes'));
 
         DB::transaction(function () use ($adminId, $sessionFingerprint, $previewType, $encryptedPayload, $payloadBytes, $now, $expiresAt, $tokenHash) {
+            // The owner row is stable even when no preview token exists yet.
+            // This serializes creation and eviction for this owner's sessions.
+            \App\Models\Admin::query()->whereKey($adminId)->lockForUpdate()->firstOrFail();
             $this->pruneExpired();
 
             PreviewToken::create([
@@ -91,11 +96,13 @@ class PreviewTokenStore
             $activeTokens = PreviewToken::where('admin_id', $adminId)
                 ->where('session_fingerprint', $sessionFingerprint)
                 ->orderBy('created_at', 'desc')
-                ->pluck('id');
+                ->orderBy('id', 'desc')
+                ->get();
 
             if ($activeTokens->count() > $maxActive) {
-                $idsToDelete = $activeTokens->slice($maxActive)->values();
-                PreviewToken::whereIn('id', $idsToDelete)->delete();
+                $evicted = $activeTokens->slice($maxActive);
+                PreviewToken::whereIn('id', $evicted->pluck('id'))->delete();
+                $this->cleanupAfterCommit($evicted);
             }
         });
 
@@ -120,9 +127,14 @@ class PreviewTokenStore
             return null;
         }
 
-        $jsonPayload = Crypt::decryptString($record->encrypted_payload);
+        try {
+            $payload = json_decode(Crypt::decryptString($record->encrypted_payload), true, 512, JSON_THROW_ON_ERROR);
+        } catch (DecryptException|\JsonException $exception) {
+            return null;
+        }
 
-        return json_decode($jsonPayload, true, 512, JSON_THROW_ON_ERROR);
+        return is_array($payload) && ($payload['type'] ?? $record->preview_type) === $record->preview_type
+            ? $payload : null;
     }
 
     public function revoke(
@@ -133,17 +145,55 @@ class PreviewTokenStore
         $tokenHash = hash('sha256', $rawToken);
         $sessionFingerprint = hash_hmac('sha256', $sessionId, config('app.key'));
 
-        $deleted = PreviewToken::where('token_hash', $tokenHash)
-            ->where('admin_id', $adminId)
-            ->where('session_fingerprint', $sessionFingerprint)
-            ->delete();
+        $deleted = DB::transaction(function () use ($tokenHash, $adminId, $sessionFingerprint): int {
+            $records = PreviewToken::where('token_hash', $tokenHash)
+                ->where('admin_id', $adminId)
+                ->where('session_fingerprint', $sessionFingerprint)
+                ->lockForUpdate()->get();
+            $count = PreviewToken::whereIn('id', $records->pluck('id'))->delete();
+            $this->cleanupAfterCommit($records);
+
+            return $count;
+        });
 
         return $deleted > 0;
     }
 
     public function pruneExpired(): int
     {
-        return PreviewToken::where('expires_at', '<=', now())->delete();
+        $count = DB::transaction(function (): int {
+            $records = PreviewToken::where('expires_at', '<=', now())->lockForUpdate()->get();
+            $count = PreviewToken::whereIn('id', $records->pluck('id'))->delete();
+            $this->cleanupAfterCommit($records);
+
+            return $count;
+        });
+
+        PreviewTemporaryAssets::pruneOrphans();
+
+        return $count;
+    }
+
+    private function cleanupAfterCommit(\Illuminate\Support\Collection $records): void
+    {
+        $paths = [];
+        foreach ($records as $record) {
+            try {
+                $payload = json_decode(Crypt::decryptString($record->encrypted_payload), true, 512, JSON_THROW_ON_ERROR);
+            } catch (DecryptException|\JsonException $exception) {
+                continue;
+            }
+            $assetMap = $payload['temporary_assets_map'] ?? [];
+            foreach (is_array($assetMap) ? $assetMap : [] as $asset) {
+                $path = is_array($asset) ? ($asset['path'] ?? null) : null;
+                if (is_string($path) && preg_match('~^preview-assets/[a-f0-9]{32}/[a-f0-9]{32}$~D', $path)) {
+                    $paths[] = $path;
+                }
+            }
+        }
+        if ($paths !== []) {
+            DB::afterCommit(static fn () => Storage::disk('local')->delete(array_unique($paths)));
+        }
     }
 
     protected function validatePayload(mixed $payload): void

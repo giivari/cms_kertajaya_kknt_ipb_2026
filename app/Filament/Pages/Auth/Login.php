@@ -3,6 +3,8 @@
 namespace App\Filament\Pages\Auth;
 
 use App\Filament\Forms\Components\Turnstile;
+use App\Services\AdminLoginThrottle;
+use DanHarrin\LivewireRateLimiting\Exceptions\TooManyRequestsException;
 use Filament\Actions\Action;
 use Filament\Auth\Http\Responses\Contracts\LoginResponse;
 use Filament\Auth\Pages\Login as BaseLogin;
@@ -11,6 +13,8 @@ use Filament\Schemas\Components\Component;
 use Filament\Schemas\Schema;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Contracts\Auth\Guard;
 use SensitiveParameter;
 
 class Login extends BaseLogin
@@ -21,7 +25,11 @@ class Login extends BaseLogin
             $response = parent::authenticate();
             
             // Logout other devices to enforce single session
-            \Illuminate\Support\Facades\Auth::logoutOtherDevices($this->data['password']);
+            if ($response !== null) {
+                app(AdminLoginThrottle::class)->succeeded($this->throttleKey());
+                session()->put('admin_mfa_recovery_version', (int) \Illuminate\Support\Facades\Auth::guard('web')->user()->mfa_recovery_version);
+                \Illuminate\Support\Facades\Auth::logoutOtherDevices($this->data['password']);
+            }
             
             return $response;
         } catch (ValidationException $e) {
@@ -37,6 +45,25 @@ class Login extends BaseLogin
             
             throw $e;
         }
+    }
+
+    protected function rateLimit($maxAttempts, $decaySeconds = 60, $method = null, $component = null)
+    {
+        $seconds = app(AdminLoginThrottle::class)->waitSeconds($this->throttleKey());
+        if ($seconds > 0) {
+            throw new TooManyRequestsException(static::class, 'authenticate', request()->ip(), $seconds);
+        }
+    }
+
+    protected function fireFailedEvent(Guard $guard, ?Authenticatable $user, #[SensitiveParameter] array $credentials): void
+    {
+        parent::fireFailedEvent($guard, $user, $credentials);
+        app(AdminLoginThrottle::class)->failed($this->throttleKey());
+    }
+
+    private function throttleKey(): string
+    {
+        return app(AdminLoginThrottle::class)->key((string) ($this->data['username'] ?? ''), request()->ip());
     }
 
     public function hasLogo(): bool

@@ -69,6 +69,10 @@ class LocationForm
                 ->schema([
                             Hidden::make('status')
                                 ->default('draft'),
+                            \Filament\Forms\Components\DateTimePicker::make('published_at')
+                                ->label('Jadwal Publikasi')
+                                ->timezone('Asia/Jakarta')
+                                ->helperText('Kosongkan untuk terbit segera saat dipublikasikan; tanggal mendatang tidak tampil lebih awal.'),
                     \Filament\Schemas\Components\Section::make('Klasifikasi')
                         ->description('Pengelompokan lokasi pada website.')
                         ->schema([
