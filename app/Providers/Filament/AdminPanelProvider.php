@@ -3,6 +3,7 @@
 namespace App\Providers\Filament;
 
 use App\Filament\AvatarProviders\LocalInitialsAvatarProvider;
+use App\Filament\Livewire\SecureDatabaseNotifications;
 use App\Filament\Pages\Auth\EditProfile;
 use App\Filament\Pages\MyProfile;
 use App\Filament\Pages\Auth\Login;
@@ -10,6 +11,7 @@ use App\Http\Middleware\AbsoluteSessionTimeout;
 use App\Http\Middleware\ForcePasswordChange;
 use Filament\Auth\MultiFactor\App\AppAuthentication;
 use Filament\Enums\ThemeMode;
+use Filament\Facades\Filament;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -43,7 +45,8 @@ class AdminPanelProvider extends PanelProvider
                 'profile' => MenuItem::make()
                     ->label(fn() => 'Profil')
                     ->url(fn (): string => MyProfile::getUrl())
-                    ->icon('heroicon-o-user'),
+                    ->icon('heroicon-o-user')
+                    ->visible(fn (): bool => self::hasCompletedRequiredMfa()),
             ])
             ->multiFactorAuthentication(
                 providers: [
@@ -79,7 +82,10 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->viteTheme('resources/css/filament/admin/theme.css')
             ->defaultThemeMode(ThemeMode::Dark)
-            ->databaseNotifications()
+            ->databaseNotifications(
+                condition: fn (): bool => self::hasCompletedRequiredMfa(),
+                livewireComponent: SecureDatabaseNotifications::class,
+            )
             ->renderHook(
                 PanelsRenderHook::STYLES_AFTER,
                 fn () => view('filament.styles')
@@ -129,5 +135,12 @@ class AdminPanelProvider extends PanelProvider
                 \App\Http\Middleware\EnsureAdminMfaRecoveryVersion::class,
                 \Filament\Auth\MultiFactor\Http\Middleware\EnsureMultiFactorAuthenticationIsEnabled::class,
             ]);
+    }
+
+    private static function hasCompletedRequiredMfa(): bool
+    {
+        $user = Filament::auth()->user();
+
+        return $user && AppAuthentication::make()->isEnabled($user);
     }
 }

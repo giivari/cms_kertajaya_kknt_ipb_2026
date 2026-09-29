@@ -13,6 +13,7 @@ use App\Filament\Widgets\WelcomeHeaderWidget;
 use App\Models\Admin;
 use App\Models\AuditLog;
 use DateTimeInterface;
+use Filament\Auth\MultiFactor\App\AppAuthentication;
 use Filament\Facades\Filament;
 use Filament\Support\Icons\Heroicon;
 use Filament\View\PanelsIconAlias;
@@ -182,7 +183,9 @@ class B12ADashboardRegistrationTest extends TestCase
 
     public function test_panel_keeps_official_shell_behaviors_and_local_avatar(): void
     {
-        $admin = Admin::factory()->create();
+        $admin = Admin::factory()->create([
+            'app_authentication_secret' => AppAuthentication::make()->generateSecret(),
+        ]);
         $panel = Filament::getPanel('admin');
 
         Filament::setCurrentPanel($panel);
