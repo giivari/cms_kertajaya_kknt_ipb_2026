@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Pages;
 
 use App\Filament\Exports\PageExporter;
+use App\Filament\Forms\Components\LocationPicker;
 use App\Filament\Support\AdminTable;
 use App\Enums\DerivativeType;
 use App\Enums\InvisibleWatermarkStatus;
@@ -242,9 +243,39 @@ class PageResource extends Resource
                                                     ->label('Peta')
                                                     ->schema([
                                                         Hidden::make('id')->dehydrated(),
-                                                        TextInput::make('latitude')->label('Garis Lintang')->numeric()->required()->placeholder('Contoh: -6.917464'),
-                                                        TextInput::make('longitude')->label('Garis Bujur')->numeric()->required()->placeholder('Contoh: 107.619123'),
-                                                        TextInput::make('zoom')->label('Tingkat Pembesaran')->numeric()->default(15),
+                                                        LocationPicker::make('location_picker')
+                                                            ->label('Pencarian dan peta lokasi')
+                                                            ->zoomPath('zoom')
+                                                            ->columnSpanFull(),
+                                                        Section::make('Ubah Koordinat Manual')
+                                                            ->description('Gunakan bila pencarian tidak tersedia atau titik perlu dimasukkan langsung.')
+                                                            ->schema([
+                                                                TextInput::make('latitude')
+                                                                    ->label('Garis Lintang')
+                                                                    ->numeric()
+                                                                    ->required()
+                                                                    ->minValue(-90)
+                                                                    ->maxValue(90)
+                                                                    ->placeholder('Contoh: -6.917464')
+                                                                    ->live(onBlur: true),
+                                                                TextInput::make('longitude')
+                                                                    ->label('Garis Bujur')
+                                                                    ->numeric()
+                                                                    ->required()
+                                                                    ->minValue(-180)
+                                                                    ->maxValue(180)
+                                                                    ->placeholder('Contoh: 107.619123')
+                                                                    ->live(onBlur: true),
+                                                            ])
+                                                            ->columns(['md' => 2])
+                                                            ->collapsible()
+                                                            ->collapsed()
+                                                            ->columnSpanFull(),
+                                                        TextInput::make('zoom')
+                                                            ->label('Tingkat Pembesaran')
+                                                            ->numeric()
+                                                            ->default(15)
+                                                            ->live(onBlur: true),
                                                     ]),
                                                 Block::make('documents')
                                                     ->label('Dokumen')

@@ -104,6 +104,20 @@ test('location list and popup data contain correct detail link', function () {
         ->assertSee('Kantor Desa');
 });
 
+test('location detail preserves Google Maps handoff from stored coordinates', function () {
+    $location = Location::factory()->create([
+        'latitude' => '-6.9123456',
+        'longitude' => '106.7654321',
+    ]);
+
+    $this->get(route('public.map.show', $location))
+        ->assertOk()
+        ->assertSee('Buka di Google Maps')
+        ->assertSee('https://www.google.com/maps/search/?api=1&query=-6.9123456,106.7654321', false)
+        ->assertSee('target="_blank"', false)
+        ->assertSee('rel="noopener noreferrer"', false);
+});
+
 test('public visibility is identical for map list detail and model check', function () {
     $visible = Location::factory()->create([
         'name' => 'Lokasi Terlihat Konsisten',
