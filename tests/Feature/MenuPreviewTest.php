@@ -26,7 +26,7 @@ test('menu create and edit preview render visible navigation without persistence
     ];
 
     $lw = Livewire::actingAs($admin)->test(CreateMenu::class)
-        ->fillForm(['location' => Menu::HEADER, 'items' => $items])
+        ->fillForm(['items' => $items])
         ->callAction($preview);
         
     $lw->assertRedirectContains('/preview-shell/');
@@ -58,7 +58,7 @@ test('menu create and edit preview render visible navigation without persistence
 
     expect([Menu::count(), MenuItem::count()])->toBe($before);
 
-    $menu = Menu::create(['location' => Menu::FOOTER]);
+    $menu = Menu::create(['location' => Menu::HEADER]);
     $lwEdit = Livewire::actingAs($admin)->test(EditMenu::class, ['record' => $menu->getRouteKey()])
         ->fillForm(['items' => [['label' => 'Kontak Desa', 'link_type' => LinkType::CONTACT->value, 'is_visible' => true, 'children' => []]]])
         ->callAction($preview);
@@ -81,14 +81,14 @@ test('menu create and edit preview render visible navigation without persistence
     expect($menu->fresh()->items)->toHaveCount(0);
 });
 
-test('menu form retains placement, destination, hierarchy, visibility, and preview controls', function () {
+test('navigation form retains destination, hierarchy, visibility, and preview controls without placement selection', function () {
     $source = file_get_contents(app_path('Filament/Resources/Menus/MenuResource.php'));
-    $sections = ['Tentang Menu', 'Tautan yang Ditampilkan', 'Pratinjau Navigasi'];
+    $sections = ['Tentang Navigasi', 'Tautan yang Ditampilkan', 'Pratinjau Navigasi'];
 
     expect(substr_count($source, "Section::make('Tautan yang Ditampilkan')"))->toBe(1)
         ->and($source)->not->toContain("->label('Tautan yang Ditampilkan')")
         ->and($source)->toContain('->hiddenLabel()')
-        ->and($source)->toContain("Select::make('location')")
+        ->and($source)->not->toContain("Select::make('location')")
         ->and($source)->toContain("Repeater::make('children')")
         ->and($source)->toContain("Select::make('link_type')")
         ->and($source)->toContain("Select::make('page_id')")

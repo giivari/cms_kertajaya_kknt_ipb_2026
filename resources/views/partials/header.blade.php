@@ -55,7 +55,7 @@
             </div>
 
             <!-- Desktop Menu -->
-            <nav aria-label="Navigasi Utama" class="hidden lg:flex items-center gap-4 xl:gap-8">
+            <nav aria-label="Navigasi Website" class="hidden lg:flex items-center gap-4 xl:gap-8">
                 @if(isset($headerMenu) && $headerMenu->items->isNotEmpty())
                     @foreach($headerMenu->items as $item)
                         @if($item->children->isNotEmpty())

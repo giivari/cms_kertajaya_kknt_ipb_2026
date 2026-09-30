@@ -19,7 +19,7 @@ final class NavigationResolver
 
         // Legacy editor state may still refer to the primary location by its
         // old name; normalized previews always carry current destinations.
-        $previewLocation = $recordSnapshot['location'] ?? $previewState['location'] ?? null;
+        $previewLocation = $previewState['location'] ?? $recordSnapshot['location'] ?? null;
         if ($previewLocation === 'header_menu') {
             $previewLocation = Menu::HEADER;
         }

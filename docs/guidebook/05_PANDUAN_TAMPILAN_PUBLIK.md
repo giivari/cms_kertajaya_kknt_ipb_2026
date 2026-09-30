@@ -2,10 +2,10 @@
 
 Bagian ini bukan ditujukan untuk mengubah isi sistem, melainkan menjelaskan bagaimana konten yang telah Anda buat di *Panel Admin* dikonversi dan ditampilkan ke pengunjung biasa (Warga Desa atau Tamu dari luar). Memahami alur ini akan membantu Anda mengemas informasi dengan lebih rapi.
 
-## A. Navigasi Atas (Header) & Kaki (Footer)
-- Di halaman publik, **Menu Navigasi** yang Anda atur lewat admin akan muncul memanjang di bagian paling atas (*Header*).
+## A. Navigasi Website dan Kaki Halaman
+- Di halaman publik, **Navigasi** yang Anda atur lewat admin akan muncul di bagian paling atas (*Header*) pada tampilan desktop dan menu mobile.
 - Ikon logo kecil dan nama yang di-klik akan selalu membawa pengguna kembali ke Beranda (Halaman Utama).
-- Bagian **Kaki Halaman (Footer)** memakai menu Footer tersendiri dan pengaturan tampilan/kontak yang memiliki consumer aktif. Periksa pratinjau dan hasil publik setelah menyimpan; jangan menganggap setiap kontrol lama telah memiliki efek publik.
+- Bagian **Kaki Halaman (Footer)** tidak memiliki menu navigasi terpisah. Isinya berasal dari Pengaturan Website, termasuk identitas desa, media sosial, kontak, jam layanan, teks kaki halaman, dan tautan footer yang tersedia.
 
 ## B. Halaman Beranda (Home)
 Kesan pertama pengunjung ada di sini! Terdiri dari beberapa blok (*section*):

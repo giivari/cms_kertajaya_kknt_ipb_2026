@@ -4,9 +4,7 @@ namespace App\Filament\Resources\Menus;
 
 use App\Enums\LinkType;
 use App\Enums\PageStatus;
-use App\Filament\Exports\MenuExporter;
 use App\Filament\Resources\Menus\Pages\EditMenu;
-use App\Filament\Resources\Menus\Pages\EditFooterMenu;
 use App\Filament\Resources\Menus\Pages\CreateMenu;
 use App\Models\Menu;
 use App\Filament\Support\AdminTable;
@@ -44,12 +42,12 @@ class MenuResource extends Resource
 
     public static function getPluralModelLabel(): string
     {
-        return 'Menu';
+        return 'Navigasi';
     }
 
     public static function getModelLabel(): string
     {
-        return 'Menu';
+        return 'Navigasi';
     }
 
     protected static ?string $model = Menu::class;
@@ -65,19 +63,9 @@ class MenuResource extends Resource
     {
         return $schema
             ->schema([
-                Select::make('location')
-                    ->label('Posisi Menu')
-                    ->options(Menu::supportedLocations())
-                    ->required()
-                    ->disabled(fn (?Menu $record): bool => $record !== null),
-                Section::make('Tentang Menu')
+                Section::make('Tentang Navigasi')
                     ->schema([
-                        Text::make(function (?Menu $record) {
-                            if (! $record) {
-                                return 'Menu adalah daftar tautan navigasi. Menu tidak membuat isi baru; buat isi melalui Halaman, lalu tambahkan halaman tersebut sebagai tautan di sini.';
-                            }
-                            return "Anda sedang mengelola tautan navigasi untuk {$record->name}. Menu mengatur tombol navigasi yang tampil di website. Menu tidak membuat isi baru; buat isi melalui Halaman, lalu tambahkan halaman tersebut sebagai tautan di sini.";
-                        })
+                        Text::make('Navigasi mengatur tautan yang tampil pada menu website. Navigasi tidak membuat isi baru; buat isi melalui Halaman, lalu tambahkan halaman tersebut sebagai tautan di sini.')
                             ->columnSpanFull(),
                     ])
                     ->columnSpanFull(),
@@ -182,7 +170,7 @@ class MenuResource extends Resource
                     ])
                     ->columnSpanFull(),
                 Section::make('Pratinjau Navigasi')
-                    ->description('Gunakan tombol Pratinjau di bagian bawah form untuk melihat susunan navigasi desktop, mobile, atau kaki halaman sebelum disimpan.')
+                    ->description('Gunakan tombol Pratinjau di bagian bawah form untuk melihat susunan navigasi desktop dan mobile sebelum disimpan.')
                     ->visible(fn (): bool => config('preview.ui_enabled', false))
                     ->columnSpanFull(),
             ]);
@@ -192,7 +180,6 @@ class MenuResource extends Resource
     {
         return [
             'index' => EditMenu::route('/'),
-            'footer' => EditFooterMenu::route('/footer'),
             'create' => CreateMenu::route('/create'),
         ];
     }

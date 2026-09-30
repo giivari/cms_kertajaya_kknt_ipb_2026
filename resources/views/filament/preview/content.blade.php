@@ -183,23 +183,9 @@
     @elseif($type === 'menu')
         @php
             $visibleItems = collect($value('items', []))->filter(fn ($item) => data_get($item, 'is_visible', true));
-            $isFooter = $value('location') === \App\Models\Menu::FOOTER;
-            $locationLabel = \App\Models\Menu::supportedLocations()[$value('location')] ?? 'Lokasi Menu';
         @endphp
-        <h1 class="mb-4 text-xl font-bold text-gray-900">{{ $locationLabel }}</h1>
-        @if($isFooter)
-            <div class="rounded-2xl bg-gray-900 p-6 text-white shadow">
-                <h2 class="mb-4 text-sm font-semibold uppercase tracking-wider text-gray-200">Tautan Cepat</h2>
-                <nav class="grid gap-2">
-                    @forelse($visibleItems as $item)
-                        <span class="text-gray-300">{{ data_get($item, 'label', 'Nama yang Tampil') }}</span>
-                    @empty
-                        <span class="text-gray-400">Belum ada tautan yang ditampilkan.</span>
-                    @endforelse
-                </nav>
-            </div>
-        @else
-            <div class="space-y-6">
+        <h1 class="mb-4 text-xl font-bold text-gray-900">Navigasi</h1>
+        <div class="space-y-6">
                 <section class="rounded-2xl bg-white p-5 shadow">
                     <p class="mb-4 text-xs font-semibold uppercase text-gray-500">Desktop</p>
                     <nav class="flex flex-wrap items-start gap-5">
@@ -232,8 +218,7 @@
                         @endforelse
                     </nav>
                 </section>
-            </div>
-        @endif
+        </div>
     @elseif(in_array($type, ['location-category', 'news-category', 'document-category'], true))
         <div class="mx-auto max-w-lg rounded-2xl bg-white p-6 shadow">
             <h2 class="text-2xl font-bold">{{ $value('name', 'Nama kategori') }}</h2>

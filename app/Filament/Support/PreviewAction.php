@@ -35,13 +35,13 @@ class PreviewAction
             ->action(function ($livewire) use ($type, $editing, $rules) {
                 $state = $livewire->form->getRawState();
                 $state = $state instanceof Arrayable ? $state->toArray() : $state;
+                if ($type === 'menu') {
+                    $state['location'] = \App\Models\Menu::HEADER;
+                }
                 $admin = Filament::auth()->user();
                 $sessionId = session()->getId();
                 abort_unless($admin && is_string($sessionId) && $sessionId !== '', 403);
                 $recordId = $editing ? ($livewire->record->id ?? null) : null;
-                if ($type === 'menu' && $editing && ! array_key_exists('location', $state)) {
-                    $state['location'] = $livewire->record->location ?? null;
-                }
                 app(PreviewDraftStore::class)->remember(get_class($livewire), $recordId, $state);
 
                 Validator::make($state, $rules, [

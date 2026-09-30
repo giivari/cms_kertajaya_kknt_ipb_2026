@@ -30,8 +30,9 @@ test('authenticated admin can render create menu page', function () {
 
     $response
         ->assertOk()
-        ->assertSee('Tentang Menu')
+        ->assertSee('Tentang Navigasi')
         ->assertSee('Tautan yang Ditampilkan')
+        ->assertDontSee('Posisi Menu')
         ->assertSee('<form', false)
         ->assertDontSee('ui-avatars.com', false);
 });

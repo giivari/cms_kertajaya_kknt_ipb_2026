@@ -103,7 +103,7 @@ class PageResource extends Resource
                         Section::make('Informasi Halaman')
                             ->description('Isi dasar halaman yang akan dikenali dan dibaca oleh pengunjung.')
                             ->schema([
-                                Text::make('Halaman berisi informasi yang dapat ditampilkan kepada pengunjung. Setelah dibuat, halaman dapat ditambahkan ke Menu.'),
+                                Text::make('Halaman berisi informasi yang dapat ditampilkan kepada pengunjung. Setelah dibuat, halaman dapat ditambahkan ke Navigasi.'),
                                 Select::make('template')
                                     ->label('Templat')
                                     ->options(app(PageTemplateService::class)->getAvailableTemplates())

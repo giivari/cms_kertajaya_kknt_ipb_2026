@@ -20,30 +20,34 @@ class CreateMenu extends CreateRecord
 
     public function mount(): void
     {
-        $location = request()->query('location', Menu::HEADER);
-        abort_unless(is_string($location) && array_key_exists($location, Menu::supportedLocations()), 404);
-
-        if (Menu::query()->where('location', $location)->exists()) {
-            $this->redirect(MenuResource::getUrl($location === Menu::HEADER ? 'index' : 'footer'));
+        if (Menu::query()->where('location', Menu::HEADER)->exists()) {
+            $this->redirect(MenuResource::getUrl('index'));
 
             return;
         }
 
         parent::mount();
-        $this->form->fill(['location' => $location]);
+    }
+
+    protected function mutateFormDataBeforeCreate(array $data): array
+    {
+        $data['location'] = Menu::HEADER;
+
+        return $data;
     }
 
     protected function handleRecordCreation(array $data): Model
     {
         // The unique location index is the final arbiter for simultaneous creates.
-        abort_if(Menu::query()->where('location', $data['location'])->exists(), 409);
+        abort_if(Menu::query()->where('location', Menu::HEADER)->exists(), 409);
+        $data['location'] = Menu::HEADER;
 
         return parent::handleRecordCreation($data);
     }
 
     protected function getRedirectUrl(): string
     {
-        return MenuResource::getUrl($this->record->location === Menu::HEADER ? 'index' : 'footer');
+        return MenuResource::getUrl('index');
     }
 
     protected function previewType(): string

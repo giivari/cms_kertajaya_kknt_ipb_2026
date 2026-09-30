@@ -10,6 +10,7 @@ use App\Models\MenuItem;
 use App\Models\Page;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
 
@@ -17,7 +18,7 @@ class MenuTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_configured_menus_render_in_header_mobile_navigation_and_footer(): void
+    public function test_primary_navigation_renders_in_header_while_legacy_footer_navigation_is_inert(): void
     {
         $headerMenu = Menu::create(['location' => Menu::HEADER]);
         MenuItem::create([
@@ -27,9 +28,14 @@ class MenuTest extends TestCase
             'custom_url' => 'https://example.test/profil',
         ]);
 
-        $footerMenu = Menu::create(['location' => Menu::FOOTER]);
+        $footerMenuId = DB::table('menus')->insertGetId([
+            'name' => 'Navigasi Kaki Halaman Lama',
+            'location' => 'footer_menu',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
         MenuItem::create([
-            'menu_id' => $footerMenu->id,
+            'menu_id' => $footerMenuId,
             'label' => 'Kebijakan Privasi',
             'link_type' => LinkType::CUSTOM->value,
             'custom_url' => 'https://example.test/privasi',
@@ -37,9 +43,15 @@ class MenuTest extends TestCase
 
         $this->get('/')
             ->assertOk()
-            ->assertSeeTextInOrder(['Profil Desa', 'Profil Desa', 'Kebijakan Privasi'])
+            ->assertSeeTextInOrder(['Profil Desa', 'Profil Desa'])
             ->assertSee('https://example.test/profil', false)
-            ->assertSee('https://example.test/privasi', false);
+            ->assertDontSee('Kebijakan Privasi')
+            ->assertDontSee('https://example.test/privasi', false)
+            ->assertSee('Hubungi Kami')
+            ->assertSee('Jam Pelayanan');
+
+        $this->assertSame(2, DB::table('menus')->count());
+        $this->assertSame(2, DB::table('menu_items')->count());
     }
 
     public function test_hierarchical_menus_resolve_children(): void
@@ -103,10 +115,9 @@ class MenuTest extends TestCase
     {
         $menu = Menu::create(['name' => 'Nama diabaikan', 'location' => Menu::HEADER]);
 
-        $this->assertSame('Navigasi Utama', $menu->name);
+        $this->assertSame('Navigasi', $menu->name);
         $this->assertSame([
-            Menu::HEADER => 'Navigasi Utama',
-            Menu::FOOTER => 'Kaki Halaman',
+            Menu::HEADER => 'Navigasi',
         ], Menu::supportedLocations());
 
         $this->expectException(ValidationException::class);
@@ -137,8 +148,6 @@ class MenuTest extends TestCase
     public function test_empty_or_missing_menus_use_safe_navigation_fallback(): void
     {
         Menu::create(['location' => Menu::HEADER]);
-        Menu::create(['location' => Menu::FOOTER]);
-
         $this->get('/')
             ->assertOk()
             ->assertSee(route('home'), false)
@@ -152,8 +161,8 @@ class MenuTest extends TestCase
         $pageSource = file_get_contents((new \ReflectionClass(PageResource::class))->getFileName());
 
         $this->assertStringNotContainsString("TextInput::make('location')", $menuSource);
-        $this->assertStringContainsString("Select::make('location')", $menuSource);
-        $this->assertStringContainsString('Menu adalah daftar tautan navigasi.', $menuSource);
-        $this->assertStringContainsString('halaman dapat ditambahkan ke Menu.', $pageSource);
+        $this->assertStringNotContainsString("Select::make('location')", $menuSource);
+        $this->assertStringContainsString('Navigasi mengatur tautan yang tampil pada menu website.', $menuSource);
+        $this->assertStringContainsString('halaman dapat ditambahkan ke Navigasi.', $pageSource);
     }
 }

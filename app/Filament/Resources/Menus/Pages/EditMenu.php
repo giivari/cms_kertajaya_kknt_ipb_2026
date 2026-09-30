@@ -6,7 +6,6 @@ use App\Filament\Resources\Menus\MenuResource;
 use App\Filament\Support\Concerns\HasEditPreview;
 use App\Models\Menu;
 use App\Services\ScopedPositionService;
-use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
 
@@ -16,22 +15,15 @@ class EditMenu extends EditRecord
 
     protected ?bool $hasDatabaseTransactions = true;
 
-    protected function menuLocation(): string
-    {
-        return Menu::HEADER;
-    }
-
     public function mount(int|string $record = null): void
     {
-        $menu = $record !== null
-            ? Menu::query()->findOrFail($record)
-            : Menu::query()->where('location', $this->menuLocation())->first();
+        $menu = Menu::query()->where('location', Menu::HEADER)->first();
         if (! $menu) {
             abort_unless(MenuResource::canCreate(), 403);
             // Filament's record authorization hook still runs after mount on
             // redirects; provide an unsaved model without writing business data.
-            $this->record = new Menu(['location' => $this->menuLocation()]);
-            $this->redirect(MenuResource::getUrl('create', ['location' => $this->menuLocation()]));
+            $this->record = new Menu(['location' => Menu::HEADER]);
+            $this->redirect(MenuResource::getUrl('create'));
             $this->skipRender();
 
             return;
@@ -50,9 +42,6 @@ class EditMenu extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Action::make('switchMenu')
-                ->label($this->menuLocation() === Menu::HEADER ? 'Kelola Menu Kaki Halaman' : 'Kelola Navigasi Utama')
-                ->url(MenuResource::getUrl($this->menuLocation() === Menu::HEADER ? 'footer' : 'index')),
             DeleteAction::make(),
         ];
     }
