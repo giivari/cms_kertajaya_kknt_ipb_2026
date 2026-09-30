@@ -1,2 +1,3 @@
 User-agent: *
 Disallow:
+Sitemap: https://desakertajaya.web.id/sitemap.xml
