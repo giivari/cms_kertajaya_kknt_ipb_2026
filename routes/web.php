@@ -10,6 +10,7 @@ use App\Http\Controllers\Public\MapController;
 use App\Http\Controllers\Public\MediaDerivativeController;
 use App\Http\Controllers\Public\NewsController;
 use App\Http\Controllers\Public\SearchController;
+use App\Http\Controllers\Public\SitemapController;
 use App\Http\Controllers\PublicController;
 use Illuminate\Support\Facades\Route;
 
@@ -19,6 +20,7 @@ Route::get(config('village.admin_path', 'desa-dashboard').'/media/{media}/origin
     ->middleware('admin.security');
 
 Route::get('/', [PublicController::class, 'index'])->name('home');
+Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
 Route::get('/media/{media}/derivative', MediaDerivativeController::class)
     ->whereNumber('media')
     ->name('media.derivative');

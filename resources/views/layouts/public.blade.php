@@ -7,6 +7,20 @@
         $defaultTitle = \App\Services\SettingsService::get('meta_title', 'Desa Kertajaya');
         $defaultDesc = \App\Services\SettingsService::get('meta_description', 'Website Resmi Pemerintahan Desa');
         $villageName = \App\Services\SettingsService::get('village_name', 'Desa Kertajaya');
+        $isHome = $isHome ?? request()->routeIs('home');
+        $pageTitle = trim($__env->yieldContent('title'));
+        $documentTitle = $isHome
+            ? $villageName
+            : ($pageTitle !== '' ? $pageTitle . ' | ' . $villageName : $defaultTitle);
+        $isPreviewRoute = request()->routeIs(
+            'pages.preview',
+            'news.preview',
+            'gallery.preview',
+            'documents.preview',
+            'admin.preview.*',
+        ) || ($isPreview ?? false);
+        $canonicalUrl = $isPreviewRoute ? null : url()->current();
+        $homeUrl = rtrim(route('home'), '/') . '/';
 
         $faviconId = \App\Services\SettingsService::get('favicon');
         $faviconUrl = null;
@@ -23,8 +37,19 @@
         }
     @endphp
 
-    <title>@hasSection('title') @yield('title') | {{ $villageName }} @else {{ $defaultTitle }} @endif</title>
+    <title>{{ $documentTitle }}</title>
     <meta name="description" content="@yield('seo_description', $defaultDesc)">
+    @if($canonicalUrl)
+        <link rel="canonical" href="{{ $canonicalUrl }}">
+    @endif
+    @if($isHome)
+        <script type="application/ld+json">{!! json_encode([
+            chr(64) . 'context' => 'https://schema.org',
+            '@type' => 'WebSite',
+            'name' => $villageName,
+            'url' => $homeUrl,
+        ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!}</script>
+    @endif
 
     @if($faviconUrl)
         <link rel="icon" type="image/png" href="{{ $faviconUrl }}">
@@ -43,9 +68,6 @@
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-@php
-    $isHome = $isHome ?? request()->routeIs('home');
-@endphp
 <body class="font-sans antialiased text-gray-900 bg-gray-50 flex flex-col min-h-screen">
     <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:z-[100] focus:p-4 focus:bg-white focus:text-navy">Skip to content</a>
 
