@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Locations\Schemas;
 
+use App\Filament\Forms\Components\LocationPicker;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
@@ -35,30 +36,45 @@ class LocationForm
                                 ->label('Deskripsi Lengkap')
                                 ->placeholder('Contoh: Curug Sawer terletak di kawasan Gunung Gede Pangrango, menawarkan...'),
                         ]),
-                    \Filament\Schemas\Components\Section::make('Peta & Kordinat')
-                        ->description('Detail koordinat dan alamat lengkap dari lokasi ini.')
+                    \Filament\Schemas\Components\Section::make('Peta & Lokasi')
+                        ->description('Cari lokasi, pilih hasil, lalu sesuaikan titik peta bila diperlukan.')
                         ->schema([
+                            LocationPicker::make('location_picker')
+                                ->label('Pencarian dan peta lokasi')
+                                ->addressPath('address')
+                                ->columnSpanFull(),
                             Textarea::make('address')
                                 ->label('Alamat Lengkap')
+                                ->helperText('Alamat terisi saat hasil pencarian dipilih dan tetap dapat diedit.')
                                 ->placeholder('Contoh: Jl. Situgunung Km. 4, Kadudampit')
                                 ->rows(3)
                                 ->columnSpanFull(),
-                            TextInput::make('latitude')
-                                ->label('Garis Lintang (Latitude)')
-                                ->helperText('Contoh: -6.9876543')
-                                ->placeholder('Contoh: -6.9876543')
-                                ->required()
-                                ->numeric()
-                                ->minValue(-90)
-                                ->maxValue(90),
-                            TextInput::make('longitude')
-                                ->label('Garis Bujur (Longitude)')
-                                ->helperText('Contoh: 106.1234567')
-                                ->placeholder('Contoh: 106.1234567')
-                                ->required()
-                                ->numeric()
-                                ->minValue(-180)
-                                ->maxValue(180),
+                            \Filament\Schemas\Components\Section::make('Ubah Koordinat Manual')
+                                ->description('Gunakan bila pencarian tidak tersedia atau titik perlu dimasukkan langsung.')
+                                ->schema([
+                                    TextInput::make('latitude')
+                                        ->label('Garis Lintang (Latitude)')
+                                        ->helperText('Contoh: -6.9876543')
+                                        ->placeholder('Contoh: -6.9876543')
+                                        ->required()
+                                        ->numeric()
+                                        ->minValue(-90)
+                                        ->maxValue(90)
+                                        ->live(onBlur: true),
+                                    TextInput::make('longitude')
+                                        ->label('Garis Bujur (Longitude)')
+                                        ->helperText('Contoh: 106.1234567')
+                                        ->placeholder('Contoh: 106.1234567')
+                                        ->required()
+                                        ->numeric()
+                                        ->minValue(-180)
+                                        ->maxValue(180)
+                                        ->live(onBlur: true),
+                                ])
+                                ->columns(['md' => 2])
+                                ->collapsible()
+                                ->collapsed()
+                                ->columnSpanFull(),
                         ])
                         ->columns(['md' => 2]),
                 ])

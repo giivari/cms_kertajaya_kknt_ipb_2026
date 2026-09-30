@@ -54,6 +54,10 @@ class ContentSecurityTest extends TestCase
             $this->assertSame('SAMEORIGIN', $result->headers->get('X-Frame-Options'));
             $this->assertSame("frame-ancestors 'self'", $result->headers->get('Content-Security-Policy'));
             $this->assertNotNull($result->headers->get('Content-Security-Policy-Report-Only'));
+            $this->assertStringContainsString(
+                "img-src 'self' data: blob: https://*.tile.openstreetmap.org",
+                $result->headers->get('Content-Security-Policy-Report-Only'),
+            );
         }
     }
 }

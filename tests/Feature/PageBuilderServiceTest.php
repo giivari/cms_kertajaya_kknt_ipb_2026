@@ -106,6 +106,36 @@ class PageBuilderServiceTest extends TestCase
         $this->assertEquals('heading', $stateValues[0]['components'][array_key_first($stateValues[0]['components'])]['type']);
     }
 
+    public function test_existing_map_payload_survives_save_and_reconstruction_without_modifying_other_blocks()
+    {
+        $page = Page::create(['title' => 'Page with map', 'slug' => 'page-with-map']);
+        $service = new PageBuilderService;
+
+        $service->saveSectionsAndComponents($page, [[
+            'name' => 'Lokasi',
+            'layout_type' => 'single_column',
+            'components' => [
+                ['type' => 'heading', 'data' => ['text' => 'Alamat Kantor', 'level' => 'h2']],
+                ['type' => 'map', 'data' => [
+                    'latitude' => '-6.9123456',
+                    'longitude' => '106.7654321',
+                    'zoom' => 17,
+                ]],
+            ],
+        ]]);
+
+        $state = $service->reconstructBuilderState($page->fresh(['sections.components']));
+        $components = array_values(array_values($state)[0]['components']);
+
+        $this->assertSame('heading', $components[0]['type']);
+        $this->assertSame('Alamat Kantor', $components[0]['data']['text']);
+        $this->assertSame('map', $components[1]['type']);
+        $this->assertSame('-6.9123456', $components[1]['data']['latitude']);
+        $this->assertSame('106.7654321', $components[1]['data']['longitude']);
+        $this->assertSame(17, $components[1]['data']['zoom']);
+        $this->assertArrayNotHasKey('location_picker', $components[1]['data']);
+    }
+
     public function test_builder_transaction_rolls_back_on_invalid_data()
     {
         $page = Page::create(['title' => 'Test Page 3', 'slug' => 'test-page-3']);
