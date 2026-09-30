@@ -25,6 +25,7 @@ use App\Filament\Resources\NewsCategories\Pages\ListNewsCategories;
 use App\Filament\Resources\Pages\Pages\ListPages;
 use App\Models\Admin;
 use App\Models\AuditLog;
+use App\Models\Menu;
 use App\Models\News;
 use App\Services\AdminExportCleanupService;
 use App\Services\AdminTablePdfExportService;
@@ -33,6 +34,7 @@ use Filament\Actions\ExportAction;
 use Filament\Actions\Exports\Enums\ExportFormat;
 use Filament\Actions\Exports\Models\Export;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
@@ -118,6 +120,20 @@ test('every exporter uses an explicit safe allowlist', function () {
             expect($columnNames)->not->toContain($attribute);
         }
     }
+});
+
+test('menu export exposes only the single primary navigation model', function () {
+    Menu::create(['location' => Menu::HEADER]);
+    DB::table('menus')->insert([
+        'name' => 'Footer Legacy', 'location' => 'footer_menu',
+        'created_at' => now(), 'updated_at' => now(),
+    ]);
+
+    $columnNames = collect(MenuExporter::getColumns())->map->getName();
+    $locations = MenuExporter::modifyQuery(Menu::query())->pluck('location')->all();
+
+    expect($columnNames)->not->toContain('location')
+        ->and($locations)->toBe([Menu::HEADER]);
 });
 
 test('spreadsheet text sanitizer prevents formula injection without mutating source values', function () {

@@ -14,7 +14,7 @@ use App\Filament\Resources\Pages\Pages\CreatePage;
 use App\Filament\Resources\GalleryAlbums\Pages\CreateGalleryAlbum;
 use App\Filament\Resources\Documents\Pages\CreateDocument;
 use App\Filament\Resources\Menus\Pages\CreateMenu;
-use App\Filament\Resources\Menus\Pages\EditFooterMenu;
+use App\Filament\Resources\Menus\Pages\EditMenu;
 use App\Filament\Resources\Media\Pages\CreateMedia;
 use App\Filament\Pages\WebsiteSettings;
 use App\Models\PreviewToken;
@@ -60,7 +60,7 @@ class P4BPreviewIntegrationTest extends TestCase
     public function test_menu_preview_preserves_destinations_hierarchy_and_business_rows(): void
     {
         $state = PreviewStateNormalizer::normalize('menu', [
-            'location' => Menu::FOOTER,
+            'location' => 'footer_menu',
             'items' => [[
                 'label' => 'Tautan Luar', 'link_type' => 'custom',
                 'custom_url' => 'https://example.test/desa', 'target' => '_blank',
@@ -74,6 +74,7 @@ class P4BPreviewIntegrationTest extends TestCase
         ]);
 
         $this->assertSame('https://example.test/desa', $state['items'][0]['custom_url']);
+        $this->assertSame(Menu::HEADER, $state['location']);
         $this->assertSame('home', $state['items'][0]['children'][0]['link_type']);
         $this->assertSame('#', $state['items'][1]['custom_url']);
 
@@ -93,7 +94,7 @@ class P4BPreviewIntegrationTest extends TestCase
             [CreatePage::class, ['title' => 'Halaman Belum Disimpan']],
             [CreateGalleryAlbum::class, ['title' => 'Album Belum Disimpan']],
             [CreateDocument::class, ['title' => 'Dokumen Belum Disimpan']],
-            [CreateMenu::class, ['location' => Menu::HEADER]],
+            [CreateMenu::class, []],
         ] as [$editor, $state]) {
             $before = PreviewToken::count();
             Livewire::test($editor)->fillForm($state)
@@ -108,19 +109,19 @@ class P4BPreviewIntegrationTest extends TestCase
         $this->assertSame(0, Menu::count());
     }
 
-    public function test_footer_menu_edit_preview_keeps_its_location_without_mutating_menu(): void
+    public function test_navigation_edit_preview_uses_primary_location_without_mutating_menu(): void
     {
         config(['preview.ui_enabled' => true]);
-        $menu = Menu::create(['location' => Menu::FOOTER]);
+        $menu = Menu::create(['location' => Menu::HEADER]);
 
-        Livewire::test(EditFooterMenu::class, ['record' => $menu->id])
+        Livewire::test(EditMenu::class, ['record' => $menu->id])
             ->call('mountAction', 'preview', [], ['schemaComponent' => 'content.form-actions'])
             ->call('callMountedAction');
 
         $this->assertSame(1, PreviewToken::count());
         $payload = json_decode(Crypt::decryptString(PreviewToken::firstOrFail()->encrypted_payload), true);
-        $this->assertSame(Menu::FOOTER, $payload['state']['location']);
-        $this->assertSame(Menu::FOOTER, $menu->fresh()->location);
+        $this->assertSame(Menu::HEADER, $payload['state']['location']);
+        $this->assertSame(Menu::HEADER, $menu->fresh()->location);
         $this->assertSame(0, MenuItem::count());
     }
 

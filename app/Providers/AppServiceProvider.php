@@ -86,15 +86,5 @@ class AppServiceProvider extends ServiceProvider
                 $context?->recordSnapshot,
             ));
         });
-
-        View::composer('partials.footer', function ($view) {
-            $context = app()->bound(\App\Support\Preview\PreviewContext::class)
-                ? app(\App\Support\Preview\PreviewContext::class) : null;
-            $view->with('footerMenu', app(\App\Services\NavigationResolver::class)->forLocation(
-                Menu::FOOTER,
-                $context?->previewType === 'menu' ? $context->normalizedState : null,
-                $context?->recordSnapshot,
-            ));
-        });
     }
 }

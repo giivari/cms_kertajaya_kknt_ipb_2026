@@ -19,13 +19,10 @@ class Menu extends Model
 
     public const HEADER = 'primary';
 
-    public const FOOTER = 'footer_menu';
-
     public static function supportedLocations(): array
     {
         return [
-            self::HEADER => 'Navigasi Utama',
-            self::FOOTER => 'Kaki Halaman',
+            self::HEADER => 'Navigasi',
         ];
     }
 

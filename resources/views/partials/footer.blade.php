@@ -111,19 +111,6 @@
 
         </div>
 
-        @if(isset($footerMenu) && $footerMenu->items->isNotEmpty())
-            <nav aria-label="Navigasi Kaki Halaman" class="flex flex-wrap gap-x-6 gap-y-3 pb-6 text-sm text-white/70">
-                @foreach($footerMenu->items as $item)
-                    <div class="flex flex-wrap items-center gap-x-3 gap-y-2">
-                        <a href="{{ $item->url }}" target="{{ $item->target }}" class="hover:text-white transition-colors">{{ $item->label }}</a>
-                        @foreach($item->children as $child)
-                            <a href="{{ $child->url }}" target="{{ $child->target }}" class="text-white/60 hover:text-white transition-colors">{{ $child->label }}</a>
-                        @endforeach
-                    </div>
-                @endforeach
-            </nav>
-        @endif
-
         <div class="pt-4 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4 text-xs md:text-sm text-white/50">
             <p class="truncate max-w-full md:max-w-[60%]">{{ \App\Services\SettingsService::get('footer_text', '© ' . date('Y') . ' Desa Kertajaya. Hak cipta dilindungi.') }}</p>
             @php

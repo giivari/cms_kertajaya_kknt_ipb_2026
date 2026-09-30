@@ -34,7 +34,7 @@ class AdminScreenVerificationTest extends TestCase
         foreach ($routes as $route) {
             $response = $this->get(route($route));
             if ($route === 'filament.admin.resources.menus.index') {
-                $response->assertRedirect(route('filament.admin.resources.menus.create', ['location' => Menu::HEADER]));
+                $response->assertRedirect(route('filament.admin.resources.menus.create'));
                 $this->assertSame(0, Menu::count());
                 continue;
             }

@@ -269,14 +269,9 @@ class PreviewStateNormalizer
     {
         $menu = [
             'description' => self::text($state['description'] ?? null),
+            'location' => \App\Models\Menu::HEADER,
             'items' => self::menuItems($state['items'] ?? []),
         ];
-
-        if (array_key_exists('location', $state)) {
-            $menu['location'] = $state['location'] === 'header_menu' ? \App\Models\Menu::HEADER
-                : (in_array($state['location'], array_keys(\App\Models\Menu::supportedLocations()), true)
-                    ? $state['location'] : \App\Models\Menu::HEADER);
-        }
 
         return $menu;
     }

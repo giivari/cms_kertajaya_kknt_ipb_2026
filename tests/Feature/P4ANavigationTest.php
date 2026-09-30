@@ -6,17 +6,17 @@ use App\Enums\LinkType;
 use App\Filament\Providers\GlobalSearchProvider;
 use App\Filament\Resources\Menus\Pages\CreateMenu;
 use App\Filament\Resources\Menus\Pages\EditMenu;
-use App\Filament\Resources\Menus\Pages\EditFooterMenu;
+use App\Filament\Support\PreviewStateNormalizer;
 use App\Models\Admin;
 use App\Models\Menu;
 use App\Models\MenuItem;
 use App\Models\Page;
 use App\Services\NavigationResolver;
 use App\Support\Preview\PreviewContext;
-use App\Filament\Support\PreviewStateNormalizer;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -32,36 +32,39 @@ class P4ANavigationTest extends TestCase
         Storage::fake('public');
     }
 
-    public function test_public_reads_are_read_only_and_header_footer_use_separate_menus(): void
+    public function test_public_reads_are_read_only_and_only_primary_navigation_is_active(): void
     {
         $this->get('/')->assertOk();
         $this->assertSame(0, Menu::count());
         $this->assertSame(0, MenuItem::count());
 
-        $header = Menu::create(['location' => Menu::HEADER]);
-        $footer = Menu::create(['location' => Menu::FOOTER]);
-        MenuItem::create(['menu_id' => $header->id, 'label' => 'Header Unik', 'link_type' => LinkType::HOME]);
-        MenuItem::create(['menu_id' => $footer->id, 'label' => 'Footer Unik', 'link_type' => LinkType::HOME]);
+        $primary = Menu::create(['location' => Menu::HEADER]);
+        $legacyFooterId = DB::table('menus')->insertGetId([
+            'name' => 'Footer Legacy', 'location' => 'footer_menu',
+            'created_at' => now(), 'updated_at' => now(),
+        ]);
+        MenuItem::create(['menu_id' => $primary->id, 'label' => 'Navigasi Aktif', 'link_type' => LinkType::HOME]);
+        MenuItem::create(['menu_id' => $legacyFooterId, 'label' => 'Footer Legacy', 'link_type' => LinkType::HOME]);
 
-        $this->get('/')->assertOk()->assertSee('Header Unik')->assertSee('Footer Unik');
+        $this->get('/')->assertOk()->assertSee('Navigasi Aktif')->assertDontSee('Footer Legacy');
         $this->assertSame(2, Menu::count());
         $this->assertSame(2, MenuItem::count());
-        $this->assertSame($header->id, app(NavigationResolver::class)->forLocation(Menu::HEADER)->id);
-        $this->assertSame($footer->id, app(NavigationResolver::class)->forLocation(Menu::FOOTER)->id);
+        $this->assertSame($primary->id, app(NavigationResolver::class)->forLocation(Menu::HEADER)->id);
+        $this->assertNull(app(NavigationResolver::class)->forLocation('footer_menu'));
     }
 
-    public function test_editor_get_does_not_create_a_menu_and_explicit_create_remains_available(): void
+    public function test_editor_get_does_not_create_a_menu_and_footer_editor_route_is_absent(): void
     {
         $admin = Admin::factory()->create(['app_authentication_secret' => 'JBSWY3DPEHPK3PXP']);
         $this->actingAs($admin)->withSession(['session_created_at' => time()]);
 
         $this->get(route('filament.admin.resources.menus.index'))
-            ->assertRedirect(route('filament.admin.resources.menus.create', ['location' => Menu::HEADER]));
-        $this->get(route('filament.admin.resources.menus.footer'))
-            ->assertRedirect(route('filament.admin.resources.menus.create', ['location' => Menu::FOOTER]));
+            ->assertRedirect(route('filament.admin.resources.menus.create'));
+        $this->assertFalse(Route::has('filament.admin.resources.menus.footer'));
+        $this->get('/desa-dashboard/menus/footer')->assertNotFound();
         $this->assertSame(0, Menu::count());
 
-        $this->get(route('filament.admin.resources.menus.create', ['location' => Menu::FOOTER]))->assertOk();
+        $this->get(route('filament.admin.resources.menus.create', ['location' => 'footer_menu']))->assertOk();
         $this->assertSame(0, Menu::count());
     }
 
@@ -90,14 +93,13 @@ class P4ANavigationTest extends TestCase
         $this->get('/')->assertOk()->assertDontSee('Halaman Mendatang')->assertDontSee('Draf Tertutup')->assertDontSee('Tanpa Tanggal')->assertDontSee('Tautan Lama Tidak Aman');
     }
 
-    public function test_explicit_footer_create_and_edit_preserve_menu_and_item_identity(): void
+    public function test_primary_navigation_create_and_edit_preserve_menu_and_item_identity(): void
     {
         $admin = Admin::factory()->create(['app_authentication_secret' => 'JBSWY3DPEHPK3PXP']);
         $this->actingAs($admin)->withSession(['session_created_at' => time()]);
         Filament::setCurrentPanel(Filament::getPanel('admin'));
 
         Livewire::test(CreateMenu::class)->fillForm([
-            'location' => Menu::FOOTER,
             'items' => [[
                 'label' => 'Kontak', 'link_type' => LinkType::CONTACT->value,
                 'is_visible' => true,
@@ -111,16 +113,15 @@ class P4ANavigationTest extends TestCase
             ]],
         ])->call('create')->assertHasNoFormErrors();
 
-        $menu = Menu::query()->where('location', Menu::FOOTER)->firstOrFail();
+        $menu = Menu::query()->where('location', Menu::HEADER)->firstOrFail();
         $item = $menu->items()->firstOrFail();
         $child = $item->children()->firstOrFail();
         $second = $menu->items()->whereKeyNot($item->id)->firstOrFail();
-        $this->get(route('filament.admin.resources.menus.create', ['location' => Menu::FOOTER]))
-            ->assertRedirect(route('filament.admin.resources.menus.footer'));
-        $this->get(route('filament.admin.resources.menus.footer'))->assertOk();
-        Livewire::test(EditMenu::class, ['record' => $menu->id])->assertHasNoErrors();
+        $this->get(route('filament.admin.resources.menus.create'))
+            ->assertRedirect(route('filament.admin.resources.menus.index'));
+        $this->get(route('filament.admin.resources.menus.index'))->assertOk();
 
-        $editor = Livewire::test(EditFooterMenu::class);
+        $editor = Livewire::test(EditMenu::class, ['record' => $menu->id]);
         $items = $editor->get('data.items');
         $itemKey = array_key_first($items);
         $childKey = array_key_first($items[$itemKey]['children']);
@@ -128,7 +129,7 @@ class P4ANavigationTest extends TestCase
         $items[$itemKey]['children'][$childKey]['label'] = 'Beranda Desa';
         $editor->fillForm(['items' => $items])->call('save')->assertHasNoFormErrors();
 
-        $this->assertSame($menu->id, Menu::query()->where('location', Menu::FOOTER)->firstOrFail()->id);
+        $this->assertSame($menu->id, Menu::query()->where('location', Menu::HEADER)->firstOrFail()->id);
         $this->assertSame([$item->id, $second->id], $menu->items()->pluck('id')->all());
         $this->assertSame($child->id, $item->children()->firstOrFail()->id);
         $this->assertSame('Kontak Desa', $item->refresh()->label);
@@ -149,14 +150,15 @@ class P4ANavigationTest extends TestCase
         $this->assertLessThanOrEqual(20, $navigation->count());
     }
 
-    public function test_existing_label_only_preview_overlay_still_reaches_public_navigation(): void
+    public function test_legacy_location_preview_is_canonicalized_to_primary_without_persistence(): void
     {
         $state = PreviewStateNormalizer::normalize('menu', [
-            'location' => Menu::FOOTER,
+            'location' => 'footer_menu',
             'items' => [['label' => 'Tautan Pratinjau', 'is_visible' => true]],
         ]);
+        $this->assertSame(Menu::HEADER, $state['location']);
         app()->instance(PreviewContext::class, new PreviewContext(
-            'menu', $state, ['location' => Menu::FOOTER], 'edit', [],
+            'menu', $state, ['location' => 'footer_menu'], 'edit', [],
         ));
 
         try {
